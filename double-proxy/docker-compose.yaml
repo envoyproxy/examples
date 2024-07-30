@@ -10,7 +10,7 @@ services:
       app:
         condition: service_healthy
     ports:
-    - "10000:10000"
+    - "${PORT_PROXY:-10000}:10000"
 
   app:
     build:

@@ -27,7 +27,7 @@ HEALTHCHECK \
     --interval=2s \
     --timeout=1s \
     --start-period=1s \
-    --retries=30 \
+    --retries=60 \
     CMD nc -zv localhost "$SERVICE_PORT"
 
 

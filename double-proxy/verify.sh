@@ -3,6 +3,8 @@
 export NAME=double-proxy
 export MANUAL=true
 
+export PORT_PROXY="${DOUBLE_PROXY_PORT_PROXY:-10400}"
+
 # shellcheck source=examples/verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
@@ -54,4 +56,4 @@ bring_up_example
 run_log "Test app/db connection"
 responds_with \
     "Connected to Postgres, version: PostgreSQL" \
-    http://localhost:10000
+    "http://localhost:${PORT_PROXY}"

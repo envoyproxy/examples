@@ -1,8 +1,8 @@
 #!/bin/bash -e
 
 export NAME=opentelemetry
-export PORT_PROXY="${OPENTELEMETRY_PORT_PROXY:-12000}"
-export PORT_UI="${OPENTELEMETRY_PORT_UI:-12001}"
+export PORT_PROXY="${OPENTELEMETRY_PORT_PROXY:-11500}"
+export PORT_UI="${OPENTELEMETRY_PORT_UI:-11501}"
 
 # shellcheck source=examples/verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"

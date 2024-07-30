@@ -78,7 +78,10 @@ bring_down_example () {
         cleanup_stack "$path" || {
             echo "ERROR: cleanup ${NAME} ${path}" >&2
         }
-        popd > /dev/null
+        popd > /dev/null || {
+            echo "BRING DOWN: ${path}" >&2
+            return 1
+        }
     done
 }
 
