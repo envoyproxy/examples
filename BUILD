@@ -1,13 +1,50 @@
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("@rules_pkg//pkg:pkg.bzl", "pkg_tar")
-load(
-    "//bazel:envoy_build_system.bzl",
-    "envoy_package",
-)
+load("//:examples.bzl", "envoy_examples")
 
 licenses(["notice"])  # Apache 2
 
-envoy_package()
+EXAMPLE_TESTS = [
+    "brotli",
+    "cache",
+    "cors",
+    "csrf",
+    "double-proxy",
+    "dynamic-config-cp",
+    "dynamic-config-fs",
+    "ext_authz",
+    # "fault-injection",
+    "front-proxy",
+    # "golang-http",
+    # "golang-network",
+    "grpc-bridge",
+    "gzip",
+    "jaeger-tracing",
+    "kafka",
+    "load-reporting-service",
+    "locality-load-balancing",
+    "local_ratelimit",
+    "lua",
+    "lua-cluster-specifier",
+    "mysql",
+    "opentelemetry",
+    "postgres",
+    "rbac",
+    "redis",
+    "route-mirror",
+    "single-page-app",
+    "skywalking",
+    "tls",
+    "tls-inspector",
+    "tls-sni",
+    "udp",
+    "vrp-litmus",
+    # "vrp-local",
+    # "wasm-cc",
+    "websocket",
+    "zipkin",
+    "zstd",
+]
 
 filegroup(
     name = "configs",
@@ -55,7 +92,7 @@ filegroup(
 
 filegroup(
     name = "docs_rst",
-    srcs = glob(["**/example.rst"]) + ["//examples/wasm-cc:example.rst"],
+    srcs = glob(["**/example.rst"]),
 )
 
 pkg_files(
@@ -99,10 +136,9 @@ filegroup(
         exclude = [
             "**/node_modules/**",
             "**/*.rst",
+            "win32*",
         ],
-    ) + [
-        "//examples/wasm-cc:files",
-    ],
+    ),
 )
 
 pkg_tar(
@@ -111,4 +147,8 @@ pkg_tar(
     extension = "tar.gz",
     package_dir = "start/sandboxes",
     deps = [":examples_docs"],
+)
+
+envoy_examples(
+    examples = EXAMPLE_TESTS,
 )

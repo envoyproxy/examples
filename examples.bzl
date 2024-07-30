@@ -1,0 +1,63 @@
+
+
+def envoy_example(name, shared = ":shared_files", common_fun = ":verify-common.sh"):
+
+    native.filegroup(
+        name = "%s_files" % name,
+        srcs = native.glob(["%s/**/*" % name]),
+    )
+
+    native.genrule(
+        name = "%s_dir" % name,
+        outs = ["%s_dir.tar" % name],
+        cmd = """
+            tar chf $@ -C . shared verify-common.sh %s
+        """ % name,
+        tools = [
+            common_fun,
+            shared,
+            "%s_files" % name,
+        ],
+    )
+
+    native.sh_binary(
+        name = "verify_%s" % name,
+        srcs = [":verify_example.sh"],
+        args = [
+            name,
+            "$(location :%s_dir)" % name,
+        ],
+        data = [":%s_dir" % name],
+    )
+
+def envoy_examples(examples):
+    RESULTS = []
+    RESULT_FILES = []
+
+    native.filegroup(
+        name = "shared_files",
+        srcs = native.glob(["shared/**/*"]),
+    )
+
+    for example in examples:
+        envoy_example(name = example, shared = ":shared_files")
+        native.genrule(
+            name = "%s_result" % example,
+            outs = ["%s_result.txt" % example],
+            cmd = """
+                ./$(location :verify_%s) %s $(location :%s_dir) >> $@
+            """ % (example, example, example),
+            tools = [
+                "verify_%s" % example,
+                "%s_dir" % example,
+            ],
+        )
+        RESULTS.append("%s_result" % example)
+        RESULT_FILES.append("$(location %s)" % ("%s_result" % example))
+
+    native.sh_binary(
+        name = "verify_examples",
+        srcs = [":verify_examples.sh"],
+        args = RESULT_FILES,
+        data = RESULTS,
+    )

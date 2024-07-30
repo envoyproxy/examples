@@ -1,4 +1,4 @@
-module github.com/envoyproxy/envoy/examples/golang-network/simple
+module github.com/envoyproxy/examples/golang-network/simple
 
 // the version should >= 1.18
 go 1.18
@@ -16,6 +16,3 @@ require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20240102182953-50ed04b92917 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240102182953-50ed04b92917 // indirect
 )
-
-// TODO: remove when #26173 lands.
-replace github.com/envoyproxy/envoy => ../../..
