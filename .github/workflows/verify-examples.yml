@@ -1,0 +1,14 @@
+name: Verify
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: envoy-x64-small
+    steps:
+      - run: |
+          bazel run --sandbox_writable_path="${HOME}/.docker/" --sandbox_writable_path=$HOME :verify_examples
