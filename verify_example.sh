@@ -1,6 +1,5 @@
 #!/bin/bash -e
 
-
 EXAMPLE_NAME="${1}"
 EXAMPLE_DIR="${2}"
 TMPOUT=$(mktemp)
@@ -10,7 +9,7 @@ export TERM=xterm-256color
 
 complete () {
     EXITCODE=$(tail -n 1 $TMPOUT | grep -oP '(?<=COMMAND_EXIT_CODE=")[0-9]+')
-    echo "Example/${EXAMPLE_NAME}: $EXITCODE"
+    echo "${EXAMPLE_NAME}: ${EXITCODE}:${TIME}"
     tail -n 1 $TMPOUT
     echo
     echo
@@ -23,10 +22,12 @@ complete () {
     rm -rf $TMPOUT
 }
 
+verify () {
+    tar xf $EXAMPLE_DIR -C $RUNDIR
+    cd "$RUNDIR/${EXAMPLE_NAME}"
+    script -q -c "unbuffer ./verify.sh" "$TMPOUT" >/dev/null
+}
+
 trap complete EXIT
 
-tar xf $EXAMPLE_DIR -C $RUNDIR
-
-cd "$RUNDIR/${EXAMPLE_NAME}"
-
-script -q -c "unbuffer ./verify.sh" "$TMPOUT" >/dev/null
+TIME=$({ time verify; } 2>&1 | grep real | cut -dl -f2)
