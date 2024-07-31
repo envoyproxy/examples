@@ -24,7 +24,13 @@ complete () {
 
 verify () {
     tar xf $EXAMPLE_DIR -C $RUNDIR
-    cd "$RUNDIR/${EXAMPLE_NAME}"
+    cd "$RUNDIR"
+    dirlist=$(ls .)
+    if [[ "$dirlist" == "external" ]]; then
+        cd "external/envoy_examples/${EXAMPLE_NAME}"
+    else
+        cd "${EXAMPLE_NAME}"
+    fi
     script -q -c "unbuffer ./verify.sh" "$TMPOUT" >/dev/null
 }
 
