@@ -134,13 +134,16 @@ filegroup(
             "**/*",
         ],
         exclude = [
+            "BUILD",
             ".git/**/*",
             "bazel-*/**/*",
             "**/node_modules/**",
             "**/*.rst",
             "win32*",
         ],
-    ),
+    ) + [
+        "//wasm-cc:files",
+    ],
 )
 
 pkg_tar(
