@@ -99,7 +99,6 @@ pkg_files(
     name = "examples_files",
     srcs = [":files"],
     prefix = "_include",
-    strip_prefix = "/examples",
 )
 
 genrule(
