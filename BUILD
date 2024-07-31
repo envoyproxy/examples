@@ -99,6 +99,7 @@ pkg_files(
     name = "examples_files",
     srcs = [":files"],
     prefix = "_include",
+    strip_prefix = "",
 )
 
 genrule(
@@ -108,7 +109,7 @@ genrule(
     cmd = """
     TEMP=$$(mktemp -d)
     for location in $(locations :docs_rst); do
-        example=$$(echo $$location | sed -e 's#^external/[^/]*/##' | cut -d/ -f2)
+        example=$$(echo $$location | sed -e 's#^external/[^/]*/##' | cut -d/ -f1)
         cp -a $$location "$${TEMP}/$${example}.rst"
         echo "    $${example}" >> "$${TEMP}/_toctree.rst"
     done
@@ -133,6 +134,8 @@ filegroup(
             "**/*",
         ],
         exclude = [
+            ".git/**/*",
+            "bazel-*/**/*",
             "**/node_modules/**",
             "**/*.rst",
             "win32*",
@@ -146,6 +149,7 @@ pkg_tar(
     extension = "tar.gz",
     package_dir = "start/sandboxes",
     deps = [":examples_docs"],
+    visibility = ["//visibility:public"],
 )
 
 envoy_examples(
