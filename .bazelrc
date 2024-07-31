@@ -1,0 +1,5 @@
+
+common --color=yes
+common:ci --noshow_progress
+common:ci --noshow_loading_progress
+common:ci --test_output=errors
