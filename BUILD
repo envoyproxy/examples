@@ -89,6 +89,7 @@ filegroup(
 filegroup(
     name = "certs",
     srcs = glob(["_extra_certs/*.pem"]),
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -126,6 +127,7 @@ genrule(
 filegroup(
     name = "lua",
     srcs = glob(["**/*.lua"]),
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
