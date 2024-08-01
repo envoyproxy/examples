@@ -1,0 +1,26 @@
+name: Docs
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+  push:
+    branches:
+    - main
+
+
+jobs:
+  docs:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+        with:
+          repository: envoyproxy/envoy
+          path: envoy
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+        with:
+          path: examples
+      - run: |
+          bazel build --override_repository=envoy_examples=../examples --config=ci //docs
+        working-directory: envoy
