@@ -92,14 +92,14 @@ filegroup(
 
 filegroup(
     name = "docs_rst",
-    srcs = glob(["**/example.rst"]),
+    srcs = glob(["**/example.rst"]) + ["//wasm-cc:example.rst"],
 )
 
 pkg_files(
     name = "examples_files",
     srcs = [":files"],
     prefix = "_include",
-    strip_prefix = "",
+    strip_prefix = "/",
 )
 
 genrule(
