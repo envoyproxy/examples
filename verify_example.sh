@@ -23,7 +23,13 @@ complete () {
 }
 
 verify () {
-    tar xf $EXAMPLE_DIR -C $RUNDIR
+    tar xf "$EXAMPLE_DIR" -C "$RUNDIR"
+    export DOCKER_NO_PULL=1
+    export DOCKER_RMI_CLEANUP=1
+    # This is set to simulate an environment where users have shared home drives protected
+    # by a strong umask (ie only group readable by default).
+    umask 027
+    chmod -R o-rwx "$RUNDIR"
     cd "$RUNDIR"
     dirlist=$(ls .)
     if [[ "$dirlist" == "external" ]]; then
