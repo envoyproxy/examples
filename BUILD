@@ -67,6 +67,7 @@ filegroup(
             "kafka/*.yaml",
         ],
     ),
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
