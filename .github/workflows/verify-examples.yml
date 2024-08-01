@@ -20,6 +20,30 @@ jobs:
     steps:
     - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
     - run: |
+        TEMPDIR=/cache/docker
+        sudo mkdir -p "${TEMPDIR}"
+        sudo mount -t tmpfs none "$TEMPDIR"
+        sudo chown runner "$TEMPDIR"
+    - uses: actions/cache/restore@v4
+      id: cache
+      with:
+        path: /cache/docker
+        key: ${{ runner.os }}-docker-${{ hashFiles('**/Dockerfile*') }}
+    - run: |
+        sudo systemctl stop docker docker.socket
+        sudo rm -rf /var/lib/docker/{*,.*}
+        TEMPDIR=/cache/docker
+        zstd --stdout -d "${TEMPDIR}/docker.tar.zst" | sudo tar --warning=no-timestamp -xf - -C /var/lib/docker
+        sudo umount "$TEMPDIR"
+        sudo systemctl start docker
+      if: steps.cache.outputs.cache-hit == 'true'
+    - run: |
+        sudo systemctl stop docker docker.socket
+        sudo rm -rf /var/lib/docker/{*,.*}
+        sudo systemctl start docker
+      if: steps.cache.outputs.cache-hit != 'true'
+
+    - run: |
         sudo apt-get update
         sudo apt-get -qq install -y --no-install-recommends expect gettext yq whois
     - run: |
@@ -32,3 +56,15 @@ jobs:
                   --host_action_env="DEV_CONTAINER_ID=${DEV_CONTAINER_ID}" \
                   --sandbox_writable_path="${HOME}/.docker/" \
                   --sandbox_writable_path=$HOME :verify_examples
+
+    - run: |
+        sudo systemctl stop docker docker.socket
+        TEMPDIR=/cache/docker
+        sudo tar cf - -C /var/lib/docker . | zstd - -q -T0 -o "${TEMPDIR}/docker.tar.zst"
+        ls -alh "${TEMPDIR}/docker.tar.zst"
+      if: steps.cache.outputs.cache-hit != 'true' && github.event_name != 'pull_request'
+    - uses: actions/cache/save@v4
+      if: steps.cache.outputs.cache-hit != 'true' && github.event_name != 'pull_request'
+      with:
+        path: /cache/docker
+        key: ${{ runner.os }}-docker-${{ hashFiles('**/Dockerfile*') }}
