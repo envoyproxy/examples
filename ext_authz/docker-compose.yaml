@@ -37,8 +37,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-opa
-    volumes:
-    - ./config/opa-service/policy.rego:/etc/policy.rego
     command:
     - run
     - --server
