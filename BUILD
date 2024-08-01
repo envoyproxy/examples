@@ -84,6 +84,7 @@ filegroup(
             "**/*docker-compose*.yaml",
         ],
     ),
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
