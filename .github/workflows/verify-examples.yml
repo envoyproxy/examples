@@ -18,13 +18,9 @@ jobs:
   verify:
     runs-on: ubuntu-24.04
     steps:
-      - run: |
-          df -h
-          free
-
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
-      - run: |
-          sudo apt-get update
-          sudo apt-get -qq install -y --no-install-recommends expect gettext yq whois
-      - run: |
-          bazel run --config=ci --sandbox_writable_path="${HOME}/.docker/" --sandbox_writable_path=$HOME :verify_examples
+    - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+    - run: |
+        sudo apt-get update
+        sudo apt-get -qq install -y --no-install-recommends expect gettext yq whois
+    - run: |
+        bazel run --config=ci --sandbox_writable_path="${HOME}/.docker/" --sandbox_writable_path=$HOME :verify_examples
