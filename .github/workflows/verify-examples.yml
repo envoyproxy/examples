@@ -41,7 +41,7 @@ jobs:
         sudo systemctl stop docker docker.socket
         sudo rm -rf /var/lib/docker/{*,.*}
         sudo systemctl start docker
-      if: steps.cache.outputs.cache-hit != 'true'
+      if: steps.cache.outputs.cache-hit != 'true' && github.event_name != 'pull_request'
 
     - run: |
         sudo apt-get update
