@@ -6,6 +6,8 @@ services:
     volumes:
     - ${UI_PATH:-./ui}:/workspace
     - ${XDS_PATH:-./xds}:/var/lib/envoy
+    environment:
+      LOCAL_UID: "${UID}"
     working_dir: /workspace
 
   envoy:
