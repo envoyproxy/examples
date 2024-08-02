@@ -43,6 +43,17 @@ jobs:
         sudo systemctl start docker
       if: steps.cache.outputs.cache-hit != 'true' && github.event_name != 'pull_request'
 
+
+    - run: |
+        TEMPDIR=/cache/docker
+        sudo mkdir -p "${TEMPDIR}"
+        sudo mount -t tmpfs none "$TEMPDIR"
+        sudo chown runner "$TEMPDIR"
+    - uses: actions/cache@v4
+      with:
+        path: /home/runner/.cache
+        key: ${{ runner.os }}-bazel-${{ hashFiles('**/BUILD', '**/*bzl', 'WORKSPACE') }}
+
     - run: |
         sudo apt-get update
         sudo apt-get -qq install -y --no-install-recommends expect gettext yq whois
