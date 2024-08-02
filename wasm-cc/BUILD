@@ -27,8 +27,8 @@ filegroup(
             ],
         ),
         "//conditions:default": [],
-        visibility = ["//visibility:public"],
     }),
+    visibility = ["//visibility:public"],
 )
 
 # envoy_wasm_cc_binary(
