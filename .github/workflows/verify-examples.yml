@@ -23,4 +23,12 @@ jobs:
         sudo apt-get update
         sudo apt-get -qq install -y --no-install-recommends expect gettext yq whois
     - run: |
-        bazel run --config=ci --sandbox_writable_path="${HOME}/.docker/" --sandbox_writable_path=$HOME :verify_examples
+        docker pull envoyproxy/envoy:dev
+        DEV_CONTAINER_ID=$(docker inspect --format='{{.Id}}' envoyproxy/envoy:dev)
+        echo "DEV_CONTAINER_ID=${DEV_CONTAINER_ID}" >> $GITHUB_ENV
+    - run: |
+        bazel run --config=ci \
+                  --action_env="DEV_CONTAINER_ID=${DEV_CONTAINER_ID}" \
+                  --host_action_env="DEV_CONTAINER_ID=${DEV_CONTAINER_ID}" \
+                  --sandbox_writable_path="${HOME}/.docker/" \
+                  --sandbox_writable_path=$HOME :verify_examples
