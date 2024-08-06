@@ -4,7 +4,7 @@ export NAME=lua-cluster-specifier
 export PORT_PROXY="${LUA_CLUSTER_PORT_PROXY:-12620}"
 export PORT_WEB="${LUA_CLUSTER_PORT_WEB:-12621}"
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 run_log "Test Lua cluster specifier with normal cluster"

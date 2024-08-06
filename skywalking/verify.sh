@@ -13,7 +13,7 @@ export ES_WATERMARK_HIGH=99%
 export ES_WATERMARK_LOW=99%
 
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 run_log "Make a request to service-1"

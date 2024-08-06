@@ -4,7 +4,7 @@ export NAME=lua
 export PORT_PROXY="${LUA_PORT_PROXY:-11230}"
 export PORT_WEB="${LUA_PORT_WEB:-11231}"
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 

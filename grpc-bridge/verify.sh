@@ -4,7 +4,7 @@ export NAME=grpc-bridge
 # this allows us to bring up the stack manually after generating stubs
 export MANUAL=true
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 

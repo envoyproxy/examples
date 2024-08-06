@@ -21,13 +21,13 @@ fail () {
 }
 
 for result in "$@"; do
-    RESULT=$(head -n1 "$result")
-    NAME=$(echo $RESULT | cut -d: -f1 | trim)
-    EXITCODE=$(echo $RESULT | cut -d: -f2 | trim)
+    RESULT="$(head -n1 "$result")"
+    NAME="$(echo "${RESULT}" | cut -d: -f1 | trim)"
+    EXITCODE="$(echo "${RESULT}" | cut -d: -f2 | trim)"
     if [[ $EXITCODE != 0 ]]; then
         echo
         echo -e "============= ${RED}FAILED (${NAME})${NC} ===================="
-        tail -n+3 $result
+        tail -n+3 "$result"
         echo -e "============ ${RED}/FAILED (${NAME})${NC} ===================="
         echo
     fi
@@ -35,9 +35,9 @@ done
 
 for result in "$@"; do
     RESULT=$(head -n1 "$result")
-    NAME=$(echo $RESULT | cut -d: -f1 | trim)
-    EXITCODE=$(echo $RESULT | cut -d: -f2 | trim)
-    TIME=$(echo $RESULT | cut -d: -f3 | trim)
+    NAME="$(echo "${RESULT}" | cut -d: -f1 | trim)"
+    EXITCODE="$(echo "${RESULT}" | cut -d: -f2 | trim)"
+    TIME="$(echo "${RESULT}" | cut -d: -f3 | trim)"
     OUTCOME=$(pass "${TIME}")
     if [[ $EXITCODE != 0 ]]; then
         OUTCOME=$(fail "${TIME}" "$EXITCODE")

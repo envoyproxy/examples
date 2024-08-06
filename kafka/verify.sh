@@ -8,7 +8,7 @@ export PORT_ADMIN="${KAFKA_PORT_ADMIN:-11101}"
 # not start.
 UPARGS="proxy kafka-server zookeeper"
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 kafka_client () {

@@ -25,7 +25,7 @@ finally () {
 
 export -f finally
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 # As much of the logic is implemented in js, not everything can get tested, at least without using

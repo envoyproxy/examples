@@ -7,7 +7,7 @@ export PORT_SAME="${CSRF_PORT_SAME:-10320}"
 export PORT_STATS="${CSRF_PORT_STATS:-10321}"
 export PORT_CROSS="${CSRF_PORT_CROSS:-10322}"
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 

@@ -6,7 +6,7 @@ export PORT_PROXY0="${LRS_PORT_PROXY0:-11200}"
 export PORT_PROXY1="${LRS_PORT_PROXY1:-11201}"
 export PORT_ADMIN="${LRS_PORT_ADMIN:-11202}"
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 run_log "Send requests"

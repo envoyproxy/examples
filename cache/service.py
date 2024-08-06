@@ -2,7 +2,6 @@ import hashlib
 import os
 import re
 import datetime
-from typing import Optional
 
 import yaml
 

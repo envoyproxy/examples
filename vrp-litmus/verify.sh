@@ -3,7 +3,7 @@
 export NAME=vrp-litmus
 export DELAY=10
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 
