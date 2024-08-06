@@ -5,7 +5,7 @@ export PORT_PROXY="${GZIP_PORT_PROXY:-10700}"
 export PORT_STATS0="${GZIP_PORT_STATS0:-10701}"
 export PORT_STATS1="${GZIP_PORT_STATS1:-10702}"
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 run_log "Test service: localhost:${PORT_PROXY}/file.json with compression"

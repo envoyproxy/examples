@@ -4,7 +4,7 @@ export NAME=zipkin
 export PORT_PROXY="${ZIPKIN_PORT_PROXY:-12600}"
 export PORT_UI="${ZIPKIN_PORT_UI:-12601}"
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 run_log "Make a request to service-1"

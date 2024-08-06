@@ -4,7 +4,7 @@ export NAME=udp
 export PORT_PROXY="${UDP_PORT_PROXY:-12100}"
 export PORT_ADMIN="${UDP_PORT_ADMIN:-12101}"
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 run_log "Send some UDP packets"

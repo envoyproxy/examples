@@ -6,7 +6,7 @@ export PORT_PROXY="${CACHE_PORT_PROXY:-10300}"
 export CACHE_RESPONSES_YAML=./ci-responses.yaml
 
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 check_validated() {

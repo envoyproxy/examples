@@ -5,7 +5,7 @@ export PORT_PROXY="${ZSTD_PORT_PROXY:-12610}"
 export PORT_ADMIN0="${ZSTD_PORT_ADMIN0:-12611}"
 export PORT_ADMIN1="${ZSTD_PORT_ADMIN1:-12612}"
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 run_log "Test service: localhost:${PORT_PROXY}/file.json with compression"

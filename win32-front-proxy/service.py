@@ -2,7 +2,6 @@ from flask import Flask
 import os
 import requests
 import socket
-import sys
 
 app = Flask(__name__)
 

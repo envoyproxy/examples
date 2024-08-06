@@ -4,7 +4,7 @@ export NAME=opentelemetry
 export PORT_PROXY="${OPENTELEMETRY_PORT_PROXY:-11500}"
 export PORT_UI="${OPENTELEMETRY_PORT_UI:-11501}"
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 run_log "Make a request to service-1"

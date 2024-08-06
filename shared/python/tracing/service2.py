@@ -1,7 +1,6 @@
 import logging
 import os
 import socket
-import sys
 
 import aiohttp
 from aiohttp import web

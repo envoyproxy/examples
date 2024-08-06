@@ -3,7 +3,7 @@
 export NAME=postgres
 export PORT_ADMIN="${POSTGRES_PORT_ADMIN:-11600}"
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 _psql () {

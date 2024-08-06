@@ -12,7 +12,7 @@ export MANUAL=true
 # - build container with custom Envoy (mocked)
 # - rebuild and run container with default (mocked) binary
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 

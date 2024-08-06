@@ -5,7 +5,7 @@ export PORT_PROXY="${FRONT_PROXY_PORT_PROXY:-10610}"
 export PORT_HTTPS="${FRONT_PROXY_PORT_HTTPS:-10611}"
 export PORT_STATS="${FRONT_PROXY_PORT_STATS:-10612}"
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 

@@ -4,7 +4,7 @@ export NAME=redis
 export PORT_PROXY="${REDIS_PORT:-11800}"
 export PORT_ADMIN="${REDIS_PORT_ADMIN:-11801}"
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 _redis_cli () {

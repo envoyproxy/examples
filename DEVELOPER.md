@@ -18,7 +18,7 @@ to `verify.sh` will test that the sandbox can be started and stopped.
 
 export NAME=example-sandbox
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 # add example tests here...
@@ -146,7 +146,7 @@ following:
 export NAME=example-sandbox
 export DELAY=10
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 # add example tests here...
@@ -169,7 +169,7 @@ might use a `verify.sh` with:
 export NAME=example-sandbox
 export PATHS=frontend,backend
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 # add example tests here...
@@ -190,7 +190,7 @@ For example:
 export NAME=example-sandbox
 export MANUAL=true
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 run_log "Creating bar.txt before starting containers"
@@ -218,7 +218,7 @@ should add the following:
 export NAME=example-sandbox
 export UPARGS="--scale http_service=2"
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 # add example tests here...

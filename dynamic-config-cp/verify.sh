@@ -5,11 +5,11 @@ export UPARGS=" proxy"
 export PORT_PROXY="${DYNAMIC_CP_PORT_PROXY:-10410}"
 export PORT_ADMIN="${DYNAMIC_CP_PORT_ADMIN:-10411}"
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 run_log "Check port ${PORT_PROXY} is not open (still shows as succeeded)"
-nc -zv localhost ${PORT_PROXY} |& grep -v open
+nc -zv localhost "${PORT_PROXY}" |& grep -v open
 
 run_log "Check the static cluster"
 curl -s "http://localhost:${PORT_ADMIN}/config_dump" \
@@ -43,7 +43,7 @@ run_log "Bring down the control plane"
 "${DOCKER_COMPOSE[@]}" stop go-control-plane
 
 wait_for 10 sh -c "\
-         curl -s "http://localhost:${PORT_ADMIN}/config_dump" \
+         curl -s \"http://localhost:${PORT_ADMIN}/config_dump\" \
          | jq -r '.configs[1].dynamic_active_clusters' \
          | grep '\"version_info\": \"1\"'"
 

@@ -3,7 +3,7 @@
 export NAME=fault-injection
 export PORT_PROXY="${FAULT_INJECTION_PORT_PROXY:-10610}"
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 

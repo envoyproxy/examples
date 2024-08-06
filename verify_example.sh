@@ -8,18 +8,18 @@ RUNDIR=$(mktemp -d)
 export TERM=xterm-256color
 
 complete () {
-    EXITCODE=$(tail -n 1 $TMPOUT | grep -oP '(?<=COMMAND_EXIT_CODE=")[0-9]+')
+    EXITCODE="$(tail -n 1 "${TMPOUT}" | grep -oP '(?<=COMMAND_EXIT_CODE=")[0-9]+')"
     echo "${EXAMPLE_NAME}: ${EXITCODE}:${TIME}"
-    tail -n 1 $TMPOUT
+    tail -n 1 "$TMPOUT"
     echo
     echo
-    if [[ $EXITCODE != 0 ]]; then
-        cat $TMPOUT
+    if [[ "$EXITCODE" != 0 ]]; then
+        cat "$TMPOUT"
     fi
     echo
     echo
-    rm -rf $RUNDIR
-    rm -rf $TMPOUT
+    rm -rf "$RUNDIR"
+    rm -rf "$TMPOUT"
 }
 
 verify () {

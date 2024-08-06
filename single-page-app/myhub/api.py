@@ -8,10 +8,6 @@ import json
 import logging
 import os
 import pathlib
-import secrets
-import urllib.parse
-
-import yaml
 
 from aiohttp import web
 

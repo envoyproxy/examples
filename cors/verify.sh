@@ -7,7 +7,7 @@ export PORT_PROXY="${CORS_PORT_PROXY:-10310}"
 export PORT_BACKEND="${CORS_PORT_BACKEND:-10311}"
 export PORT_STATS="${CORS_PORT_STATS:-10312}"
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 

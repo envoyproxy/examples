@@ -5,7 +5,7 @@ export MANUAL=true
 
 export PORT_PROXY="${DOUBLE_PROXY_PORT_PROXY:-10400}"
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 mkdir -p certs

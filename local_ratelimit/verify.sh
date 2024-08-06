@@ -5,7 +5,7 @@ export PORT_PROXY="${LOCAL_RATELIMIT_PORT_PROXY:-11210}"
 export PORT_STATS0="${LOCAL_RATELIMIT_PORT_STATS0:-11211}"
 export PORT_STATS1="${LOCAL_RATELIMIT_PORT_STATS1:-11212}"
 
-# shellcheck source=examples/verify-common.sh
+# shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 
