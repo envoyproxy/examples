@@ -15,7 +15,7 @@ updates:
     github-workflows:
       patterns:
       - "*"
-      schedule:
+  schedule:
     interval: "daily"
     time: "06:00"
 
