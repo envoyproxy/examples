@@ -6,7 +6,7 @@ go 1.20
 // NOTICE: these lines could be generated automatically by "go mod tidy"
 require (
 	github.com/cncf/xds/go v0.0.0-20231128003011-0fa0005c9caa
-	github.com/envoyproxy/envoy v1.24.0
+	github.com/envoyproxy/envoy v1.31.1-0.20240821014141-c8f58b61c36d
 	google.golang.org/protobuf v1.34.2
 )
 
@@ -16,8 +16,3 @@ require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20240102182953-50ed04b92917 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240102182953-50ed04b92917 // indirect
 )
-
-// TODO: remove when #26173 lands.
-// And check the "API compatibility" section in doc:
-// https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/golang_filter#developing-a-go-plugin
-replace github.com/envoyproxy/envoy => ../../..

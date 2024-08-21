@@ -1,5 +1,7 @@
 github.com/cncf/xds/go v0.0.0-20231128003011-0fa0005c9caa h1:jQCWAUqqlij9Pgj2i/PB79y4KOPYVyFYdROxgaCwdTQ=
 github.com/cncf/xds/go v0.0.0-20231128003011-0fa0005c9caa/go.mod h1:x/1Gn8zydmfq8dk6e9PdstVsDgu9RuyIIJqAaF//0IM=
+github.com/envoyproxy/envoy v1.31.1-0.20240821014141-c8f58b61c36d h1:YwwhqKB3CuEDpN2gjj8ed+ptgTgSP9EZ7mWe7WdLgMM=
+github.com/envoyproxy/envoy v1.31.1-0.20240821014141-c8f58b61c36d/go.mod h1:ujBFxE543X8OePZG+FbeR9LnpBxTLu64IAU7A20EB9A=
 github.com/envoyproxy/protoc-gen-validate v1.0.2 h1:QkIBuU5k+x7/QXPvPPnWXWlCdaBFApVqftFV6k087DA=
 github.com/envoyproxy/protoc-gen-validate v1.0.2/go.mod h1:GpiZQP3dDbg4JouG/NNS7QWXpgx6x8QiMKdmN72jogE=
 github.com/golang/protobuf v1.5.0/go.mod h1:FsONVRAS9T7sI+LIUmWTfcYkHO4aIWwzhcaSAoJOfIk=
