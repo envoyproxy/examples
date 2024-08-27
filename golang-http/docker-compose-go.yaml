@@ -7,11 +7,10 @@ services:
     command: >
       bash -c "
       cd golang-http/simple
-      && go build -o simple.so -buildmode=c-shared .
-      && cp ./simple.so /output"
+      && go build -o /output/simple.so -buildmode=c-shared ."
     working_dir: /source
     environment:
     - GOFLAGS=-buildvcs=false
     volumes:
-    - ../..:/source
+    - ..:/source
     - ./lib:/output
