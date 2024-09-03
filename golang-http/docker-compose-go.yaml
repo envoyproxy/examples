@@ -15,3 +15,16 @@ services:
     volumes:
     - ..:/source
     - ./lib:/output
+  go_plugin_cleanup:
+    build:
+      context: simple
+      dockerfile: ../../shared/golang/Dockerfile
+      target: golang-base
+    command: >
+      bash -c "
+      cd golang-http/simple
+      && rm -rf simple.so /workdir/lib"
+    working_dir: /source
+    volumes:
+    - ..:/source
+    - .:/workdir

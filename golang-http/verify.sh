@@ -31,3 +31,6 @@ run_log "Make a request handled by the Go plugin using custom configuration"
 responds_with \
     "Configured local reply from go, path: /localreply_by_config" \
     "http://localhost:${PORT_PROXY}/localreply_by_config"
+
+run_log "Cleanup the go plugin library"
+"${DOCKER_COMPOSE[@]}" -f docker-compose-go.yaml up --quiet-pull --remove-orphans go_plugin_cleanup
