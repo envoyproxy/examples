@@ -32,7 +32,7 @@ static_resources:
                   uri: http://myhub:7000/authenticate
                   timeout: 3s
                 default_expires_in: 600s
-                authorization_endpoint: http://localhost:7000/authorize
+                authorization_endpoint: http://localhost:11902/authorize
                 redirect_uri: "%REQ(x-forwarded-proto)%://%REQ(:authority)%/authorize"
                 forward_bearer_token: true
                 pass_through_matcher:
@@ -111,7 +111,7 @@ static_resources:
                   uri: http://myhub:7000/authenticate
                   timeout: 3s
                 default_expires_in: 600s
-                authorization_endpoint: http://localhost:7000/authorize
+                authorization_endpoint: http://localhost:11902/authorize
                 redirect_uri: "%REQ(x-forwarded-proto)%://%REQ(:authority)%/authorize"
                 forward_bearer_token: true
                 pass_through_matcher:

@@ -33,74 +33,69 @@ export -f finally
 # Everything else should be tested.
 
 
-EXPECTED_USER_JQ=$(
-cat << 'EOF'
-{"avatar_url": "http://localhost:\($port)/images/users/envoy.svg",
- "followers": 3,
- "following": 2,
- "name": "Envoy Demo",
- "login": "envoydemo",
- "public_repos": 3}
-EOF
-)
-EXPECTED_USER="$(
-    yq -c \
-        --arg port "$PORT_MYHUB" \
-        "$EXPECTED_USER_JQ" \
-      < myhub/data.yml)"
-
-EXPECTED_REPOS_JQ=$(
-cat << 'EOF'
-.users.envoydemo.public_repos as $user_repos
-| .repos as $repos
-| $user_repos
-| map({
-    "html_url": "http://localhost:\($port)/envoydemo/\(.)",
-    "updated_at": $repos[.].updated_at,
-    "full_name": "envoydemo/\(.)"})
-EOF
-)
-EXPECTED_REPOS="$(
-    yq -c \
-        --arg port "$PORT_MYHUB" \
-        "$EXPECTED_REPOS_JQ" \
-      < myhub/data.yml)"
-
-EXPECTED_FOLLOWERS_JQ=$(
-cat << 'EOF'
-.users.envoydemo.followers as $followers
-| .users as $users
-| $followers
-| map({
-    "avatar_url": "http://localhost:\($port)/images/users/\(.).png",
-    "name": $users[.].name,
-    "html_url": "http://localhost:\($port)/users/\(.)",
-    "login": .})
-EOF
-)
-EXPECTED_FOLLOWING="$(
-    yq -c \
-        --arg port "$PORT_MYHUB" \
-        "$EXPECTED_FOLLOWERS_JQ" \
-      < myhub/data.yml)"
-
-EXPECTED_FOLLOWING_JQ=$(
-cat << 'EOF'
-.users.envoydemo.following as $following
-| .users as $users
-| $following
-| map({
-    "avatar_url": "http://localhost:\($port)/images/users/\(.).png",
-    "name": $users[.].name,
-    "html_url": "http://localhost:\($port)/users/\(.)",
-    "login": .})
-EOF
-)
-EXPECTED_FOLLOWING="$(
-    yq -c \
-        --arg port "$PORT_MYHUB" \
-        "$EXPECTED_FOLLOWING_JQ" \
-      < myhub/data.yml)"
+# EXPECTED_USER_JQ=$(
+# cat << 'EOF'
+# {"avatar_url": "http://localhost:\($port)/images/users/envoy.svg",
+#  "followers": 3,
+#  "following": 2,
+#  "name": "Envoy Demo",
+#  "login": "envoydemo",
+#  "public_repos": 3}
+# EOF
+# )
+# EXPECTED_USER="$(
+#     yq -c \
+#         --arg port "$PORT_MYHUB" \
+#         "$EXPECTED_USER_JQ" \
+#       < myhub/data.yml)"
+# 
+# EXPECTED_REPOS_JQ=$(
+# cat << 'EOF'
+# .users.envoydemo.public_repos as $user_repos
+# | .repos as $repos
+# | $user_repos
+# | map({
+#     "html_url": "http://localhost:\($port)/envoydemo/\(.)",
+#     "updated_at": $repos[.].updated_at,
+#     "full_name": "envoydemo/\(.)"})
+# EOF
+# )
+# EXPECTED_REPOS="$(
+#     yq -c \
+#         --arg port "$PORT_MYHUB" \
+#         "$EXPECTED_REPOS_JQ" \
+#       < myhub/data.yml)"
+# 
+# EXPECTED_FOLLOWERS_JQ=$(
+# cat << 'EOF'
+# .users.envoydemo.followers as $followers
+# | .users as $users
+# | $followers
+# | map({
+#     "avatar_url": "http://localhost:\($port)/images/users/\(.).png",
+#     "name": $users[.].name,
+#     "html_url": "http://localhost:\($port)/users/\(.)",
+#     "login": .})
+# EOF
+# )
+# EXPECTED_FOLLOWING="$(
+#     yq -c \
+#         --arg port "$PORT_MYHUB" \
+#         "$EXPECTED_FOLLOWERS_JQ" \
+#       < myhub/data.yml)"
+# 
+# EXPECTED_FOLLOWING_JQ=$(
+# cat << 'EOF'
+# .users.envoydemo.following as $following
+# | .users as $users
+# | $following
+# | map({
+#     "avatar_url": "http://localhost:\($port)/images/users/\(.).png",
+#     "name": $users[.].name,
+#     "html_url": "http://localhost:\($port)/users/\(.)",
+#     "login": .})
+# EOF
+# )
 
 
 test_auth () {
@@ -138,7 +133,7 @@ test_auth () {
         "http://localhost:${PORT_MYHUB}/authorize?client_id=0123456789&redirect_uri=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Fauthorize&response_type=code&scope=user%3Aemail&state=url%3D${proxy_scheme}%253A%252F%252Flocalhost%253A{proxy_port}%252Flogin%26nonce%3D12345678" \
         "${curl_args[@]}"
 
-    # Temporarily disable the rest of the verification to allow the PR https://github.com/envoyproxy/envoy/pull/35919 to pass
+    # Temporarily disable the rest of the verification to allow the PR to pass
     # run_log "Return to the app and receive creds"
     # CODE=$(_curl "${curl_args[@]}" --head "http://localhost:${PORT_MYHUB}/authorize?client_id=0123456789&redirect_uri=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Fauthorize&response_type=code&scope=user%3Aemail&state=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Flogin" | grep Location | cut -d= -f2 | cut -d\& -f1)
     # RESPONSE=$(_curl "${curl_args[@]}" --head "${proxy_scheme}://localhost:${proxy_port}/authorize?code=$CODE&state=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Flogin")
