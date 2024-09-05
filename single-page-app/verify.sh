@@ -118,6 +118,9 @@ test_auth () {
         "${proxy_scheme}://localhost:${proxy_port}" \
         "${curl_args[@]}"
 
+    # To enhance security,the nonce will always be used in the OAuth2 flow once PR https://github.com/envoyproxy/envoy/pull/35919 is merged.
+    # Nonce-less verification will remain for backward compatibility with previous releases.
+    # TODO: zhaohuabing - Remove the nonce-less verification after a reasonable transition period, such as one year.
     run_log "Check whether the nonce is used in the OAuth2 filter"
     SUPPORT_NONCE="false"
     LOCATION=$(_curl "${curl_args[@]}" --head "${proxy_scheme}://localhost:${proxy_port}/login" | grep location)
