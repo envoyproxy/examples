@@ -113,12 +113,13 @@ test_auth () {
     fi
 
     run_log "Fetch the app page"
+    sleep 4
     responds_with \
         "Envoy single page app example" \
         "${proxy_scheme}://localhost:${proxy_port}" \
         "${curl_args[@]}"
 
-    run_log "Check if the nonce is used in the OAuth2 filter"
+    run_log "Check whether the nonce is used in the OAuth2 filter"
     SUPPORT_NONCE="false"
     LOCATION=$(_curl "${curl_args[@]}" --head "${proxy_scheme}://localhost:${proxy_port}/login" | grep location)
     if [[ "$LOCATION" == *"nonce%3D"* ]]; then
@@ -132,7 +133,11 @@ test_auth () {
         "${curl_args[@]}"
     if [[ "$SUPPORT_NONCE" == "true" ]]; then
         responds_with_header \
-            "location: http://localhost:${PORT_MYHUB}/authorize?client_id=0123456789&redirect_uri=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Fauthorize&response_type=code&scope=user%3Aemail&state=url%3D${proxy_scheme}%253A%252F%252Flocalhost%253A{proxy_port}%252Flogin%26nonce%3D" \
+            "location: http://localhost:${PORT_MYHUB}/authorize?client_id=0123456789&redirect_uri=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Fauthorize&response_type=code&scope=user%3Aemail&state=url%3D${proxy_scheme}%253A%252F%252Flocalhost%253A${proxy_port}%252Flogin%26nonce%3D" \
+            "${proxy_scheme}://localhost:${proxy_port}/login" \
+            "${curl_args[@]}"
+        responds_with_header \
+            "set-cookie: OauthNonce=" \
             "${proxy_scheme}://localhost:${proxy_port}/login" \
             "${curl_args[@]}"
     else
@@ -146,11 +151,11 @@ test_auth () {
     if [[ "$SUPPORT_NONCE" == "true" ]]; then
         responds_with_header \
             "HTTP/1.1 302 Found" \
-            "http://localhost:${PORT_MYHUB}/authorize?client_id=0123456789&redirect_uri=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Fauthorize&response_type=code&scope=user%3Aemail&state=url%3D${proxy_scheme}%253A%252F%252Flocalhost%253A{proxy_port}%252Flogin%26nonce%3D12345678" \
+            "http://localhost:${PORT_MYHUB}/authorize?client_id=0123456789&redirect_uri=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Fauthorize&response_type=code&scope=user%3Aemail&state=url%3D${proxy_scheme}%253A%252F%252Flocalhost%253A${proxy_port}%252Flogin%26nonce%3D12345678" \
             "${curl_args[@]}"
         responds_with_header \
             "Location: ${proxy_scheme}://localhost:${proxy_port}/authorize?code=" \
-            "http://localhost:${PORT_MYHUB}/authorize?client_id=0123456789&redirect_uri=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Fauthorize&response_type=code&scope=user%3Aemail&state=url%3D${proxy_scheme}%253A%252F%252Flocalhost%253A{proxy_port}%252Flogin%26nonce%3D12345678" \
+            "http://localhost:${PORT_MYHUB}/authorize?client_id=0123456789&redirect_uri=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Fauthorize&response_type=code&scope=user%3Aemail&state=url%3D${proxy_scheme}%253A%252F%252Flocalhost%253A${proxy_port}%252Flogin%26nonce%3D12345678" \
             "${curl_args[@]}"
     else
         responds_with_header \
@@ -165,8 +170,8 @@ test_auth () {
 
     run_log "Return to the app and receive creds"
     if [[ "$SUPPORT_NONCE" == "true" ]]; then
-        CODE=$(_curl "${curl_args[@]}" --head "http://localhost:${PORT_MYHUB}/authorize?client_id=0123456789&redirect_uri=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Fauthorize&response_type=code&scope=user%3Aemail&state=url%3D${proxy_scheme}%253A%252F%252Flocalhost%253A{proxy_port}%252Flogin%26nonce%3D12345678" | grep Location | cut -d= -f2 | cut -d\& -f1)
-        RESPONSE=$(_curl "${curl_args[@]}" --head "${proxy_scheme}://localhost:${proxy_port}/authorize?code=$CODE&state=url%3D${proxy_scheme}%253A%252F%252Flocalhost%253A{proxy_port}%252Flogin%26nonce%3D12345678")
+        CODE=$(_curl "${curl_args[@]}" --head "http://localhost:${PORT_MYHUB}/authorize?client_id=0123456789&redirect_uri=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Fauthorize&response_type=code&scope=user%3Aemail&state=url%3D${proxy_scheme}%253A%252F%252Flocalhost%253A${proxy_port}%252Flogin%26nonce%3D12345678" | grep Location | cut -d= -f2 | cut -d\& -f1)
+        RESPONSE=$(_curl "${curl_args[@]}" --cookie "OauthNonce=12345678" --head "${proxy_scheme}://localhost:${proxy_port}/authorize?code=$CODE&state=url%3D${proxy_scheme}%253A%252F%252Flocalhost%253A${proxy_port}%252Flogin%26nonce%3D12345678")
     else
         CODE=$(_curl "${curl_args[@]}" --head "http://localhost:${PORT_MYHUB}/authorize?client_id=0123456789&redirect_uri=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Fauthorize&response_type=code&scope=user%3Aemail&state=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Flogin" | grep Location | cut -d= -f2 | cut -d\& -f1)
         RESPONSE=$(_curl "${curl_args[@]}" --head "${proxy_scheme}://localhost:${proxy_port}/authorize?code=$CODE&state=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Flogin")
@@ -321,7 +326,10 @@ responds_with_header \
     "http://localhost:${PORT_DEV_PROXY}/login"
 if [[ "$SUPPORT_NONCE" == "true" ]]; then
     responds_with_header \
-        "location: https://github.com/login/oauth/authorize?client_id=XXX&redirect_uri=http%3A%2F%2Flocalhost%3A${PORT_DEV_PROXY}%2Fauthorize&response_type=code&scope=user%3Aemail&state=url%3D${proxy_scheme}%253A%252F%252Flocalhost%253A{proxy_port}%252Flogin%26nonce%3D" \
+        "location: https://github.com/login/oauth/authorize?client_id=XXX&redirect_uri=http%3A%2F%2Flocalhost%3A${PORT_DEV_PROXY}%2Fauthorize&response_type=code&scope=user%3Aemail&state=url%3Dhttp%253A%252F%252Flocalhost%253A${PORT_DEV_PROXY}%252Flogin%26nonce%3D" \
+        "http://localhost:${PORT_DEV_PROXY}/login"
+    responds_with_header \
+        "set-cookie: OauthNonce=" \
         "http://localhost:${PORT_DEV_PROXY}/login"
 else
     responds_with_header \
@@ -336,7 +344,11 @@ responds_with \
     -k
 if [[ "$SUPPORT_NONCE" == "true" ]]; then
     responds_with_header \
-        "location: https://github.com/login/oauth/authorize?client_id=XXX&redirect_uri=https%3A%2F%2Flocalhost%3A${PORT_PROXY}%2Fauthorize&response_type=code&scope=user%3Aemail&state=url%3D${proxy_scheme}%253A%252F%252Flocalhost%253A{proxy_port}%252Flogin%26nonce%3D" \
+        "location: https://github.com/login/oauth/authorize?client_id=XXX&redirect_uri=https%3A%2F%2Flocalhost%3A${PORT_PROXY}%2Fauthorize&response_type=code&scope=user%3Aemail&state=url%3Dhttps%253A%252F%252Flocalhost%253A${PORT_PROXY}%252Flogin%26nonce%3D" \
+        "https://localhost:${PORT_PROXY}/login" \
+        -k
+    responds_with_header \
+        "set-cookie: OauthNonce=" \
         "https://localhost:${PORT_PROXY}/login" \
         -k
 else
