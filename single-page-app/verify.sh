@@ -113,7 +113,6 @@ test_auth () {
     fi
 
     run_log "Fetch the app page"
-    sleep 4
     responds_with \
         "Envoy single page app example" \
         "${proxy_scheme}://localhost:${proxy_port}" \

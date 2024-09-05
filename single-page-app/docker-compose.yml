@@ -44,6 +44,12 @@ services:
     - ${SECRETS_PATH:-./secrets}:/etc/envoy/secrets
     - ${XDS_PATH:-./xds}:/var/lib/envoy
     - ${UI_PATH:-./ui}/dist:/var/www/html
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:10001"]
+      interval: 1s
+      timeout: 1s
+      retries: 5
+      start_period: 1s
 
   myhub:
     build:
