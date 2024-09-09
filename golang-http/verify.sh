@@ -2,6 +2,7 @@
 
 export NAME=golang
 export UID
+export GID
 export MANUAL=true
 export PORT_PROXY="${GOLANG_PORT_PROXY:-10710}"
 

@@ -1,17 +1,18 @@
 services:
   go_plugin_compile:
+    user: ${UID:-1000}:${GID:-1000}
     build:
       context: simple
       dockerfile: ../../shared/golang/Dockerfile
       target: golang-base
     command: >
       bash -c "
-      cd golang-http/simple
-      && go build -o simple.so -buildmode=c-shared .
-      && cp ./simple.so /output"
+      mkdir -p lib
+      && cd simple
+      && go build -o ../lib/simple.so -buildmode=c-shared ."
     working_dir: /source
     environment:
     - GOFLAGS=-buildvcs=false
+    - HOME=/tmp
     volumes:
-    - ../..:/source
-    - ./lib:/output
+    - .:/source

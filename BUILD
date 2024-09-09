@@ -15,7 +15,7 @@ EXAMPLE_TESTS = [
     "ext_authz",
     # "fault-injection",
     "front-proxy",
-    # "golang-http",
+    "golang-http",
     # "golang-network",
     "grpc-bridge",
     "gzip",
