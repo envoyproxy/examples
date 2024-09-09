@@ -72,3 +72,6 @@ lerna-debug.log*
 node_modules
 dist
 *.bak
+
+filters/envoy
+filters/bazel

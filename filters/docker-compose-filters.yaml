@@ -1,0 +1,14 @@
+services:
+  filter_example_compile:
+    build:
+      context: ../shared/build
+    command: >
+      bash -c "
+      bazel build //:envoy"
+    entrypoint: /usr/local/bin/build-entrypoint.sh
+    environment:
+    - BUILD_UID=${UID:-1000}
+    working_dir: /source
+    volumes:
+    - ${ENVOY_DOCKER_BUILD_DIR:-/tmp/envoy-docker-build}:/tmp
+    - .:/source
