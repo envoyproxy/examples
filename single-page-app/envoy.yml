@@ -4,6 +4,7 @@ node:
 
 dynamic_resources:
   lds_config:
+    resource_api_version: V3
     path_config_source:
       path: /var/lib/envoy/lds.yml
 
@@ -53,11 +54,13 @@ static_resources:
                   token_secret:
                     name: token
                     sds_config:
+                      resource_api_version: V3
                       path_config_source:
                         path: /etc/envoy/secrets/myhub-token-secret.yml
                   hmac_secret:
                     name: hmac
                     sds_config:
+                      resource_api_version: V3
                       path_config_source:
                         path: /etc/envoy/secrets/hmac-secret.yml
                 auth_scopes:
@@ -132,11 +135,13 @@ static_resources:
                   token_secret:
                     name: token
                     sds_config:
+                      resource_api_version: V3
                       path_config_source:
                         path: /etc/envoy/secrets/myhub-token-secret.yml
                   hmac_secret:
                     name: hmac
                     sds_config:
+                      resource_api_version: V3
                       path_config_source:
                         path: /etc/envoy/secrets/hmac-secret.yml
                 auth_scopes:
