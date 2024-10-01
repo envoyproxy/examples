@@ -7,7 +7,7 @@ toolchain go1.22.5
 require (
 	github.com/envoyproxy/go-control-plane v0.13.0
 	github.com/golang/protobuf v1.5.4
-	google.golang.org/grpc v1.67.0
+	google.golang.org/grpc v1.67.1
 )
 
 require (
