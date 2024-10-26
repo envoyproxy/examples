@@ -46,7 +46,7 @@ filter can't decode encrypted sessions.
 
 .. code-block:: console
 
-  $ docker run --rm -it --network envoymesh -e PGSSLMODE=disable postgres:latest psql -U postgres -h proxy -p 1999
+  $ docker run --rm -it --network postgres_default -e PGSSLMODE=disable postgres:latest psql -U postgres -h proxy -p 1999
   ... snip ...
 
   postgres=# CREATE DATABASE testdb;
