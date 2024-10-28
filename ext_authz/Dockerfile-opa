@@ -1,3 +1,3 @@
-FROM openpolicyagent/opa:0.68.0-istio@sha256:95af3422ff3d055942a1e048e66b61ec97ae6d00613156e2836d2caff5b7f5bd
+FROM openpolicyagent/opa:0.69.0-istio@sha256:0306bcadb3d390e1cc80755512b6b05a7eb1e602a5a99364d400ec22ae9b6881
 
 COPY --chmod=644 ./config/opa-service/policy.rego /etc/policy.rego
