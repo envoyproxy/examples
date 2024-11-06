@@ -13,7 +13,7 @@ services:
       jaeger:
         condition: service_healthy
     ports:
-    - "${PORT_PROXY:-8000}:8000"
+    - "${PORT_PROXY:-10000}:10000"
 
   service1:
     build:
