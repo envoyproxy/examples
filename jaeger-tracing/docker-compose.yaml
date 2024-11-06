@@ -13,7 +13,7 @@ services:
       jaeger:
         condition: service_healthy
     ports:
-    - "${PORT_PROXY:-10000}:8000"
+    - "${PORT_PROXY:-10000}:10000"
 
   service1:
     build:
@@ -40,4 +40,4 @@ services:
     environment:
     - COLLECTOR_ZIPKIN_HOST_PORT=9411
     ports:
-    - "${PORT_UI:-10000}:16686"
+    - "${PORT_UI:-16686}:16686"

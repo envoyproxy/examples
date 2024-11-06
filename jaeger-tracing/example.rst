@@ -17,7 +17,7 @@ service1 makes an API call to service2 before returning a response.
 The three containers will be deployed inside a virtual network called ``envoymesh``.
 
 All incoming requests are routed via the front Envoy, which is acting as a reverse proxy
-sitting on the edge of the ``envoymesh`` network. Port ``8000`` is exposed
+sitting on the edge of the ``envoymesh`` network. Port ``10000`` is exposed
 by docker compose (see :download:`docker-compose.yaml <_include/jaeger-tracing/docker-compose.yaml>`). Notice that
 all Envoys are configured to collect request traces (e.g., http_connection_manager/config/tracing setup in
 :download:`envoy.yaml <_include/jaeger-tracing/envoy.yaml>`) and setup to propagate the spans generated
@@ -48,13 +48,11 @@ To build this sandbox example, and start the example apps run the following comm
     $ docker compose pull
     $ docker compose up --build -d
     $ docker compose ps
-
-                Name                          Command             State                                    Ports
-    ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    jaeger-tracing_front-envoy_1   /docker-entrypoint.sh /bin ... Up      10000/tcp, 0.0.0.0:8000->8000/tcp
-    jaeger-tracing_jaeger_1        /go/bin/all-in-one-linux - ... Up      14250/tcp, 14268/tcp, 0.0.0.0:16686->16686/tcp, 5775/udp, 5778/tcp, 6831/udp, 6832/udp, 9411/tcp
-    jaeger-tracing_service1_1      /bin/sh -c /usr/local/bin/ ... Up      10000/tcp
-    jaeger-tracing_service2_1      /bin/sh -c /usr/local/bin/ ... Up      10000/tcp
+    NAME                           IMAGE                        COMMAND                  SERVICE       CREATED          STATUS                    PORTS
+    jaeger-tracing-front-envoy-1   jaeger-tracing-front-envoy   "/docker-entrypoint.…"   front-envoy   43 seconds ago   Up 20 seconds             0.0.0.0:10000->10000/tcp
+    jaeger-tracing-jaeger-1        jaeger-tracing-jaeger        "/go/bin/all-in-one-…"   jaeger        43 seconds ago   Up 25 seconds (healthy)   4317-4318/tcp, 5775/udp, 5778/tcp, 9411/tcp, 14250/tcp, 14268/tcp, 6831-6832/udp, 0.0.0.0:16686->16686/tcp
+    jaeger-tracing-service1-1      jaeger-tracing-service1      "/usr/local/bin/star…"   service1      43 seconds ago   Up 42 seconds (healthy)
+    jaeger-tracing-service2-1      jaeger-tracing-service2      "/usr/local/bin/star…"   service2      43 seconds ago   Up 42 seconds (healthy)
 
 Step 2: Generate some load
 **************************
@@ -63,23 +61,28 @@ You can now send a request to service1 via the front-envoy as follows:
 
 .. code-block:: console
 
-    $ curl -v localhost:8000/trace/1
-    *   Trying 192.168.99.100...
-    * Connected to 192.168.99.100 (192.168.99.100) port 8000 (#0)
+    $ curl -v localhost:10000/trace/1
+    curl -v localhost:10000/trace/1
+    * Host localhost:10000 was resolved.
+    * IPv6: ::1
+    * IPv4: 127.0.0.1
+    *   Trying [::1]:10000...
+    * Connected to localhost (::1) port 10000
     > GET /trace/1 HTTP/1.1
-    > Host: 192.168.99.100:8000
-    > User-Agent: curl/7.54.0
+    > Host: localhost:10000
+    > User-Agent: curl/8.6.0
     > Accept: */*
     >
     < HTTP/1.1 200 OK
-    < content-type: text/html; charset=utf-8
-    < content-length: 89
-    < x-envoy-upstream-service-time: 9
+    < content-type: text/plain; charset=utf-8
+    < content-length: 79
+    < date: Wed, 06 Nov 2024 17:06:59 GMT
     < server: envoy
-    < date: Fri, 26 Aug 2018 19:39:19 GMT
+    < x-envoy-upstream-service-time: 37
     <
-    Hello from behind Envoy (service 1)! hostname: f26027f1ce28 resolvedhostname: 172.19.0.6
-    * Connection #0 to host 192.168.99.100 left intact
+    Hello from behind Envoy (service 1)! hostname 1445fe2bbcb3 resolved 172.20.0.4
+    * Connection #0 to host localhost left intact
+
 
 Step 3: View the traces in Jaeger UI
 ************************************
@@ -88,6 +91,10 @@ Point your browser to http://localhost:16686 . You should see the Jaeger dashboa
 Set the service to "front-proxy" and hit 'Find Traces'. You should see traces from the front-proxy.
 Click on a trace to explore the path taken by the request from front-proxy to service1
 to service2, as well as the latency incurred at each hop.
+
+The trace should look similar to the image below:
+
+.. image:: /start/sandboxes/_include/jaeger-tracing/_static/jaeger_tracing.png
 
 .. seealso::
 
