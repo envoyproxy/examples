@@ -92,6 +92,8 @@ Set the service to "front-proxy" and hit 'Find Traces'. You should see traces fr
 Click on a trace to explore the path taken by the request from front-proxy to service1
 to service2, as well as the latency incurred at each hop.
 
+The trace should look similar to the image below:
+
 .. image:: /start/sandboxes/_include/jaeger-tracing/_static/jaeger_tracing.png
 
 .. seealso::
