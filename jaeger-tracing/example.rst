@@ -17,7 +17,7 @@ service1 makes an API call to service2 before returning a response.
 The three containers will be deployed inside a virtual network called ``envoymesh``.
 
 All incoming requests are routed via the front Envoy, which is acting as a reverse proxy
-sitting on the edge of the ``envoymesh`` network. Port ``8000`` is exposed
+sitting on the edge of the ``envoymesh`` network. Port ``10000`` is exposed
 by docker compose (see :download:`docker-compose.yaml <_include/jaeger-tracing/docker-compose.yaml>`). Notice that
 all Envoys are configured to collect request traces (e.g., http_connection_manager/config/tracing setup in
 :download:`envoy.yaml <_include/jaeger-tracing/envoy.yaml>`) and setup to propagate the spans generated
@@ -91,6 +91,8 @@ Point your browser to http://localhost:16686 . You should see the Jaeger dashboa
 Set the service to "front-proxy" and hit 'Find Traces'. You should see traces from the front-proxy.
 Click on a trace to explore the path taken by the request from front-proxy to service1
 to service2, as well as the latency incurred at each hop.
+
+.. image:: /start/sandboxes/_include/jaeger-tracing/_static/jaeger_tracing.png
 
 .. seealso::
 
