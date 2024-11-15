@@ -25,23 +25,23 @@ static_resources:
                 collector_endpoint_version: HTTP_JSON
 
             custom_tags:
-              - tag: tag_literal
-                literal:
-                  value: literal value
-              - tag: tag_request_header
-                request_header:
-                  name: ":path"
-              - tag: tag_env_hostname
-                environment:
-                  name: "HOSTNAME"
-              - tag: tag_metadata
-                metadata:
-                  kind:
-                    request: {}
-                  metadata_key:
-                    key: custom_tag
-                    path:
-                      - key: tag_metadata
+            - tag: tag_literal
+              literal:
+                value: literal value
+            - tag: tag_request_header
+              request_header:
+                name: ":path"
+            - tag: tag_env_hostname
+              environment:
+                name: "HOSTNAME"
+            - tag: tag_metadata
+              metadata:
+                kind:
+                  request: {}
+                metadata_key:
+                  key: custom_tag
+                  path:
+                  - key: tag_metadata
 
           codec_type: AUTO
           stat_prefix: ingress_http
