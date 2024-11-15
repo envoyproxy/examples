@@ -36,6 +36,8 @@ calls to other services. In the sandbox we have provided, the simple ``aiohttp``
 (see trace function in :download:`examples/shared/python/tracing/service.py <_include/shared/python/tracing/service.py>`) acting as service1 propagates
 the trace headers while making an outbound call to service2.
 
+This demo also show how you can use custom_tags to to attach additional tags to the spans.
+
 Step 1: Build the sandbox
 *************************
 
