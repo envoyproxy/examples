@@ -10,11 +10,13 @@ export PORT_PROXY="${SPA_PORT_PROXY:-11900}"
 export PORT_MYHUB="${SPA_PORT_MYHUB:-11902}"
 export MANUAL=true
 
+
 BACKUP_FILES=(
-    "envoy.yml"
+  "envoy.yml"
 )
 
-finally() {
+
+finally () {
     rm -rf .local.ci
     for file in "${BACKUP_FILES[@]}"; do
         move_if_exists "${file}.bak" "${file}"
@@ -30,8 +32,9 @@ export -f finally
 # eg selenium or similar.
 # Everything else should be tested.
 
+
 EXPECTED_USER_JQ=$(
-    cat <<'EOF'
+cat << 'EOF'
 {"avatar_url": "http://localhost:\($port)/images/users/envoy.svg",
  "followers": 3,
  "following": 2,
@@ -44,11 +47,10 @@ EXPECTED_USER="$(
     yq -c \
         --arg port "$PORT_MYHUB" \
         "$EXPECTED_USER_JQ" \
-        <myhub/data.yml
-)"
+      < myhub/data.yml)"
 
 EXPECTED_REPOS_JQ=$(
-    cat <<'EOF'
+cat << 'EOF'
 .users.envoydemo.public_repos as $user_repos
 | .repos as $repos
 | $user_repos
@@ -62,11 +64,10 @@ EXPECTED_REPOS="$(
     yq -c \
         --arg port "$PORT_MYHUB" \
         "$EXPECTED_REPOS_JQ" \
-        <myhub/data.yml
-)"
+      < myhub/data.yml)"
 
 EXPECTED_FOLLOWERS_JQ=$(
-    cat <<'EOF'
+cat << 'EOF'
 .users.envoydemo.followers as $followers
 | .users as $users
 | $followers
@@ -81,11 +82,10 @@ EXPECTED_FOLLOWING="$(
     yq -c \
         --arg port "$PORT_MYHUB" \
         "$EXPECTED_FOLLOWERS_JQ" \
-        <myhub/data.yml
-)"
+      < myhub/data.yml)"
 
 EXPECTED_FOLLOWING_JQ=$(
-    cat <<'EOF'
+cat << 'EOF'
 .users.envoydemo.following as $following
 | .users as $users
 | $following
@@ -100,10 +100,10 @@ EXPECTED_FOLLOWING="$(
     yq -c \
         --arg port "$PORT_MYHUB" \
         "$EXPECTED_FOLLOWING_JQ" \
-        <myhub/data.yml
-)"
+      < myhub/data.yml)"
 
-test_auth() {
+
+test_auth () {
     local proxy_port
     proxy_scheme=$1
     proxy_port=$2
@@ -118,11 +118,9 @@ test_auth() {
         "${proxy_scheme}://localhost:${proxy_port}" \
         "${curl_args[@]}"
 
-    # To enhance security,the nonce will always be used in the OAuth2 flow once PR https://github.com/envoyproxy/envoy/pull/35919 is merged.
-    # Nonce-less verification will remain for backward compatibility with previous releases.
-    # TODO: zhaohuabing - Remove the nonce-less verification after a reasonable transition period, such as one year.
-    run_log "Check whether the nonce is used in the OAuth2 filter"
-
+    # State has been changed to be a base64url encoded json object in #37473.
+    # TODO(zhaohuabing): Remove the following code after #37473 is merged and become stable.
+    run_log "Check whether the state is a base64url encoded json object"
     BASE64URL_PREFIX="eyJ1cmwiOi" # The state is prefixed with this string when it is a base64url encoded json object ({"url":)
     STATE_BASE64URL_ENCODE="false" # Whether the state is a base64url encoded json object
     LOCATION=$(_curl "${curl_args[@]}" --head "${proxy_scheme}://localhost:${proxy_port}/login" | grep location)
@@ -204,7 +202,7 @@ test_auth() {
     )
 
     for endpoint in "${endpoints[@]}"; do
-        IFS='|' read -r log_message expected_response path <<<"$endpoint"
+        IFS='|' read -r log_message expected_response path <<< "$endpoint"
         run_log "$log_message"
         responds_with \
             "$expected_response" \
@@ -221,12 +219,12 @@ test_auth() {
     echo "$RESPONSE" | grep "set-cookie: BearerToken=deleted"
 }
 
-get_js() {
-    _curl -k "https://localhost:${PORT_PROXY}" |
-        grep "assets/index" |
-        grep -oP '<script type="module" crossorigin src="/assets/[^"]+"></script>' |
-        grep -oP '/assets/[^"]+' |
-        sed 's/\/assets\///;s/".*//'
+get_js () {
+    _curl -k "https://localhost:${PORT_PROXY}" \
+        | grep "assets/index" \
+        | grep -oP '<script type="module" crossorigin src="/assets/[^"]+"></script>' \
+        | grep -oP '/assets/[^"]+' \
+        | sed 's/\/assets\///;s/".*//'
 }
 
 run_log "Adjust environment for CI"
@@ -238,8 +236,8 @@ export UI_PATH=./.local.ci/ui
 for file in "${BACKUP_FILES[@]}"; do
     cp -a "${file}" "${file}.bak"
 done
-echo "VITE_APP_API_URL=https://localhost:${PORT_PROXY}" >ui/.env.production.local
-echo "VITE_APP_API_URL=http://localhost:${PORT_DEV_PROXY}" >ui/.env.development.local
+echo "VITE_APP_API_URL=https://localhost:${PORT_PROXY}" > ui/.env.production.local
+echo "VITE_APP_API_URL=http://localhost:${PORT_DEV_PROXY}" > ui/.env.development.local
 sed -i "s/localhost:7000/localhost:${PORT_MYHUB}/g" envoy.yml
 export UID
 
@@ -248,7 +246,7 @@ cp -a secrets/ .local.ci/
 export SECRETS_PATH=./.local.ci/secrets/
 HMAC_SECRET=$(echo "MY_HMAC_SECRET" | mkpasswd -s)
 export HMAC_SECRET
-envsubst <hmac-secret.tmpl.yml >.local.ci/secrets/hmac-secret.yml
+envsubst < hmac-secret.tmpl.yml > .local.ci/secrets/hmac-secret.yml
 
 run_log "Start servers"
 bring_up_example
@@ -273,7 +271,7 @@ docker compose up --build -d envoy
 docker compose run --rm ui build.sh
 
 run_log "Check the created routes"
-jq '.resources[0].filter_chains[0].filters[0].typed_config.route_config.virtual_hosts[0].routes' <.local.ci/production/xds/lds.yml
+jq '.resources[0].filter_chains[0].filters[0].typed_config.route_config.virtual_hosts[0].routes' < .local.ci/production/xds/lds.yml
 
 test_auth https "${PORT_PROXY}"
 
@@ -301,7 +299,7 @@ responds_with \
 
 run_log "Update Envoy's configuration to use Github"
 export TOKEN_SECRET=ZZZ
-envsubst <token-secret.tmpl.yml >.local.ci/secrets/github-token-secret.yml
+envsubst < token-secret.tmpl.yml > .local.ci/secrets/github-token-secret.yml
 GITHUB_PROVIDED_CLIENT_ID=XXX
 cp -a envoy.yml .local.ci/
 sed -i "s@cluster:\ hub@cluster:\ github@g" .local.ci/envoy.yml
@@ -310,10 +308,10 @@ sed -i "s@authorization_endpoint:\ http://localhost:${PORT_MYHUB}/authorize@auth
 sed -i "s@uri:\ http://myhub:${PORT_MYHUB}/authenticate@uri:\ https://github.com/login/oauth/access_token@g" .local.ci/envoy.yml
 sed -i "s@path:\ /etc/envoy/secrets/myhub-token-secret.yml@path:\ /etc/envoy/secrets/github-token-secret.yml@g" .local.ci/envoy.yml
 sed -i "s@host_rewrite_literal:\ api.myhub@host_rewrite_literal:\ api.github.com@g" .local.ci/envoy.yml
-cat _github-clusters.yml >>.local.ci/envoy.yml
+cat _github-clusters.yml >> .local.ci/envoy.yml
 
 run_log "Update the app configuration to use Github"
-echo "VITE_APP_AUTH_PROVIDER=github" >.local.ci/ui/.env.local
+echo "VITE_APP_AUTH_PROVIDER=github" > .local.ci/ui/.env.local
 
 run_log "Rebuild the app and restart Envoy (Github)"
 export ENVOY_CONFIG=.local.ci/envoy.yml
