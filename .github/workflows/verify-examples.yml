@@ -8,6 +8,7 @@ on:
   push:
     branches:
     - main
+    - gh-readonly-queue/main/*
 
 concurrency:
   group: >-
