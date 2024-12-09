@@ -22,11 +22,15 @@ jobs:
     steps:
     - name: Fetch merge queue details
       run: |
+        gh pr list --label "merge-queue" --json number --limit 1
         echo "${{ github.ref }}"
         if [[ "${{ github.ref }}" != "refs/heads/merge-queue/head" ]]; then
             echo "Not the head of the queue. Skipping CI."
             exit 0
         fi
+      env:
+        GH_TOKEN: ${{ github.token }}
+
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
     - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
       with:
