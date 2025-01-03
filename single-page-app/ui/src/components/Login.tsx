@@ -1,7 +1,7 @@
 import {useToast} from '@chakra-ui/react'
 import {useEffect, useContext} from "react"
 import {Navigate} from "react-router-dom"
-import {AuthContext} from "../App"
+import {AuthContext} from "../context"
 import {TAuthContext} from "../@types/app"
 import Home from "./Home"
 

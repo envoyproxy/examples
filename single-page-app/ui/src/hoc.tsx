@@ -1,6 +1,6 @@
 import React, {useContext} from "react"
 
-import {AuthContext, DataContext} from "./App"
+import {AuthContext, DataContext} from "./context"
 import {
   IComponentWithDataProp,
   IComponentWithUserProp,

@@ -8,7 +8,7 @@ import {
 } from '@chakra-ui/react'
 import {useContext} from "react"
 
-import {AuthContext} from "../App"
+import {AuthContext} from "../context"
 import {
   IHomeProps,
   TAuthContext} from "../@types/app"

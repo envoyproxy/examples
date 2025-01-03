@@ -27,7 +27,7 @@ import {
   useDisclosure,
   useToast,
 } from '@chakra-ui/react'
-import {AuthContext} from "../App"
+import {AuthContext} from "../context"
 import {IUser, TAuthContext} from "../@types/app"
 import {AuthProviders} from "../providers.tsx"
 
