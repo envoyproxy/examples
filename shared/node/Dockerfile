@@ -19,6 +19,7 @@ COPY --chmod=755 ./scripts/entrypoint.sh /entrypoint.sh
 COPY --chmod=755 ./scripts/build.sh /usr/local/bin/build.sh
 COPY --chmod=755 ./scripts/dev.sh /usr/local/bin/dev.sh
 COPY --chmod=644 ./routes.jq /usr/local/share/routes.jq
+RUN echo 'Acquire::Retries "5";' | sudo tee /etc/apt/apt.conf.d/80-retries
 RUN apt-get update \
     && apt-get -qq install -y --no-install-recommends gosu jq netcat-traditional yq
 ENTRYPOINT ["/entrypoint.sh"]
