@@ -16,7 +16,7 @@ WORKDIR /go/go-control-plane
 
 FROM os-base AS golang-control-plane
 ENV DEBIAN_FRONTEND=noninteractive
-RUN echo 'Acquire::Retries "5";' | tee /etc/apt/apt.conf.d/80-retries
+RUN echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80-retries
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     apt-get -qq update \
