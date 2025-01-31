@@ -6,6 +6,7 @@ FROM ${ENVOY_IMAGE}:${ENVOY_VARIANT} AS envoy-base
 ARG ENVOY_CONFIG=envoy.yaml
 ENV ENVOY_CONFIG="$ENVOY_CONFIG"
 ENV DEBIAN_FRONTEND=noninteractive
+RUN echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80-retries
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     rm -f /etc/apt/apt.conf.d/docker-clean \
