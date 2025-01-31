@@ -6,7 +6,7 @@ FROM ${ENVOY_IMAGE}:${ENVOY_VARIANT} AS envoy-base
 ARG ENVOY_CONFIG=envoy.yaml
 ENV ENVOY_CONFIG="$ENVOY_CONFIG"
 ENV DEBIAN_FRONTEND=noninteractive
-RUN echo 'Acquire::Retries "5";' | sudo tee /etc/apt/apt.conf.d/80-retries
+RUN echo 'Acquire::Retries "5";' | tee /etc/apt/apt.conf.d/80-retries
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     rm -f /etc/apt/apt.conf.d/docker-clean \
@@ -28,7 +28,7 @@ HEALTHCHECK \
              && curl -s "localhost:${ENVOY_ADMIN_PORT}/stats?filter=listener_manager.workers_started" | grep 1
 
 FROM envoy-base AS envoy-fault-injection
-RUN echo 'Acquire::Retries "5";' | sudo tee /etc/apt/apt.conf.d/80-retries
+RUN echo 'Acquire::Retries "5";' | tee /etc/apt/apt.conf.d/80-retries
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     apt-get -qq update -y \
@@ -50,7 +50,7 @@ RUN echo "4a7d17d4724ee890490bcd6cfdedb12a02316a3d33214348d30979abd201f1ca /usr/
 
 
 FROM envoy-base AS envoy-load-balancing
-RUN echo 'Acquire::Retries "5";' | sudo tee /etc/apt/apt.conf.d/80-retries
+RUN echo 'Acquire::Retries "5";' | tee /etc/apt/apt.conf.d/80-retries
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     apt-get -qq update -y \

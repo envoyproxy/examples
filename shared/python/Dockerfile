@@ -19,7 +19,7 @@ ARG SERVICE_PORT=8080
 ENV DEBIAN_FRONTEND=noninteractive \
     SERVICE_PORT=$SERVICE_PORT
 ADD "$PYTHON_REQUIREMENTS_FILE" /tmp/requirements.txt
-RUN echo 'Acquire::Retries "5";' | sudo tee /etc/apt/apt.conf.d/80-retries
+RUN echo 'Acquire::Retries "5";' | tee /etc/apt/apt.conf.d/80-retries
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     pip3 install --require-hashes -qr /tmp/requirements.txt \
