@@ -24,12 +24,15 @@ curl -s "http://localhost:${PORT_ADMIN}/config_dump" \
 run_log "Bring up go-control-plane"
 "${DOCKER_COMPOSE[@]}" up --build -d go-control-plane
 wait_for 30 sh -c "${DOCKER_COMPOSE[*]} ps go-control-plane | grep healthy | grep -v unhealthy"
-wait_for 10 bash -c "responds_with 'Request served by service1' http://localhost:${PORT_PROXY}"
+wait_for 10 sh -c "\
+         curl -s \"http://localhost:${PORT_PROXY}\" \
+         | jq -r '.hostname' \
+         | grep service1"
 
 run_log "Check for response from service1 backend"
-responds_with \
-    "Request served by service1" \
-    "http://localhost:${PORT_PROXY}"
+curl -s "http://localhost:${PORT_PROXY}" \
+    | jq -r '.hostname' \
+    | grep service1
 
 run_log "Check config for active clusters"
 curl -s "http://localhost:${PORT_ADMIN}/config_dump" \
@@ -48,9 +51,9 @@ wait_for 10 sh -c "\
          | grep '\"version_info\": \"1\"'"
 
 run_log "Check for continued response from service1 backend"
-responds_with \
-    "Request served by service1" \
-    "http://localhost:${PORT_PROXY}"
+curl -s "http://localhost:${PORT_PROXY}" \
+    | jq -r '.hostname' \
+    | grep service1
 
 run_log "Check config for active clusters"
 curl -s "http://localhost:${PORT_ADMIN}/config_dump" \
@@ -68,10 +71,12 @@ run_log "Bring back up the control plane"
 "${DOCKER_COMPOSE[@]}" up --build -d go-control-plane
 wait_for 30 sh -c "${DOCKER_COMPOSE[*]} ps go-control-plane | grep healthy | grep -v unhealthy"
 
+
 run_log "Check for response from service2 backend"
-wait_for 5 bash -c "responds_with \
-    'Request served by service2' \
-    http://localhost:${PORT_PROXY}"
+wait_for 5 sh -c "\
+         curl -s \"http://localhost:${PORT_PROXY}\" \
+         | jq -r '.hostname' \
+         | grep service2"
 
 run_log "Check config for active clusters pointing to service2"
 curl -s "http://localhost:${PORT_ADMIN}/config_dump" \
