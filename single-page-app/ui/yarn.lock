@@ -2877,13 +2877,13 @@ for-each@^0.3.3:
   dependencies:
     is-callable "^1.1.3"
 
-framer-motion@^11.16.1:
-  version "11.16.1"
-  resolved "https://registry.yarnpkg.com/framer-motion/-/framer-motion-11.16.1.tgz#3768ba04acbe51bdba599dc8a10db7b9737cc020"
-  integrity sha512-xsjhEUSWHn39g334PpBTH+QissgEJVJkpRGS/4QUyMSmoJSNxA+7FTuq61s+OXPMS4muu5k9Y6r7GpcNKhd1xA==
+framer-motion@^12.4.11:
+  version "12.4.11"
+  resolved "https://registry.yarnpkg.com/framer-motion/-/framer-motion-12.4.11.tgz#c903d07d41222f7c2ec303ab4326eff86260b504"
+  integrity sha512-MHeZlgzo9DnQ6+TFgRqJiOk4vWwsDcXFtxeXlVawVs1nwgcZW3966foGIgkIiIrBSPHB9RlbqspAxiYWosFT9g==
   dependencies:
-    motion-dom "^11.16.1"
-    motion-utils "^11.16.0"
+    motion-dom "^12.4.11"
+    motion-utils "^12.4.10"
     tslib "^2.4.0"
 
 framesync@6.1.2:
@@ -3742,17 +3742,17 @@ minimist@^1.2.0, minimist@^1.2.6:
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.8.tgz#c1a464e7693302e082a075cee0c057741ac4772c"
   integrity sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==
 
-motion-dom@^11.16.1:
-  version "11.16.1"
-  resolved "https://registry.yarnpkg.com/motion-dom/-/motion-dom-11.16.1.tgz#ce1057bbd12bece8eb1cd42f99d64013b24cf949"
-  integrity sha512-XVNf3iCfZn9OHPZYJQy5YXXLn0NuPNvtT3YCat89oAnr4D88Cr52KqFgKa8dWElBK8uIoQhpJMJEG+dyniYycQ==
+motion-dom@^12.4.11:
+  version "12.4.11"
+  resolved "https://registry.yarnpkg.com/motion-dom/-/motion-dom-12.4.11.tgz#0419c8686cda4d523f08249deeb8fa6683a9b9d3"
+  integrity sha512-wstlyV3pktgFjqsjbXMo1NX9hQD9XTVqxQNvfc+FREAgxr3GVzgWIEKvbyyNlki3J1jmmh+et9X3aCKeqFPcxA==
   dependencies:
-    motion-utils "^11.16.0"
+    motion-utils "^12.4.10"
 
-motion-utils@^11.16.0:
-  version "11.16.0"
-  resolved "https://registry.yarnpkg.com/motion-utils/-/motion-utils-11.16.0.tgz#e75865442278be49e411ca9105c9139edc572811"
-  integrity sha512-ngdWPjg31rD4WGXFi0eZ00DQQqKKu04QExyv/ymlC+3k+WIgYVFbt6gS5JsFPbJODTF/r8XiE/X+SsoT9c0ocw==
+motion-utils@^12.4.10:
+  version "12.4.10"
+  resolved "https://registry.yarnpkg.com/motion-utils/-/motion-utils-12.4.10.tgz#3d93acea5454419eaaad8d5e5425cb71cbfa1e7f"
+  integrity sha512-NPwZd94V013SwRf++jMrk2+HEBgPkeIE2RiOzhAuuQlqxMJPkKt/LXVh6Upl+iN8oarSGD2dlY5/bqgsYXDABA==
 
 ms@2.1.2:
   version "2.1.2"
