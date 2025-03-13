@@ -15,9 +15,11 @@ services:
   service1:
     build:
       context: ../shared/echo
-    hostname: service1
+    environment:
+      ECHO_HOSTNAME: service1
 
   service2:
     build:
       context: ../shared/echo
-    hostname: service2
+    environment:
+      ECHO_HOSTNAME: service2

@@ -10,7 +10,7 @@ export PORT_WEB="${LUA_PORT_WEB:-11231}"
 
 run_log "Test common Lua script"
 responds_with \
-    "Foo: bar" \
+    '"foo": "bar"' \
     "http://localhost:${PORT_PROXY}"
 
 run_log "Test route-specific Lua script"

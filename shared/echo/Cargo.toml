@@ -1,0 +1,8 @@
+[package]
+name = "example-echo"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1.44.0", features = ["full"] }
+toolshed-echo = { git = "https://github.com/envoyproxy/toolshed", rev = "b4d881d380785e99d0afffa2cabc5b5fa52e6dd6", subdirectory = "rust/echo" }

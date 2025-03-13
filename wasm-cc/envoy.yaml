@@ -84,7 +84,7 @@ static_resources:
             address:
               socket_address:
                 address: web_service
-                port_value: 9000
+                port_value: 8080
   - name: web_service_with_wasm_filter
     type: strict_dns
     lb_policy: round_robin
@@ -96,7 +96,7 @@ static_resources:
             address:
               socket_address:
                 address: web_service
-                port_value: 9000
+                port_value: 8080
     typed_extension_protocol_options:
       envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
         "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions

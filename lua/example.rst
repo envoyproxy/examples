@@ -37,7 +37,7 @@ Change to the ``examples/lua`` directory.
       Name                     Command               State             Ports
   --------------------------------------------------------------------------------------------
   lua_proxy_1         /docker-entrypoint.sh /bin ... Up      10000/tcp, 0.0.0.0:8000->8000/tcp
-  lua_web_service_1   node ./index.js                Up      0.0.0.0:8080->80/tcp
+  lua_web_service_1   "example-echo -c /et…"         Up      8080/tcp
 
 Step 2: Send a request to the service
 *************************************
@@ -48,8 +48,8 @@ Terminal 1
 
 .. code-block:: console
 
-   $ curl -v localhost:8000 2>&1 | grep Foo
-   Foo: bar                              <-- This is added by the common Lua filter. --<
+   $ curl -v localhost:8000 2>&1 | grep foo
+   "foo": "bar"                              <-- This is added by the common Lua filter. --<
 
 Step 3: Using multiple Lua filters at the same time
 *********************************************************
