@@ -1,4 +1,4 @@
-FROM rust:1.84.1 AS builder
+FROM rust:1.85.1 AS builder
 WORKDIR /usr/src/echo
 COPY . .
 RUN rustup install nightly && rustup default nightly && cargo build --release
