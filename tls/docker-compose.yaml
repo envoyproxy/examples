@@ -1,6 +1,8 @@
 services:
 
   proxy-https-to-http:
+    depends_on:
+    - service-http
     build:
       context: .
       dockerfile: ../shared/envoy/Dockerfile
@@ -10,6 +12,8 @@ services:
     - "${PORT_PROXY0:-10000}:10000"
 
   proxy-https-to-https:
+    depends_on:
+    - service-https
     build:
       context: .
       dockerfile: ../shared/envoy/Dockerfile
@@ -19,6 +23,8 @@ services:
     - "${PORT_PROXY1:-10001}:10000"
 
   proxy-http-to-https:
+    depends_on:
+    - service-https
     build:
       context: .
       dockerfile: ../shared/envoy/Dockerfile
@@ -28,6 +34,8 @@ services:
     - "${PORT_PROXY2:-10002}:10000"
 
   proxy-https-passthrough:
+    depends_on:
+    - service-https
     build:
       context: .
       dockerfile: ../shared/envoy/Dockerfile
@@ -38,16 +46,18 @@ services:
 
   service-http:
     build:
-      context: .
-      dockerfile: ../shared/echo2/Dockerfile
-    hostname: service-http
+      context: ../shared/echo
     environment:
-    - HTTPS_PORT=0
+      ECHO_HOSTNAME: service-http
+      ECHO_HTTP_HOST: 0.0.0.0
+      ECHO_HTTP_PORT: 80
 
   service-https:
     build:
-      context: .
-      dockerfile: ../shared/echo2/Dockerfile
-    hostname: service-https
+      context: ../shared/echo
     environment:
-    - HTTP_PORT=0
+      ECHO_HOSTNAME: service-https
+      ECHO_HTTPS_HOST: 0.0.0.0
+      ECHO_HTTPS_PORT: 443
+      ECHO_TLS_CERT: /tmp/snakeoil/tls.cert
+      ECHO_TLS_KEY: /tmp/snakeoil/tls.key

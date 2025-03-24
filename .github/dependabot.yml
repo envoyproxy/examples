@@ -145,13 +145,6 @@ updates:
     interval: daily
     time: "06:00"
 
-# TODO(phlax): just use above
-- package-ecosystem: "docker"
-  directory: "/shared/echo2"
-  schedule:
-    interval: daily
-    time: "06:00"
-
 - package-ecosystem: "docker"
   directory: "/shared/golang"
   schedule:

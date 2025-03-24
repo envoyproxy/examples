@@ -31,26 +31,26 @@ bring_up_example
 run_log "Query domain1 with curl and tls/sni"
 curl -sk --resolve "domain1.example.com:${PORT_PROXY}:127.0.0.1" \
      "https://domain1.example.com:${PORT_PROXY}" \
-    | jq '.os.hostname' | grep http-upstream1
+    | jq '.hostname' | grep service-http0
 
 run_log "Query domain2 with curl and tls/sni"
 curl -sk --resolve "domain2.example.com:${PORT_PROXY}:127.0.0.1" \
      "https://domain2.example.com:${PORT_PROXY}" \
-    | jq '.os.hostname' | grep http-upstream2
+    | jq '.hostname' | grep service-http1
 
 run_log "Query domain3 with curl and tls/sni"
 curl -sk --resolve "domain3.example.com:${PORT_PROXY}:127.0.0.1" \
      "https://domain3.example.com:${PORT_PROXY}" \
-    | jq '.os.hostname' | grep https-upstream3
+    | jq '.hostname' | grep service-https
 
 run_log "Query domain1 via Envoy sni client"
 curl -s "http://localhost:${PORT_PROXY_CLIENT}/domain1" \
-    | jq '.os.hostname' | grep http-upstream1
+    | jq '.hostname' | grep service-http0
 
 run_log "Query domain2 via Envoy sni client"
 curl -s "http://localhost:${PORT_PROXY_CLIENT}/domain2" \
-    | jq '.os.hostname' | grep http-upstream2
+    | jq '.hostname' | grep service-http1
 
 run_log "Query domain3 via Envoy sni client"
 curl -s "http://localhost:${PORT_PROXY_CLIENT}/domain3" \
-    | jq '.os.hostname' | grep https-upstream3
+    | jq '.hostname' | grep service-https

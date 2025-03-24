@@ -1,6 +1,10 @@
 services:
 
   proxy:
+    depends_on:
+    - service-http0
+    - service-http1
+    - service-https
     build:
       context: .
       dockerfile: ../shared/envoy/Dockerfile
@@ -9,6 +13,8 @@ services:
     - "${PORT_PROXY:-10000}:10000"
 
   proxy-client:
+    depends_on:
+    - proxy
     build:
       context: .
       dockerfile: ../shared/envoy/Dockerfile
@@ -18,26 +24,28 @@ services:
     ports:
     - "${PORT_PROXY_CLIENT:-20000}:10000"
 
-  http-upstream1:
+  service-http0:
     build:
-      context: .
-      dockerfile: ../shared/echo2/Dockerfile
-    hostname: http-upstream1
+      context: ../shared/echo
     environment:
-    - HTTPS_PORT=0
+      ECHO_HOSTNAME: service-http0
+      ECHO_HTTP_HOST: 0.0.0.0
+      ECHO_HTTP_PORT: 80
 
-  http-upstream2:
+  service-http1:
     build:
-      context: .
-      dockerfile: ../shared/echo2/Dockerfile
-    hostname: http-upstream2
+      context: ../shared/echo
     environment:
-    - HTTPS_PORT=0
+      ECHO_HOSTNAME: service-http1
+      ECHO_HTTP_HOST: 0.0.0.0
+      ECHO_HTTP_PORT: 80
 
-  https-upstream3:
+  service-https:
     build:
-      context: .
-      dockerfile: ../shared/echo2/Dockerfile
-    hostname: https-upstream3
+      context: ../shared/echo
     environment:
-    - HTTP_PORT=0
+      ECHO_HOSTNAME: service-https
+      ECHO_HTTPS_HOST: 0.0.0.0
+      ECHO_HTTPS_PORT: 443
+      ECHO_TLS_CERT: /tmp/snakeoil/tls.cert
+      ECHO_TLS_KEY: /tmp/snakeoil/tls.key

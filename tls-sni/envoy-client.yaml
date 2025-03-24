@@ -89,3 +89,7 @@ static_resources:
       typed_config:
         "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
         sni: domain3.example.com
+        common_tls_context:
+          tls_params:
+            tls_minimum_protocol_version: TLSv1_3
+            tls_maximum_protocol_version: TLSv1_3

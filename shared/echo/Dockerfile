@@ -14,10 +14,12 @@ COPY --from=builder \
     /usr/local/bin/example-echo
 EXPOSE 8080
 COPY <<EOF /etc/config.yaml
-listener:
-  port: 8080
-  host: >-
-    0.0.0.0
+listeners:
+  http:
+    port: 8080
+    host: >-
+      0.0.0.0
 
 EOF
+COPY ./snakeoil /tmp/snakeoil
 CMD ["example-echo", "-c", "/etc/config.yaml"]
