@@ -21,7 +21,7 @@ static_resources:
       - name: envoy.filters.network.tcp_proxy
         typed_config:
           "@type": type.googleapis.com/envoy.extensions.filters.network.tcp_proxy.v3.TcpProxy
-          cluster: service-https-http2
+          cluster: service-https1
           stat_prefix: https_passthrough
     - filter_chain_match:
         transport_protocol: tls
@@ -30,7 +30,7 @@ static_resources:
       - name: envoy.filters.network.tcp_proxy
         typed_config:
           "@type": type.googleapis.com/envoy.extensions.filters.network.tcp_proxy.v3.TcpProxy
-          cluster: service-https-http1.1
+          cluster: service-https0
           stat_prefix: https_passthrough
     - filter_chain_match:
       filters:
@@ -41,29 +41,29 @@ static_resources:
           stat_prefix: ingress_http
 
   clusters:
-  - name: service-https-http2
+  - name: service-https1
     type: STRICT_DNS
     lb_policy: ROUND_ROBIN
     load_assignment:
-      cluster_name: service-https-http2
+      cluster_name: service-https1
       endpoints:
       - lb_endpoints:
         - endpoint:
             address:
               socket_address:
-                address: service-https-http2
+                address: service-https1
                 port_value: 443
-  - name: service-https-http1.1
+  - name: service-https0
     type: STRICT_DNS
     lb_policy: ROUND_ROBIN
     load_assignment:
-      cluster_name: service-https-http1.1
+      cluster_name: service-https0
       endpoints:
       - lb_endpoints:
         - endpoint:
             address:
               socket_address:
-                address: service-https-http1.1
+                address: service-https0
                 port_value: 443
   - name: service-http
     type: STRICT_DNS

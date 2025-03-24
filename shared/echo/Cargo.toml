@@ -5,4 +5,4 @@ edition = "2021"
 
 [dependencies]
 tokio = { version = "1.44.0", features = ["full"] }
-toolshed-echo = { git = "https://github.com/envoyproxy/toolshed", rev = "b4d881d380785e99d0afffa2cabc5b5fa52e6dd6", subdirectory = "rust/echo" }
+toolshed-echo = { git = "https://github.com/envoyproxy/toolshed", rev = "e2df528a12fc331599fb0ca3bdaf370ca3bffe2d", subdirectory = "rust/echo" }
