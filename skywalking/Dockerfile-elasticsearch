@@ -1,1 +1,1 @@
-FROM elasticsearch:8.17.3@sha256:2cc40b15dff85281ac804e7ff27cbc07b31fdd542e94ea7a2bdb6470e3b6bb68
+FROM elasticsearch:9.0.1@sha256:577aee5810654e487ad30f84eec14b0c9789332d6d76f2ac5879eeebd3c578e1
