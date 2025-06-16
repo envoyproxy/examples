@@ -186,9 +186,9 @@ test_auth () {
     echo "$RESPONSE" | grep "set-cookie: OauthExpires="
     echo "$RESPONSE" | grep "set-cookie: BearerToken="
 
-    HMAC=$(echo "$RESPONSE" | grep "set-cookie: OauthHMAC=" | cut -d' ' -f2-)
-    OAUTH_EXPIRES=$(echo "$RESPONSE" | grep "set-cookie: OauthExpires=" | cut -d' ' -f2-)
-    TOKEN=$(echo "$RESPONSE" | grep "set-cookie: BearerToken=" | cut -d' ' -f2-)
+    HMAC=$(echo "$RESPONSE" | grep "set-cookie: OauthHMAC=" | sed -E 's/^set-cookie: (OauthHMAC=[^;]+);.*$/\1/')
+    OAUTH_EXPIRES=$(echo "$RESPONSE" | grep "set-cookie: OauthExpires=" | sed -E 's/^set-cookie: (OauthExpires=[^;]+);.*$/\1/')
+    TOKEN=$(echo "$RESPONSE" | grep "set-cookie: BearerToken=" | sed -E 's/^set-cookie: (BearerToken=[^;]+);.*$/\1/')
     COOKIES=(
         --cookie "$HMAC"
         --cookie "$OAUTH_EXPIRES"
