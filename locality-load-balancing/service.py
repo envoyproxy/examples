@@ -9,7 +9,6 @@ ishealthy = True
 
 @routes.get("/")
 async def get(request):
-    global ishealthy
     if ishealthy:
         return web.Response(text=f"Hello from {os.environ['HOST']}!\n")
     else:
