@@ -45,6 +45,7 @@ services:
     - "${PORT_PROXY3:-10003}:10000"
 
   service-http:
+    image: envoy-example-echo
     build:
       context: ../shared/echo
     environment:
@@ -53,6 +54,7 @@ services:
       ECHO_HTTP_PORT: 80
 
   service-https:
+    image: envoy-example-echo
     build:
       context: ../shared/echo
     environment:

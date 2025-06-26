@@ -8,5 +8,6 @@ services:
     - "${PORT_ADMIN:-10001}:10001"
 
   backend:
+    image: envoy-example-echo
     build:
       context: ../shared/echo
