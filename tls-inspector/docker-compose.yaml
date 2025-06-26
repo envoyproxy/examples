@@ -16,7 +16,7 @@ services:
     - "${PORT_ADMIN:-12345}:12345"
 
   service-https0:
-    image: envoy-example-echo
+    image: ${COMPOSE_PROJECT_NAME}-echo
     build:
       context: ../shared/echo
     environment:
@@ -27,7 +27,7 @@ services:
       ECHO_TLS_KEY: /tmp/snakeoil/tls.key
 
   service-https1:
-    image: envoy-example-echo
+    image: ${COMPOSE_PROJECT_NAME}-echo
     build:
       context: ../shared/echo
     environment:
@@ -38,7 +38,7 @@ services:
       ECHO_TLS_KEY: /tmp/snakeoil/tls.key
 
   service-http:
-    image: envoy-example-echo
+    image: ${COMPOSE_PROJECT_NAME}-echo
     build:
       context: ../shared/echo
     environment:
