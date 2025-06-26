@@ -11,5 +11,6 @@ services:
     - "8001:8001"
 
   web_service:
+    image: envoy-example-echo
     build:
       context: ../shared/echo
