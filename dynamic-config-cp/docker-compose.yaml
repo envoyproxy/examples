@@ -12,14 +12,14 @@ services:
     - "${PORT_ADMIN:-19000}:19000"
 
   service1:
-    image: envoy-example-echo
+    image: ${COMPOSE_PROJECT_NAME}-echo
     build:
       context: ../shared/echo
     environment:
       ECHO_HOSTNAME: service1
 
   service2:
-    image: envoy-example-echo
+    image: ${COMPOSE_PROJECT_NAME}-echo
     build:
       context: ../shared/echo
     environment:

@@ -25,7 +25,7 @@ services:
     - "${PORT_PROXY_CLIENT:-20000}:10000"
 
   service-http0:
-    image: envoy-example-echo
+    image: ${COMPOSE_PROJECT_NAME}-echo
     build:
       context: ../shared/echo
     environment:
@@ -34,7 +34,7 @@ services:
       ECHO_HTTP_PORT: 80
 
   service-http1:
-    image: envoy-example-echo
+    image: ${COMPOSE_PROJECT_NAME}-echo
     build:
       context: ../shared/echo
     environment:
@@ -43,7 +43,7 @@ services:
       ECHO_HTTP_PORT: 80
 
   service-https:
-    image: envoy-example-echo
+    image: ${COMPOSE_PROJECT_NAME}-echo
     build:
       context: ../shared/echo
     environment:

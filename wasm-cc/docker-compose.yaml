@@ -11,6 +11,6 @@ services:
     - "8001:8001"
 
   web_service:
-    image: envoy-example-echo
+    image: ${COMPOSE_PROJECT_NAME}-echo
     build:
       context: ../shared/echo
