@@ -7,6 +7,10 @@ if [[ $(id -u envoybuild) != "${BUILD_UID}" ]]; then
     chown envoybuild /home/envoybuild
 fi
 
+if [[ ! -e /output ]]; then
+    mkdir /output
+fi
+
 chown envoybuild /output
 chmod 1777 /tmp
 
