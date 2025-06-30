@@ -2993,10 +2993,10 @@ for-each@^0.3.5:
   dependencies:
     is-callable "^1.2.7"
 
-framer-motion@^12.19.1:
-  version "12.19.1"
-  resolved "https://registry.yarnpkg.com/framer-motion/-/framer-motion-12.19.1.tgz#1d078c04d2ef15bec180cd3573218fad1f4ee871"
-  integrity sha512-nq9hwWAEKf4gzprbOZzKugLV5OVKF7zrNDY6UOVu+4D3ZgIkg8L9Jy6AMrpBM06fhbKJ6LEG6UY5+t7Eq6wNlg==
+framer-motion@^12.19.2:
+  version "12.19.2"
+  resolved "https://registry.yarnpkg.com/framer-motion/-/framer-motion-12.19.2.tgz#19e7f0ccff98c769ba2cafff24ba97d1bb6701a5"
+  integrity sha512-0cWMLkYr+i0emeXC4hkLF+5aYpzo32nRdQ0D/5DI460B3O7biQ3l2BpDzIGsAHYuZ0fpBP0DC8XBkVf6RPAlZw==
   dependencies:
     motion-dom "^12.19.0"
     motion-utils "^12.19.0"
