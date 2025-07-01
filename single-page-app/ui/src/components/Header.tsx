@@ -1,5 +1,5 @@
 import {useState} from "react"
-import {CloseIcon, ChevronUpIcon} from '@chakra-ui/icons'
+import {FiX, FiChevronUp} from 'react-icons/fi';
 import {Box, Flex} from '@chakra-ui/react'
 import {IHeaderProps} from "../@types/app"
 import {UserMenu} from "./User"
@@ -20,7 +20,7 @@ export const Header = (props: IHeaderProps) => {
       <Flex align="center">
       </Flex>
       <Box display={{base: "block", md: "none"}} onClick={toggleMenu}>
-        {show ? <CloseIcon /> : <ChevronUpIcon />}
+        {show ? <FiX /> : <FiChevronUp />}
       </Box>
       <Box
         display={{base: show ? "block" : "none", md: "block"}}
