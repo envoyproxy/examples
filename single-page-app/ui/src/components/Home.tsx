@@ -1,11 +1,11 @@
+import {Text} from '@chakra-ui/react'
 import {
   Tab,
   TabList,
   TabPanel,
   TabPanels,
   Tabs,
-  Text,
-} from '@chakra-ui/react'
+} from '@chakra-ui/tabs'
 import {useContext} from "react"
 
 import {AuthContext} from "../context"

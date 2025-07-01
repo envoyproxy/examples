@@ -1,12 +1,12 @@
+import {Button} from '@chakra-ui/react'
 import {
-  Button,
   Table,
   TableCaption,
   TableContainer,
   Tbody,
   Thead,
   Tr,
-} from '@chakra-ui/react'
+} from '@chakra-ui/table'
 import React from "react"
 
 import {withAuth, withData} from "../hoc"

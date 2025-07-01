@@ -1,9 +1,8 @@
 import {
   Flex,
   Link,
-  Td,
-  Th,
 } from '@chakra-ui/react'
+import {Td, Th} from '@chakra-ui/table'
 import React from "react"
 
 import {
