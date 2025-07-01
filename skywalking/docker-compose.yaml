@@ -70,6 +70,8 @@ services:
     environment:
       discovery.type: single-node
       ingest.geoip.downloader.enabled: "false"
+      # JVM heap size
+      ES_JAVA_OPTS: "-Xms1g -Xmx1g"
 
       cluster.routing.allocation.disk.watermark.low: "${ES_WATERMARK_LOW:-85%}"
       cluster.routing.allocation.disk.watermark.high: "${ES_WATERMARK_HIGH:-90%}"
@@ -84,6 +86,8 @@ services:
       memlock:
         soft: -1
         hard: -1
+    mem_limit: 2g
+    mem_reservation: 1g
 
   skywalking-oap:
     build:
@@ -99,11 +103,11 @@ services:
     healthcheck:
       test:
       - CMD-SHELL
-      - /skywalking/bin/swctl health
+      - curl -sf http://localhost:12800/healthcheck || exit 1
       interval: 10s
-      timeout: 120s
+      timeout: 10s
       retries: 10
-      start_period: 10s
+      start_period: 30s
     restart: on-failure
 
   skywalking-ui:
