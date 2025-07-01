@@ -4,10 +4,17 @@ import {
   Button,
   Flex,
   Image,
+  Text,
+  useDisclosure,
+  useToast,
+} from '@chakra-ui/react'
+import {
   Menu,
   MenuButton,
   MenuList,
   MenuItem,
+} from '@chakra-ui/menu'
+import {
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -15,6 +22,8 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+} from '@chakra-ui/modal'
+import {
   Table,
   TableCaption,
   TableContainer,
@@ -23,10 +32,7 @@ import {
   Thead,
   Th,
   Tr,
-  Text,
-  useDisclosure,
-  useToast,
-} from '@chakra-ui/react'
+} from '@chakra-ui/table'
 import {AuthContext} from "../context"
 import {IUser, TAuthContext} from "../@types/app"
 import {AuthProviders} from "../providers.tsx"
@@ -91,7 +97,7 @@ export const UserMenu = () => {
         </Flex>
       </MenuButton>
       <MenuList>
-        <MenuItem onClick={onOpen}>Info</MenuItem>
+        <MenuItem value="info" onClick={onOpen}>Info</MenuItem>
         <Modal
           isCentered
           onClose={onClose}
@@ -146,7 +152,7 @@ export const UserMenu = () => {
             </ModalFooter>
           </ModalContent>
         </Modal>
-        <MenuItem onClick={()=> handleLogout()}>Logout</MenuItem>
+        <MenuItem value="logout" onClick={()=> handleLogout()}>Logout</MenuItem>
       </MenuList>
     </Menu>)
 }
