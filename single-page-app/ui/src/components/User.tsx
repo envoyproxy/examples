@@ -1,5 +1,5 @@
 import {useContext} from "react"
-import {ChevronDownIcon} from '@chakra-ui/icons'
+import {FiChevronDown} from 'react-icons/fi';
 import {
   Button,
   Flex,
@@ -78,7 +78,7 @@ export const UserMenu = () => {
   }
   return (
     <Menu>
-      <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
+      <MenuButton as={Button} rightIcon={<FiChevronDown />}>
         <Flex align="center">
           <Image
             boxSize='2rem'
