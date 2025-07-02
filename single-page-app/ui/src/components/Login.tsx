@@ -1,9 +1,9 @@
-import {useToast} from '@chakra-ui/react'
 import {useEffect, useContext} from "react"
 import {Navigate} from "react-router-dom"
 import {AuthContext} from "../context"
 import {TAuthContext} from "../@types/app"
 import Home from "./Home"
+import {toaster} from "./ui/toast"
 
 /*
 Note: Envoy's oAuth implementation requires that a page be requested *after*
@@ -17,7 +17,6 @@ Note: Envoy's oAuth implementation requires that a page be requested *after*
 export default function Login() {
   const {state, dispatch} = useContext(AuthContext) as TAuthContext
   const {isLoggedIn} = state
-  const toast = useToast()
   useEffect(() => {
     const {authenticating, failed, isLoggedIn, proxy_url} = state
     const fetchUser = async () => {
@@ -32,16 +31,15 @@ export default function Login() {
     if (!isLoggedIn && !authenticating && !failed) {
       fetchUser().catch(error => {
         dispatch({type: "ERROR"})
-        toast({
-          title: "Login failed.",
-          description: `${error.message}`,
-          status: "error",
-          duration: 9000,
-          isClosable: true,
+        toaster.create({
+          description: `Login failed: ${error.message}`,
+          type: "error",
+          closable: true,
+          duration: 3000,
         })
       })
     }
-  }, [state, dispatch, toast])
+  }, [state, dispatch])
   if (isLoggedIn) {
     return <Navigate to="/" />
   }

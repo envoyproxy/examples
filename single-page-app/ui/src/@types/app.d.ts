@@ -134,3 +134,19 @@ interface IRepoInfo {
   full_name: string
   updated_at: string
 }
+
+interface IComponentWithUserInfoProp {
+  user: IUser | null
+}
+
+interface IUserDialogProps extends IComponentWithUserInfoProp {
+  open: boolean
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+interface IUserMenuProps extends IComponentWithUserInfoProp {
+  handleLogout: () => Promise<void>
+  onInfoClick: () => void
+  open: boolean
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>
+}
