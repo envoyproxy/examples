@@ -2,8 +2,8 @@ import {
   Flex,
   Image,
   Link,
+  Table,
 } from '@chakra-ui/react'
-import {Td, Th} from '@chakra-ui/table'
 import React from "react"
 
 import {
@@ -14,8 +14,8 @@ import {
 export const RelatedUserTableHeaders = () => {
   return (
     <>
-      <Th>User</Th>
-      <Th>Full name</Th>
+      <Table.ColumnHeader>User</Table.ColumnHeader>
+      <Table.ColumnHeader>Full name</Table.ColumnHeader>
     </>)
 }
 
@@ -23,7 +23,7 @@ export const RelatedUserTr: React.FC<{resource: IRepoInfo | IUserLogin}> = ({res
   const user = resource as IUserLogin
   return (
     <>
-      <Td>
+      <Table.Cell>
         <Flex align="center">
           <Image
             boxSize='2rem'
@@ -35,9 +35,9 @@ export const RelatedUserTr: React.FC<{resource: IRepoInfo | IUserLogin}> = ({res
             {user.login}
           </Link>
         </Flex>
-      </Td>
-      <Td>
+      </Table.Cell>
+      <Table.Cell>
         {user.name}
-      </Td>
+      </Table.Cell>
     </>)
 }

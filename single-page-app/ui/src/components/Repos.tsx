@@ -1,8 +1,8 @@
 import {
   Flex,
   Link,
+  Table,
 } from '@chakra-ui/react'
-import {Td, Th} from '@chakra-ui/table'
 import React from "react"
 
 import {
@@ -13,8 +13,8 @@ import {
 export const RepoTableHeaders = () => {
   return (
     <>
-      <Th>Repo</Th>
-      <Th>Updated</Th>
+      <Table.ColumnHeader>Repo</Table.ColumnHeader>
+      <Table.ColumnHeader>Updated</Table.ColumnHeader>
     </>)
 }
 
@@ -22,13 +22,13 @@ export const RepoTr: React.FC<{resource: IRepoInfo | IUserLogin}> = ({resource})
   const repo = resource as IRepoInfo
   return (
     <>
-      <Td>
+      <Table.Cell>
         <Flex align="center">
           <Link href={repo.html_url}>
             {repo.full_name}
           </Link>
         </Flex>
-      </Td>
-      <Td>{repo.updated_at}</Td>
+      </Table.Cell>
+      <Table.Cell>{repo.updated_at}</Table.Cell>
     </>)
 }
