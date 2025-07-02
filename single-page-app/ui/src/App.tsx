@@ -1,4 +1,4 @@
-import {ChakraProvider, extendTheme} from '@chakra-ui/react'
+import {ChakraProvider, createSystem, defaultConfig, defineConfig, mergeConfigs} from '@chakra-ui/react'
 import {useReducer} from 'react'
 import {BrowserRouter as Router, Route, Routes} from "react-router-dom"
 
@@ -9,19 +9,25 @@ import Logout from "./components/Logout"
 import {AuthContext, DataContext} from "./context"
 import {dataInitialState, dataReducer, userInitialState, userReducer} from "./store/reducer"
 
-const theme = extendTheme({
-  colors: {
-    primary: {
-      500: '#000',
+const customConfig = defineConfig({
+  theme: {
+    tokens: {
+      colors: {
+        primary: {
+          500: {value: "#000"},
+        },
+      },
     },
   },
 })
+
+const system = createSystem(mergeConfigs(defaultConfig, customConfig))
 
 function App() {
   const [userState, userDispatch] = useReducer(userReducer, userInitialState)
   const [dataState, dataDispatch] = useReducer(dataReducer, dataInitialState)
   return (
-    <ChakraProvider theme={theme}>
+    <ChakraProvider value={system}>
       <AuthContext.Provider
         value={{
           state: userState,

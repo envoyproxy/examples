@@ -103,28 +103,29 @@ EXPECTED_FOLLOWING="$(
       < myhub/data.yml)"
 
 test_auth () {
-    local proxy_port
-    proxy_scheme=$1
-    proxy_port=$2
+    local proxy_port proxy_scheme name
+    name=$1
+    proxy_scheme=$2
+    proxy_port=$3
     curl_args=()
     if [[ "$proxy_scheme" == "https" ]]; then
         curl_args=(-k)
     fi
 
-    run_log "Fetch the app page"
+    run_log "Fetch the app page (${name})"
     responds_with \
         "Envoy single page app example" \
         "${proxy_scheme}://localhost:${proxy_port}" \
         "${curl_args[@]}"
 
-    run_log "Check whether PKCE is supported"
+    run_log "Check whether PKCE is supported (${name})"
     SUPPORT_PKCE="false" # Whether PKCE is supported in this version of Envoy
     LOCATION=$(_curl "${curl_args[@]}" --head "${proxy_scheme}://localhost:${proxy_port}/login" | grep location)
     if [[ "$LOCATION" == *"code_challenge"* ]]; then
         SUPPORT_PKCE="true"
     fi
 
-    run_log "Inititiate login"
+    run_log "Inititiate login (${name})"
     responds_with_header \
         "HTTP/1.1 302 Found" \
         "${proxy_scheme}://localhost:${proxy_port}/login" \
@@ -151,7 +152,7 @@ test_auth () {
     encoded_state=$(echo -n "{\"url\":\"${proxy_scheme}://localhost:${proxy_port}/login\",\"csrf_token\":\"${csrf_token}\"}" | basenc --base64url --wrap=0 | sed 's/=//g')
     code_verifier="Fc1bBwAAAAAVzVsHAAAAABjf6i_Hvf8T2dEuEhPhhDNMlp16az-0dxisL-TzJKaZjOMF8nov_pG377FHmpKcsA"
     code_challenge="YRQaBq_UpkWzfr6JvtNnh7LMfmPVcIKVYdV98ugwmLY"
-    run_log "Fetch the myhub authorization page"
+    run_log "Fetch the myhub authorization page (${name})"
     if [[ "$SUPPORT_PKCE" == "true" ]]; then
         responds_with_header \
             "HTTP/1.1 302 Found" \
@@ -172,7 +173,7 @@ test_auth () {
             "${curl_args[@]}"
     fi
 
-    run_log "Return to the app and receive creds"
+    run_log "Return to the app and receive creds (${name})"
     if [[ "$SUPPORT_PKCE" == "true" ]]; then
         CODE=$(_curl "${curl_args[@]}" --head "http://localhost:${PORT_MYHUB}/authorize?client_id=0123456789&code_challenge=${code_challenge}&code_challenge_method=S256&redirect_uri=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Fauthorize&response_type=code&scope=user%3Aemail&state=${encoded_state}" | grep Location | cut -d= -f2 | cut -d\& -f1)
         RESPONSE=$(_curl "${curl_args[@]}" --cookie "OauthNonce=${csrf_token}" --cookie "CodeVerifier=${code_verifier}" --head "${proxy_scheme}://localhost:${proxy_port}/authorize?code=$CODE&state=${encoded_state}")
@@ -211,7 +212,7 @@ test_auth () {
             "${curl_args[@]}"
     done
 
-    run_log "Log out of Myhub"
+    run_log "Log out of Myhub (${name})"
     RESPONSE=$(_curl "${curl_args[@]}" --head "${proxy_scheme}://localhost:${proxy_port}/logout")
     echo "$RESPONSE" | grep "HTTP/1.1 302 Found"
     echo "$RESPONSE" | grep "location: ${proxy_scheme}://localhost:${proxy_port}/"
@@ -251,7 +252,7 @@ envsubst < hmac-secret.tmpl.yml > .local.ci/secrets/hmac-secret.yml
 run_log "Start servers"
 bring_up_example
 
-test_auth http "${PORT_DEV_PROXY}"
+test_auth dev http "${PORT_DEV_PROXY}"
 
 run_log "Live reload dev app"
 sed -i s/Envoy\ single\ page\ app\ example/CUSTOM\ APP/g .local.ci/ui/index.html
@@ -273,7 +274,7 @@ docker compose run --rm ui build.sh
 run_log "Check the created routes"
 jq '.resources[0].filter_chains[0].filters[0].typed_config.route_config.virtual_hosts[0].routes' < .local.ci/production/xds/lds.yml
 
-test_auth https "${PORT_PROXY}"
+test_auth production https "${PORT_PROXY}"
 
 current_js=$(get_js)
 

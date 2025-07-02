@@ -17,7 +17,7 @@ resources:
         stat_prefix: ingress_http
         route_config:
           name: static_route
-          max_direct_response_body_size_bytes: 640000
+          max_direct_response_body_size_bytes: 720000
           virtual_hosts:
           - name: static_service
             domains: ["*"]

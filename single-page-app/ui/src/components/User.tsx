@@ -1,52 +1,147 @@
-import {useContext} from "react"
+import {useContext, useState} from "react"
 import {FiChevronDown} from 'react-icons/fi';
 import {
   Button,
+  CloseButton,
+  Dialog,
   Flex,
   Image,
-  Text,
-  useDisclosure,
-  useToast,
-} from '@chakra-ui/react'
-import {
   Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-} from '@chakra-ui/menu'
-import {
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-} from '@chakra-ui/modal'
-import {
+  Portal,
   Table,
-  TableCaption,
-  TableContainer,
-  Tbody,
-  Td,
-  Thead,
-  Th,
-  Tr,
-} from '@chakra-ui/table'
+  Text,
+} from '@chakra-ui/react'
 import {AuthContext} from "../context"
 import {IUser, TAuthContext} from "../@types/app"
 import {AuthProviders} from "../providers.tsx"
+import {toaster} from "./ui/toast"
+import {IComponentWithUserInfoProp, IUserDialogProps, IUserMenuProps} from "../@types/app"
+
+export const UserInfoTable = (props: IComponentWithUserInfoProp) => {
+  const {user} = props
+  const {
+    followers,
+    following,
+    public_repos} = user as IUser
+  return (
+    <Table.Root striped>
+      <Table.Header>
+        <Table.Row>
+          <Table.ColumnHeader>metric</Table.ColumnHeader>
+          <Table.ColumnHeader>count</Table.ColumnHeader>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        <Table.Row>
+          <Table.Cell>Repos</Table.Cell>
+          <Table.Cell>{public_repos}</Table.Cell>
+        </Table.Row>
+        <Table.Row>
+          <Table.Cell>Followers</Table.Cell>
+          <Table.Cell>{followers}</Table.Cell>
+        </Table.Row>
+        <Table.Row>
+          <Table.Cell>Following</Table.Cell>
+          <Table.Cell>{following}</Table.Cell>
+        </Table.Row>
+      </Table.Body>
+    </Table.Root>)
+}
+
+export const UserInfoDialog = (props: IUserDialogProps) => {
+  const {open, setOpen, user} = props
+  const {
+    avatar_url,
+    login} = user as IUser
+  return (
+    <Dialog.Root open={open} onOpenChange={({open}) => setOpen(open)}>
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>
+              <Dialog.Title>
+                <Flex align="center">
+                  <Image
+                    boxSize='2rem'
+                    borderRadius='full'
+                    src={avatar_url}
+                    alt="Avatar"
+                    mr='12px'
+                  />
+                  <Text>{login}</Text>
+                </Flex>
+              </Dialog.Title>
+            </Dialog.Header>
+            <Dialog.Body>
+              <UserInfoTable user={user} />
+            </Dialog.Body>
+            <Dialog.Footer>
+              <Dialog.ActionTrigger asChild>
+                <Button variant="subtle">Close</Button>
+              </Dialog.ActionTrigger>
+            </Dialog.Footer>
+            <Dialog.CloseTrigger asChild>
+              <CloseButton />
+            </Dialog.CloseTrigger>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>)
+}
+
+export const UserMenuDropdown = (props: IUserMenuProps) => {
+  const {onInfoClick, handleLogout, open, setOpen, user} = props
+  const {
+    avatar_url = '...',
+    login = '...'} = user as IUser || {}
+  return (
+    <Menu.Root open={open} onOpenChange={({open}) => setOpen(open)}>
+      <Menu.Trigger asChild>
+        <Button variant="subtle">
+          <Flex align="center" gap="2">
+            <Image boxSize="2rem" borderRadius="full" src={avatar_url} alt={login} />
+            <Text>{login}</Text>
+            <FiChevronDown />
+          </Flex>
+        </Button>
+      </Menu.Trigger>
+      <Portal>
+        <Menu.Positioner>
+          <Menu.Content>
+            <Menu.Item value="info" onSelect={onInfoClick}>Info</Menu.Item>
+            <Menu.Item value="logout" onSelect={handleLogout}>Logout</Menu.Item>
+          </Menu.Content>
+        </Menu.Positioner>
+      </Portal>
+    </Menu.Root>)
+}
 
 export const UserMenu = () => {
   const {state, dispatch} = useContext(AuthContext) as TAuthContext
-  const {isOpen, onOpen, onClose} = useDisclosure()
   const {authenticating, isLoggedIn, provider, user} = state
   const authProvider = AuthProviders[provider]
-  const toast = useToast()
   const handleLogin = async () => {
     // This is intercepted and redirected by Envoy
     window.location.href = '/login'
   }
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  if (!isLoggedIn) {
+    const {icon: Icon, name: providerName} = authProvider
+    const loginText = authenticating ? 'Logging in' : `Login to ${providerName}`;
+    return (
+      <Button variant="subtle" onClick={() => handleLogin()}>
+        <Flex align="center">
+          <Icon />
+          <Text>{loginText}</Text>
+        </Flex>
+      </Button>)
+  }
+  const onInfoClick = () => {
+    setMenuOpen(false)
+    setDialogOpen(true)
+  };
   const handleLogout = async () => {
     const response = await fetch('/logout')
     if (response.status === 200) {
@@ -54,105 +149,27 @@ export const UserMenu = () => {
         type: "LOGOUT",
       })
     } else {
-      toast({
-        title: "Logout failed.",
-        description: `${response.statusText}`,
-        status: "error",
-        duration: 9000,
-        isClosable: true,
+      toaster.create({
+        description: `Logout failed: ${response.statusText}`,
+        type: "error",
+        closable: true,
+        duration: 3000,
       })
     }
-  }
-  const {
-    avatar_url = '...',
-    login = '...',
-    public_repos = '0',
-    followers = '0',
-    following = '0'} = user as IUser || {}
-  if (!isLoggedIn) {
-    const {icon: Icon, name: providerName} = authProvider
-    const loginText = authenticating ? 'Logging in' : `Login to ${providerName}`;
-    return (
-      <Menu>
-        <MenuButton as={Button} onClick={() => handleLogin()}>
-          <Flex align="center">
-            <Icon />
-            <Text>{loginText}</Text>
-          </Flex>
-        </MenuButton>
-      </Menu>)
+
   }
   return (
-    <Menu>
-      <MenuButton as={Button} rightIcon={<FiChevronDown />}>
-        <Flex align="center">
-          <Image
-            boxSize='2rem'
-            borderRadius='full'
-            src={avatar_url}
-            alt="Avatar"
-            mr='12px'
-          />
-          <Text>{login}</Text>
-        </Flex>
-      </MenuButton>
-      <MenuList>
-        <MenuItem value="info" onClick={onOpen}>Info</MenuItem>
-        <Modal
-          isCentered
-          onClose={onClose}
-          isOpen={isOpen}
-          motionPreset='slideInBottom'>
-          <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>
-              <Flex align="center">
-                <Image
-                  boxSize='2rem'
-                  borderRadius='full'
-                  src={avatar_url}
-                  alt="Avatar"
-                  mr='12px'
-                />
-                <Text>{login}</Text>
-              </Flex>
-            </ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              <TableContainer>
-                <Table variant='simple'>
-                  <TableCaption>Github user metrics</TableCaption>
-                  <Thead>
-                    <Tr>
-                      <Th>metric</Th>
-                      <Th isNumeric>count</Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    <Tr>
-                      <Td>Repos</Td>
-                      <Td isNumeric>{public_repos}</Td>
-                    </Tr>
-                    <Tr>
-                      <Td>Followers</Td>
-                      <Td isNumeric>{followers}</Td>
-                    </Tr>
-                    <Tr>
-                      <Td>Following</Td>
-                      <Td isNumeric>{following}</Td>
-                    </Tr>
-                  </Tbody>
-                </Table>
-              </TableContainer>
-            </ModalBody>
-            <ModalFooter>
-              <Button mr={3} onClick={onClose}>
-                Close
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
-        <MenuItem value="logout" onClick={()=> handleLogout()}>Logout</MenuItem>
-      </MenuList>
-    </Menu>)
+    <>
+      <UserMenuDropdown
+        handleLogout={handleLogout}
+        onInfoClick={onInfoClick}
+        open={menuOpen}
+        setOpen={setMenuOpen}
+        user={user} />
+      <UserInfoDialog
+        open={dialogOpen}
+        setOpen={setDialogOpen}
+        user={user} />
+    </>
+  );
 }

@@ -1,13 +1,6 @@
-import {Button} from '@chakra-ui/react'
-import {
-  Table,
-  TableCaption,
-  TableContainer,
-  Tbody,
-  Thead,
-  Tr,
-} from '@chakra-ui/table'
+import {Button, Table} from '@chakra-ui/react'
 import React from "react"
+import {toaster} from "./ui/toast"
 
 import {withAuth, withData} from "../hoc"
 import {
@@ -25,7 +18,7 @@ class BaseResources<T> extends React.Component<ITableResourceProps<T>, IActionSt
   }
 
   render() {
-    const {data, name, headers: Headers, row: Row, title, user} = this.props
+    const {data, name, headers: Headers, row: Row, user} = this.props
     const rows = data.state.data?.[name]
     const {user: userData} = user.state || {}
     const {login} = userData || {}
@@ -35,30 +28,36 @@ class BaseResources<T> extends React.Component<ITableResourceProps<T>, IActionSt
     }
 
     if (!rows || !Array.isArray(rows)) {
-      return <Button onClick={() => this.updateResources()}>Update {name}</Button>
+      return (
+        <Button
+          variant="subtle"
+          onClick={() => this.updateResources()}>
+          Update {name}
+        </Button>)
     }
 
     return (
       <>
-        <Button onClick={() => this.updateResources()}>Update {name}</Button>
-        <TableContainer>
-          <Table variant="simple">
-            <TableCaption>{title}</TableCaption>
-            <Thead>
-              <Tr>
-                <Headers />
-              </Tr>
-            </Thead>
-            <Tbody>
-              {rows.map((resource, index: number) => (
-                <Tr key={index}>
-                  <Row resource={resource as T} />
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </TableContainer>
-      </>
+        <Button
+          variant="subtle"
+          onClick={() => this.updateResources()}>
+          Update {name}
+        </Button>
+        <Table.Root striped>
+          <Table.Header>
+            <Table.Row>
+              <Headers />
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {rows.map((resource, index: number) => (
+              <Table.Row key={index}>
+                <Row resource={resource as T} />
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table.Root>
+    </>
     )
   }
 
@@ -78,6 +77,12 @@ class BaseResources<T> extends React.Component<ITableResourceProps<T>, IActionSt
       dispatch({
         type: 'UPDATE',
         payload,
+      })
+      toaster.create({
+        description: `Updated: ${name}`,
+        type: "info",
+        closable: true,
+        duration: 3000,
       })
     } catch (error) {
       const e = error as Record<'message', string>
