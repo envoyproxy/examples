@@ -1,6 +1,6 @@
 .. _install_sandboxes_ratelimit:
 
-Local Ratelimit
+Local ratelimit
 ===============
 
 .. sidebar:: Requirements
@@ -8,7 +8,7 @@ Local Ratelimit
    .. include:: _include/docker-env-setup-link.rst
 
    :ref:`curl <start_sandboxes_setup_curl>`
-        Used to make ``HTTP`` requests.
+        Used to make HTTP requests.
 
 Rate limiting is used to control the rate of requests sent or received by a network interface controller, which is helpful to prevent DoS attacks and limit web scraping.
 
@@ -22,12 +22,12 @@ This sandbox provides an example of rate limiting of L4 connections.
 Step 1: Start all of our containers
 ***********************************
 
-Change to the ``examples/local_ratelimit`` directory and bring up the docker composition.
+Change to the ``local_ratelimit`` directory and bring up the docker composition.
 
 .. code-block:: console
 
     $ pwd
-    envoy/examples/ratelimit
+    examples/ratelimit
     $ docker compose pull
     $ docker compose up --build -d
     $ docker compose ps
@@ -41,7 +41,7 @@ Step 2: Test rate limiting of upstream service
 
 The sandbox is configured with ``10000`` port for upstream service.
 
-If a request reaches the rate limit, Envoy will add ``x-local-rate-limit`` header and refuse the connection with a 429 HTTP response code and with the content ``local_rate_limited``.
+If a request reaches the rate limit, Envoy will add ``x-local-rate-limit`` header and refuse the connection with a ``429`` HTTP response code and with the content ``local_rate_limited``.
 
 Now, use ``curl`` to make a request five times for the limited upstream service:
 

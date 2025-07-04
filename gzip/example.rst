@@ -8,13 +8,13 @@ Gzip
    .. include:: _include/docker-env-setup-link.rst
 
    :ref:`curl <start_sandboxes_setup_curl>`
-        Used to make ``HTTP`` requests.
+        Used to make HTTP requests.
 
 By enabling compression in Envoy you can save some network bandwidth, at the expense of increased processor usage.
 
 Envoy supports compression and decompression for both requests and responses.
 
-This sandbox provides examples of response compression and request decompression served over ``HTTP``. Although ``HTTPS`` is not demonstrated, compression can be used for this also.
+This sandbox provides examples of response compression and request decompression served over HTTP. Although HTTPS is not demonstrated, compression can be used for this also.
 
 The sandbox covers three scenarios:
 
@@ -25,12 +25,12 @@ The sandbox covers three scenarios:
 Step 1: Start all of our containers
 ***********************************
 
-Change to the ``examples/gzip`` directory and bring up the docker composition.
+Change to the ``gzip`` directory and bring up the docker composition.
 
 .. code-block:: console
 
     $ pwd
-    envoy/examples/gzip
+    examples/gzip
     $ docker compose pull
     $ docker compose up --build -d
     $ docker compose ps

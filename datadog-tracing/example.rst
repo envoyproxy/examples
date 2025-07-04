@@ -7,10 +7,16 @@ Datadog tracing
 
    .. include:: _include/docker-env-setup-link.rst
 
-.. note:: Before proceeding, please ensure you have a Datadog account set up. If you don't already have one, you can `sign up for Datadog here <https://app.datadoghq.eu/signup>`_.
-
    :ref:`curl <start_sandboxes_setup_curl>`
         Used to make HTTP requests.
+
+
+.. note::
+
+   Before proceeding, please ensure you have a Datadog account set up.
+
+   If you don't already have one, you can `sign up for Datadog here <https://app.datadoghq.eu/signup>`_.
+
 
 The Datadog tracing sandbox demonstrates Envoy's :ref:`request tracing <arch_overview_tracing>`
 capabilities using `Datadog <https://datadoghq.com/>`_ as the tracing provider.
@@ -29,14 +35,12 @@ Each span records the latency of upstream API calls as well as information neede
 Step 1: Build the sandbox
 *************************
 
-Change directory to ``examples/datadog-tracing`` in the Envoy repository.
-
-To build this sandbox example, and start the example services run the following commands:
+Change to the ``datadog-tracing`` directory, and start the containers, with the following commands:
 
 .. code-block:: console
 
     $ pwd
-    envoy/examples/datadog-tracing
+    examples/datadog-tracing
     $ export DD_API_KEY=<YOUR_API_KEY>
     $ docker compose pull
     $ docker compose up --build -d

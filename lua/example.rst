@@ -8,7 +8,7 @@ Lua filter
    .. include:: _include/docker-env-setup-link.rst
 
    :ref:`curl <start_sandboxes_setup_curl>`
-        Used to make ``HTTP`` requests.
+        Used to make HTTP requests.
 
 In this example, we show how the `Lua <https://www.lua.org/>`_ filter can be used with the Envoy
 proxy.
@@ -24,12 +24,12 @@ regarding these functions.
 Step 1: Build the sandbox
 *************************
 
-Change to the ``examples/lua`` directory.
+Change to the ``lua`` directory.
 
 .. code-block:: console
 
   $ pwd
-  envoy/examples/lua
+  examples/lua
   $ docker compose pull
   $ docker compose up --build -d
   $ docker compose ps

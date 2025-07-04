@@ -1,7 +1,7 @@
 .. _install_sandboxes_load_reporting_service:
 
-Load reporting service (``LRS``)
-================================
+Load reporting service (LRS)
+============================
 
 .. sidebar:: Requirements
 
@@ -10,25 +10,33 @@ Load reporting service (``LRS``)
 This simple example demonstrates Envoy's :ref:`Load reporting service (LRS) <arch_overview_load_reporting_service>`
 capability and how to use it.
 
-Lets say Cluster A (downstream) talks to Cluster B (Upstream) and Cluster C (Upstream). When enabling Load Report for
-Cluster A, LRS server should be sending LoadStatsResponse to Cluster A with LoadStatsResponse.Clusters to be B and C.
-LRS server will then receive LoadStatsRequests (with total requests, successful requests etc) from Cluster A to Cluster B and
+Lets say Cluster A (downstream) talks to Cluster B (Upstream) and Cluster C (Upstream).
+
+When enabling Load Report for Cluster A, the LRS server should be sending ``LoadStatsResponse`` to Cluster A with
+``LoadStatsResponse.Clusters`` to be B and C.
+
+The LRS server will then receive ``LoadStatsRequests`` (with total requests, successful requests etc) from Cluster A to Cluster B and
 from Cluster A to Cluster C.
 
-In this example, all incoming requests are routed via Envoy to a simple goLang web server aka http_server.
-We scale up two containers and randomly send requests to each. Envoy is configured to initiate the connection with LRS Server.
-LRS Server enables the stats by sending LoadStatsResponse. Sending requests to http_server will be counted towards successful
-requests and will be visible in LRS Server logs.
+In this example, all incoming requests are routed via Envoy to a simple Golang web server named ``http_server``.
+
+We scale up two containers and randomly send requests to each.
+
+Envoy is configured to initiate the connection with the LRS Server.
+
+The LRS Server enables stats by sending ``LoadStatsResponse``.
+
+Sending requests to ``http_server`` are counted towards successful requests and will be visible in the LRS Server logs.
 
 Step 1: Build the sandbox
 *************************
 
-Change to the ``examples/load-reporting-service`` directory.
+Change to the ``load-reporting-service`` directory.
 
 Terminal 1 ::
 
     $ pwd
-    envoy/examples/load-reporting-service
+    examples/load-reporting-service
     $ docker compose pull
     $ docker compose up --scale http_service=2
 
@@ -36,7 +44,7 @@ Terminal 1 ::
 Terminal 2 ::
 
     $ pwd
-    envoy/examples/load_reporting_service
+    examples/load_reporting_service
     $ docker compose ps
 
                   Name                               Command               State                Ports
@@ -51,7 +59,7 @@ Step 2: Start sending stream of HTTP requests
 Terminal 2 ::
 
   $ pwd
-  envoy/examples/load_reporting_service
+  examples/load_reporting_service
   $ bash send_requests.sh
 
 The script above (:download:`send_requests.sh <_include/load-reporting-service/send_requests.sh>`) sends requests

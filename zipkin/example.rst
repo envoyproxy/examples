@@ -8,7 +8,7 @@ Zipkin tracing
    .. include:: _include/docker-env-setup-link.rst
 
    :ref:`curl <start_sandboxes_setup_curl>`
-        Used to make ``HTTP`` requests.
+        Used to make HTTP requests.
 
 The Zipkin tracing sandbox demonstrates Envoy's :ref:`request tracing <arch_overview_tracing>`
 capabilities using `Zipkin <https://zipkin.io/>`_ as the tracing provider.
@@ -46,14 +46,14 @@ The Zipkin collector provides a web UI for viewing the collected traces on port 
 Step 1: Build the sandbox
 *************************
 
-Change directory to ``examples/zipkin`` in the Envoy repository.
+Change to the ``zipkin`` directory.
 
 To build this sandbox example, and start the example services run the following commands:
 
 .. code-block:: console
 
     $ pwd
-    envoy/examples/zipkin
+    examples/zipkin
     $ docker compose pull
     $ docker compose up --build -d
     $ docker compose ps

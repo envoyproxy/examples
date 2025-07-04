@@ -1,6 +1,6 @@
 .. _install_sandboxes_locality_load_balancing:
 
-Locality Weighted Load Balancing
+Locality weighted load balancing
 ================================
 
 .. sidebar:: Requirements
@@ -8,9 +8,11 @@ Locality Weighted Load Balancing
    .. include:: _include/docker-env-setup-link.rst
 
    :ref:`curl <start_sandboxes_setup_curl>`
-        Used to make ``HTTP`` requests.
+        Used to make HTTP requests.
 
-This example demonstrates the :ref:`locality weighted load balancing <arch_overview_load_balancing_locality_weighted_lb>` feature in Envoy proxy. The demo simulates a scenario that a backend service resides in two local zones and one remote zone.
+This example demonstrates the :ref:`locality weighted load balancing <arch_overview_load_balancing_locality_weighted_lb>` feature in Envoy proxy.
+
+The demo simulates a scenario that a backend service resides in two local zones and one remote zone.
 
 The components used in this demo are as follows:
 
@@ -20,18 +22,22 @@ The components used in this demo are as follows:
 - Backend container in the the remote locality, with priority set to 1, referred to as ``remote-1``.
 - Backend container in the the remote locality, with priority set to 2, referred to as ``remote-2``.
 
-The client Envoy proxy configures the 4 backend containers in the same Envoy cluster, so that Envoy handles load balancing to those backend servers. From here we can see, we have localities with 3 different priorities:
+The client Envoy proxy configures the 4 backend containers in the same Envoy cluster, so that Envoy handles load balancing to those backend servers.
+
+From here we can see, we have localities with 3 different priorities:
 
 - priority 0: ``local-1``
 - priority 1: ``local-2`` and ``remote-1``
 - priority 2: ``remote-2``
 
-In Envoy, when the healthiness of a given locality drops below a threshold (71% by default), the next priority locality will start to share the request loads. The demo below will show this behavior.
+In Envoy, when the healthiness of a given locality drops below a threshold (71% by default), the next priority locality will start to share the request loads.
+
+The demo below will show this behavior.
 
 Step 1: Start all of our containers
 ***********************************
 
-In terminal, move to the ``examples/locality_load_balancing`` directory.
+In terminal, move to the ``locality_load_balancing`` directory.
 
 To build this sandbox example and start the example services, run the following commands:
 
@@ -40,7 +46,9 @@ To build this sandbox example and start the example services, run the following 
     # Start demo
     $ docker compose up --build -d
 
-The locality configuration is set in the client container via static Envoy configuration file. Please refer to the ``cluster`` section of the :download:`proxy configuration <_include/locality-load-balancing/envoy.yaml>` file.
+The locality configuration is set in the client container via static Envoy configuration file.
+
+Please refer to the ``cluster`` section of the :download:`proxy configuration <_include/locality-load-balancing/envoy.yaml>` file.
 
 .. note::
     The ``locality_weighted_lb_config`` must be set in ``common_lb_config`` for the ``load_balancing_weight`` to be used.
@@ -71,7 +79,7 @@ If locality ``local-1`` becomes unhealthy (i.e. fails the Envoy health check), t
     Hello from backend-local-2!: 49, 49.0%
     Failed: 0
 
-Now if ``local-2`` becomes unhealthy also, priority 1 locality is only 50% healthy. Thus priority 2 locality starts to share the request load. Requests will be sent to both ``remote-1`` and ``remote-2``.
+Now if ``local-2`` becomes unhealthy also, priority ``1`` locality is only 50% healthy. Thus priority 2 locality starts to share the request load. Requests will be sent to both ``remote-1`` and ``remote-2``.
 
 .. code-block:: console
 
@@ -88,7 +96,7 @@ Now if ``local-2`` becomes unhealthy also, priority 1 locality is only 50% healt
 Step 3: Recover servers
 ***********************
 
-Before moving on, we need to server local-1 and local-2 first.
+Before moving on, we need to server ``local-1`` and ``local-2`` first.
 
 .. code-block:: console
 
@@ -147,7 +155,7 @@ Now we send the 100 requests again.
 
 As ``local-1`` does not have enough healthy workloads, requests are partially shared by secondary localities.
 
-If we bring down all the servers in priority 1 locality, it will make priority 1 locality 0% healthy. The traffic should split between priority 0 and priority 2 localities.
+If we bring down all the servers in priority ``1`` locality, it will make priority ``1`` locality 0% healthy. The traffic should split between priority ``0`` and priority ``2`` localities.
 
 .. code-block:: console
 

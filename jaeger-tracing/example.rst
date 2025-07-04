@@ -8,16 +8,17 @@ Jaeger tracing
    .. include:: _include/docker-env-setup-link.rst
 
    :ref:`curl <start_sandboxes_setup_curl>`
-        Used to make ``HTTP`` requests.
+        Used to make HTTP requests.
 
 The Jaeger tracing sandbox demonstrates Envoy's :ref:`request tracing <arch_overview_tracing>`
 capabilities using `Jaeger <https://jaegertracing.io/>`_ as the tracing provider. This sandbox
 is very similar to the front proxy architecture described above, with one difference:
 service1 makes an API call to service2 before returning a response.
-The three containers will be deployed inside a virtual network called ``envoymesh``.
+
+The three containers will be deployed inside a virtual Docker network.
 
 All incoming requests are routed via the front Envoy, which is acting as a reverse proxy
-sitting on the edge of the ``envoymesh`` network. Port ``10000`` is exposed
+sitting on the edge of the Docker network. Port ``10000`` is exposed
 by docker compose (see :download:`docker-compose.yaml <_include/jaeger-tracing/docker-compose.yaml>`). Notice that
 all Envoys are configured to collect request traces (e.g., http_connection_manager/config/tracing setup in
 :download:`envoy.yaml <_include/jaeger-tracing/envoy.yaml>`) and setup to propagate the spans generated
@@ -32,7 +33,7 @@ needed to correlate the span with other related spans (e.g., the trace ID).
 One of the most important benefits of tracing from Envoy is that it will take care of
 propagating the traces to the Jaeger service cluster. However, in order to fully take advantage
 of tracing, the application has to propagate trace headers that Envoy generates, while making
-calls to other services. In the sandbox we have provided, the simple ``aiohttp`` app
+calls to other services. In the sandbox we have provided, the simple aiohttp app
 (see trace function in :download:`examples/shared/python/tracing/service.py <_include/shared/python/tracing/service.py>`) acting as service1 propagates
 the trace headers while making an outbound call to service2.
 
@@ -44,7 +45,7 @@ To build this sandbox example, and start the example apps run the following comm
 .. code-block:: console
 
     $ pwd
-    envoy/examples/jaeger-tracing
+    examples/jaeger-tracing
     $ docker compose pull
     $ docker compose up --build -d
     $ docker compose ps

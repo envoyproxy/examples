@@ -43,9 +43,9 @@ to ``true``
 
 .. literalinclude:: _include/single-page-app/envoy.yml
    :language: yaml
-   :lines: 36-40
+   :lines: 35-39
    :linenos:
-   :lineno-start: 36
+   :lineno-start: 35
    :emphasize-lines: 3
    :caption: :download:`envoy.yml <_include/single-page-app/envoy.yml>`
 
@@ -75,7 +75,7 @@ and some :ref:`guidance is provided on how to do this <install_sandboxes_single_
 Step 1: Create a ``.local`` directory for sandbox customizations
 ****************************************************************
 
-Change to the ``examples/single-page-app`` directory, and create a directory to store sandbox customizations.
+Change to the ``single-page-app`` directory, and create a directory to store sandbox customizations.
 
 You can use ``.local`` which will be ignored by Git:
 
@@ -126,7 +126,7 @@ Then bring up the Docker composition:
 .. code-block:: console
 
     $ pwd
-    envoy/examples/single-page-app
+    examples/single-page-app
     $ export UID
     $ docker compose pull
     $ docker compose up --build -d
@@ -165,10 +165,10 @@ This ignores all paths for OAuth other than:
 
 .. literalinclude:: _include/single-page-app/envoy.yml
    :language: yaml
-   :lines: 37-46
+   :lines: 36-46
    :linenos:
-   :lineno-start: 37
-   :emphasize-lines: 3-8
+   :lineno-start: 36
+   :emphasize-lines: 3-9
    :caption: :download:`envoy.yml <_include/single-page-app/envoy.yml>`
 
 When a user clicks ``login`` the app initiates the OAuth flow by calling the ``/login`` path in Envoy.
@@ -177,9 +177,9 @@ This redirects the user to the OAuth provider for authorization/authentication w
 
 .. literalinclude:: _include/single-page-app/envoy.yml
    :language: yaml
-   :lines: 34-39
+   :lines: 33-38
    :linenos:
-   :lineno-start: 34
+   :lineno-start: 33
    :emphasize-lines: 3-4
    :caption: :download:`envoy.yml <_include/single-page-app/envoy.yml>`
 
@@ -188,9 +188,9 @@ On successful authorization/authentication the user is redirected back via this 
 
 .. literalinclude:: _include/single-page-app/envoy.yml
    :language: yaml
-   :lines: 44-50
+   :lines: 43-49
    :linenos:
-   :lineno-start: 44
+   :lineno-start: 43
    :emphasize-lines: 3-5
    :caption: :download:`envoy.yml <_include/single-page-app/envoy.yml>`
 
@@ -198,10 +198,10 @@ Envoy then uses this authorization code with its client secret to confirm author
 
 .. literalinclude:: _include/single-page-app/envoy.yml
    :language: yaml
-   :lines: 50-61
+   :lines: 49-60
    :linenos:
-   :lineno-start: 50
-   :emphasize-lines: 3-10
+   :lineno-start: 49
+   :emphasize-lines: 3-9
    :caption: :download:`envoy.yml <_include/single-page-app/envoy.yml>`
 
 .. literalinclude:: _include/single-page-app/secrets/myhub-token-secret.yml
@@ -237,9 +237,9 @@ Once logged in, you should be able to make queries to the API using the OAuth cr
 
    .. literalinclude:: _include/single-page-app/envoy.yml
       :language: yaml
-      :lines: 33-37
+      :lines: 32-36
       :linenos:
-      :lineno-start: 33
+      :lineno-start: 32
       :emphasize-lines: 3
       :caption: :download:`envoy.yml <_include/single-page-app/envoy.yml>`
 
@@ -259,10 +259,10 @@ This cookie is then passed through Envoy in any subsequent requests to the proxi
 
 .. literalinclude:: _include/single-page-app/envoy.yml
    :language: yaml
-   :lines: 76-88
+   :lines: 75-88
    :linenos:
-   :lineno-start: 76
-   :emphasize-lines: 3-11
+   :lineno-start: 75
+   :emphasize-lines: 3-9
    :caption: :download:`envoy.yml <_include/single-page-app/envoy.yml>`
 
 .. _install_sandboxes_single_page_app_step_reload:
@@ -288,9 +288,9 @@ development backend to be "upgraded" to use Websockets:
 
 .. literalinclude:: _include/single-page-app/envoy.yml
    :language: yaml
-   :lines: 22-27
+   :lines: 21-26
    :linenos:
-   :lineno-start: 22
+   :lineno-start: 21
    :emphasize-lines: 3-4
    :caption: :download:`envoy.yml <_include/single-page-app/envoy.yml>`
 
@@ -327,9 +327,9 @@ On signing out, the app makes a request to Envoy's configured
 
 .. literalinclude:: _include/single-page-app/envoy.yml
    :language: yaml
-   :lines: 47-53
+   :lines: 46-52
    :linenos:
-   :lineno-start: 47
+   :lineno-start: 46
    :emphasize-lines: 3-5
    :caption: :download:`envoy.yml <_include/single-page-app/envoy.yml>`
 

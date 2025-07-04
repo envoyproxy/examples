@@ -8,10 +8,10 @@ Dynamic configuration (filesystem)
    .. include:: _include/docker-env-setup-link.rst
 
    :ref:`curl <start_sandboxes_setup_curl>`
-        Used to make ``HTTP`` requests.
+        Used to make HTTP requests.
 
    :ref:`jq <start_sandboxes_setup_jq>`
-        Parse ``json`` output from the upstream echo servers.
+        Parse JSON output from the upstream echo servers.
 
 This example walks through configuring Envoy using filesystem-based dynamic configuration.
 
@@ -21,16 +21,16 @@ restarting the server.
 Step 1: Start the proxy container
 *********************************
 
-Change directory to ``examples/dynamic-config-fs`` in the Envoy repository.
+Change to the ``dynamic-config-fs`` directory.
 
 Build and start the containers.
 
-This should also start two upstream ``HTTP`` echo servers, ``service1`` and ``service2``.
+This should also start two upstream HTTP echo servers, ``service1`` and ``service2``.
 
 .. code-block:: console
 
     $ pwd
-    envoy/examples/dynamic-config-fs
+    examples/dynamic-config-fs
     $ docker compose pull
     $ docker compose up --build -d
     $ docker compose ps

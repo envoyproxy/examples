@@ -8,7 +8,7 @@ PostgreSQL filter
    .. include:: _include/docker-env-setup-link.rst
 
    :ref:`curl <start_sandboxes_setup_curl>`
-        Used to make ``HTTP`` requests.
+        Used to make HTTP requests.
 
 In this example, we show how the :ref:`PostgreSQL filter <config_network_filters_postgres_proxy>`
 can be used with the Envoy proxy.
@@ -19,14 +19,14 @@ The Envoy proxy configuration includes a PostgreSQL filter that parses queries a
 Step 1: Build the sandbox
 *************************
 
-Change to the ``examples/postgres`` directory.
+Change to the ``postgres`` directory.
 
 Build and start the containers.
 
 .. code-block:: console
 
   $ pwd
-  envoy/examples/postgres
+  examples/postgres
   $ docker compose pull
   $ docker compose up --build -d
   $ docker compose ps
@@ -36,12 +36,12 @@ Build and start the containers.
   postgres_postgres_1   docker-entrypoint.sh postgres  Up      5432/tcp
   postgres_proxy_1      /docker-entrypoint.sh /usr ... Up      10000/tcp, 1999/tcp, 0.0.0.0:8001->8001/tcp
 
-Step 2: Issue commands using psql
-*********************************
+Step 2: Issue commands using the ``psql`` client
+************************************************
 
 This example uses ``psql`` client inside a container to issue some commands and
 verify they are routed via Envoy. Note that we should set the environment variable
-``PGSSLMODE=disable`` to disable ``SSL`` because the current implementation of the
+``PGSSLMODE=disable`` to disable SSL because the current implementation of the
 filter can't decode encrypted sessions.
 
 .. code-block:: console

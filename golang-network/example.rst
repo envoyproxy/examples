@@ -26,12 +26,12 @@ The example Go plugin adds a :literal:`hello, \ ` prefix to the requests receive
 Step 1: Compile the go plugin library
 *************************************
 
-Change to the ``examples/golang-network`` directory and build the go plugin library.
+Change to the ``golang-network`` directory and build the go plugin library.
 
 .. code-block:: console
 
    $ pwd
-   envoy/examples/golang-network
+   examples/golang-network
    $ docker compose -f docker-compose-go.yaml run --rm go_plugin_compile
 
 The compiled library should now be in the ``lib`` folder.

@@ -8,7 +8,7 @@ Golang HTTP filter
    .. include:: _include/docker-env-setup-link.rst
 
    :ref:`curl <start_sandboxes_setup_curl>`
-        Used to make ``HTTP`` requests.
+        Used to make HTTP requests.
 
 In this example, we show how the `Golang <https://go.dev/>`_ filter can be used with the Envoy
 proxy.
@@ -20,12 +20,12 @@ It also shows how Go plugins can be independently configured at runtime.
 Step 1: Compile the go plugin library
 *************************************
 
-Change to the ``examples/golang-http`` directory and build the go plugin library.
+Change to the ``golang-http`` directory and build the go plugin library.
 
 .. code-block:: console
 
    $ pwd
-   envoy/examples/golang-http
+   examples/golang-http
    $ docker compose -f docker-compose-go.yaml run --rm go_plugin_compile
 
 The compiled library should now be in the ``lib`` folder.

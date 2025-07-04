@@ -8,13 +8,13 @@ Zstd
    .. include:: _include/docker-env-setup-link.rst
 
    :ref:`curl <start_sandboxes_setup_curl>`
-        Used to make ``HTTP`` requests.
+        Used to make HTTP requests.
 
 By enabling compression in Envoy you can save some network bandwidth, at the expense of increased processor usage.
 
 Envoy supports compression and decompression for both requests and responses.
 
-This sandbox provides an example of response compression served over ``HTTPS``.
+This sandbox provides an example of response compression served over HTTPS.
 
 The sandbox covers two scenarios:
 
@@ -24,12 +24,12 @@ The sandbox covers two scenarios:
 Step 1: Start all of our containers
 ***********************************
 
-Change to the ``examples/zstd`` directory and bring up the docker composition.
+Change to the ``zstd`` directory and bring up the docker composition.
 
 .. code-block:: console
 
     $ pwd
-    envoy/examples/zstd
+    examples/zstd
     $ docker compose pull
     $ docker compose up --build -d
     $ docker compose ps

@@ -19,27 +19,27 @@ deploys a service with both a frontend and backed. This service will be started
 on two different virtual machines with different origins.
 
 The frontend has a field to input the remote domain of where you would like to
-send POST requests along with radio buttons to select the remote domain's CSRF
+send ``POST`` requests along with radio buttons to select the remote domain's CSRF
 enforcement. The CSRF enforcement choices are:
 
   * Disabled: CSRF is disabled on the requested route. This will result in a
     successful request since there is no CSRF enforcement.
   * Shadow Mode: CSRF is not enforced on the requested route but will record
     if the request contains a valid source origin.
-  * Enabled: CSRF is enabled and will return a 403 (Forbidden) status code when
+  * Enabled: CSRF is enabled and will return a ``403 (Forbidden)`` status code when
     a request is made from a different origin.
-  * Ignored: CSRF is enabled but the request type is a GET. This should bypass
+  * Ignored: CSRF is enabled but the request type is a ``GET``. This should bypass
     the CSRF filter and return successfully.
 
 Step 1: Start all of our containers
 ***********************************
 
-Change to the ``examples/csrf/samesite`` directory, and start the containers:
+Change to the ``csrf/samesite`` directory, and start the containers:
 
 .. code-block:: console
 
   $ pwd
-  envoy/examples/csrf/samesite
+  examples/csrf/samesite
   $ docker compose pull
   $ docker compose up --build -d
   $ docker compose ps
@@ -54,7 +54,7 @@ Now, switch to the ``crosssite`` directory in the ``csrf`` example, and start th
 .. code-block:: console
 
   $ pwd
-  envoy/examples/csrf/crosssite
+  examples/csrf/crosssite
   $ docker compose up --build -d
   $ docker compose ps
 
@@ -75,8 +75,8 @@ with ``localhost``.
 To demonstrate same-site requests open the frontend service for ``samesite`` at http://localhost:8000
 and enter the IP address of the ``samesite`` machine as the destination.
 
-Results of the cross-site request will be shown on the page under *Request Results*.
-Your browser's ``CSRF`` enforcement logs can be found in the browser console and in the
+Results of the cross-site request will be shown on the page under *Request results*.
+Your browser's CSRF enforcement logs can be found in the browser console and in the
 network tab.
 
 For example:
@@ -86,7 +86,7 @@ For example:
   Failed to load resource: the server responded with a status of 403 (Forbidden)
 
 If you change the destination to be the same as one displaying the website and
-set the ``CSRF`` enforcement to enabled the request will go through successfully.
+set the CSRF enforcement to enabled the request will go through successfully.
 
 Step 3: Check stats of backend via admin
 ****************************************
@@ -98,7 +98,7 @@ If you browse to http://localhost:8001/stats you will be able to view
 all of the Envoy stats for the backend. You should see the CORS stats for
 invalid and valid origins increment as you make requests from the frontend cluster.
 
-.. code-block:: none
+.. code-block:: yaml
 
   http.ingress_http.csrf.missing_source_origin: 0
   http.ingress_http.csrf.request_invalid: 1

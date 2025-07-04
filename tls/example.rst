@@ -1,29 +1,29 @@
 .. _install_sandboxes_tls:
 
-Transport layer security (``TLS``)
-==================================
+Transport Layer Security (TLS)
+==============================
 
 .. sidebar:: Requirements
 
    .. include:: _include/docker-env-setup-link.rst
 
    :ref:`curl <start_sandboxes_setup_curl>`
-        Used to make ``HTTP`` requests.
+        Used to make HTTP requests.
 
    :ref:`jq <start_sandboxes_setup_jq>`
-        Parse ``json`` output from the upstream echo servers.
+        Parse JSON output from the upstream echo servers.
 
 This example walks through some of the ways that Envoy can be configured to make
-use of encrypted connections using ``HTTP`` over ``TLS``.
+use of encrypted connections using HTTP over TLS.
 
-It demonstrates a number of commonly used proxying and ``TLS`` termination patterns:
+It demonstrates a number of commonly used proxying and TLS termination patterns:
 
 - ``https`` -> ``http``
 - ``https`` -> ``https``
 - ``http`` -> ``https``
 - ``https`` passthrough
 
-To better understand the provided examples, and for a description of how ``TLS`` is
+To better understand the provided examples, and for a description of how TLS is
 configured with Envoy, please see the :ref:`securing Envoy quick start guide <start_quick_start_securing>`.
 
 .. warning::
@@ -31,7 +31,7 @@ configured with Envoy, please see the :ref:`securing Envoy quick start guide <st
    For the sake of simplicity, the examples provided here do not authenticate any client certificates,
    or validate any of the provided certificates.
 
-   When using ``TLS``, you are strongly encouraged to :ref:`validate <start_quick_start_securing_validation>`
+   When using TLS, you are strongly encouraged to :ref:`validate <start_quick_start_securing_validation>`
    all certificates wherever possible.
 
    You should also :ref:`authenticate clients <start_quick_start_securing_mtls>`
@@ -40,19 +40,19 @@ configured with Envoy, please see the :ref:`securing Envoy quick start guide <st
 Step 1: Build the sandbox
 *************************
 
-Change directory to ``examples/tls`` in the Envoy repository.
+Change to the ``tls`` directory.
 
 This starts four proxies listening on ``localhost`` ports ``10000-10003``.
 
-It also starts two upstream services, one ``HTTP`` and one ``HTTPS``, which echo back received headers
-in ``json`` format.
+It also starts two upstream services, one HTTP and one HTTPS, which echo back received headers
+in JSON format.
 
 The upstream services listen on the internal Docker network on ports ``80`` and ``443`` respectively.
 
 .. code-block:: console
 
   $ pwd
-  envoy/examples/tls
+  examples/tls
   $ docker compose pull
   $ docker compose up --build -d
   $ docker compose ps
@@ -66,12 +66,12 @@ The upstream services listen on the internal Docker network on ports ``80`` and 
   tls_service-http_1              node ./index.js                Up
   tls_service-https_1             node ./index.js                Up
 
-Step 2: Test proxying ``https`` -> ``http``
-*******************************************
+Step 2: Test proxying HTTPS -> HTTP
+***********************************
 
-The Envoy proxy listening on https://localhost:10000 terminates ``HTTPS`` and proxies to the upstream ``HTTP`` service.
+The Envoy proxy listening on https://localhost:10000 terminates HTTPS and proxies to the upstream HTTP service.
 
-The :download:`https -> http configuration <_include/tls/envoy-https-http.yaml>` adds a ``TLS``
+The :download:`https -> http configuration <_include/tls/envoy-https-http.yaml>` adds a TLS
 :ref:`transport_socket <extension_envoy.transport_sockets.tls>` to the
 :ref:`listener <envoy_v3_api_msg_config.listener.v3.Listener>`.
 
@@ -90,8 +90,8 @@ The upstream ``service-http`` handles the request.
    $ curl -sk https://localhost:10000  | jq -r '.os.hostname'
    service-http
 
-Step 3: Test proxying ``https`` -> ``https``
-********************************************
+Step 3: Test proxying HTTPS -> HTTPS
+************************************
 
 The Envoy proxy listening on https://localhost:10001 terminates ``HTTPS`` and proxies to the upstream ``HTTPS`` service.
 
@@ -115,12 +115,12 @@ The upstream ``service-https`` handles the request.
    $ curl -sk https://localhost:10001  | jq -r '.os.hostname'
    service-https
 
-Step 4: Test proxying ``http`` -> ``https``
-*******************************************
+Step 4: Test proxying HTTP -> HTTPS
+***********************************
 
-The Envoy proxy listening on http://localhost:10002 terminates ``HTTP`` and proxies to the upstream ``HTTPS`` service.
+The Envoy proxy listening on http://localhost:10002 terminates HTTP and proxies to the upstream HTTPS service.
 
-The :download:`http -> https configuration <_include/tls/envoy-http-https.yaml>` adds a ``TLS``
+The :download:`http -> https configuration <_include/tls/envoy-http-https.yaml>` adds a TLS
 :ref:`transport_socket <extension_envoy.transport_sockets.tls>` to the
 :ref:`cluster <envoy_v3_api_msg_config.cluster.v3.Cluster>`.
 
@@ -140,14 +140,14 @@ The upstream ``service-https`` handles the request.
    service-https
 
 
-Step 5: Test proxying ``https`` passthrough
+Step 5: Test proxying HTTPS passthrough
 *******************************************
 
-The Envoy proxy listening on https://localhost:10003 proxies directly to the upstream ``HTTPS`` service which
-does the ``TLS`` termination.
+The Envoy proxy listening on https://localhost:10003 proxies directly to the upstream HTTPS service which
+does the TLS termination.
 
-The :download:`https passthrough configuration <_include/tls/envoy-https-passthrough.yaml>` requires no ``TLS``
-or ``HTTP`` setup, and instead uses a simple
+The :download:`https passthrough configuration <_include/tls/envoy-https-passthrough.yaml>` requires no TLS
+or HTTP setup, and instead uses a simple
 :ref:`tcp_proxy  <envoy_v3_api_msg_extensions.filters.network.tcp_proxy.v3.TcpProxy>`.
 
 Querying the service at port ``10003`` you should see that no ``x-forwarded-proto`` header has been
@@ -172,8 +172,8 @@ The upstream ``service-https`` handles the request.
 
    :ref:`TLS SNI sandbox <install_sandboxes_tls_sni>`
       Example of using Envoy to serve multiple domains protected by TLS and
-      served from the same ``IP`` address.
+      served from the same IP address.
 
    :ref:`Double proxy sandbox <install_sandboxes_double_proxy>`
       An example of securing traffic between proxies with validation and
-      mutual authentication using ``mTLS`` with non-``HTTP`` traffic.
+      mutual authentication using mTLS with non-HTTP traffic.

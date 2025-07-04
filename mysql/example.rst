@@ -8,7 +8,7 @@ MySQL filter
    .. include:: _include/docker-env-setup-link.rst
 
    :ref:`curl <start_sandboxes_setup_curl>`
-        Used to make ``HTTP`` requests.
+        Used to make HTTP requests.
 
 In this example, we show how the :ref:`MySQL filter <config_network_filters_mysql_proxy>` can be used with the Envoy proxy.
 
@@ -23,14 +23,14 @@ metrics.
 Step 1: Build the sandbox
 *************************
 
-Change to the ``examples/mysql`` directory.
+Change to the ``mysql`` directory.
 
 Build and start the containers.
 
 .. code-block:: console
 
   $ pwd
-  envoy/examples/mysql
+  examples/mysql
   $ docker compose pull
   $ docker compose up --build -d
   $ docker compose ps
@@ -40,8 +40,8 @@ Build and start the containers.
   mysql_mysql_1   docker-entrypoint.sh mysqld      Up      3306/tcp
   mysql_proxy_1   /docker-entrypoint.sh /bin       Up      10000/tcp, 1999/tcp, 0.0.0.0:8001->8001/tcp
 
-Step 2: Issue commands using mysql
-**********************************
+Step 2: Issue commands using the ``mysql`` client
+*************************************************
 
 Use ``mysql`` to issue some commands and verify they are routed via Envoy.
 

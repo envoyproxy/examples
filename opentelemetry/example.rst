@@ -8,7 +8,7 @@ OpenTelemetry tracing
    .. include:: _include/docker-env-setup-link.rst
 
    :ref:`curl <start_sandboxes_setup_curl>`
-        Used to make ``HTTP`` requests.
+        Used to make HTTP requests.
 
 The OpenTelemetry tracing sandbox demonstrates Envoy's :ref:`request tracing <arch_overview_tracing>`
 capabilities using `OpenTelemetry <https://opentelemetry.io/>`_ as the tracing provider.
@@ -46,14 +46,14 @@ The OpenTelemetry collector provides a web UI for viewing the collected traces o
 Step 1: Build the sandbox
 *************************
 
-Change directory to ``examples/opentelemetry`` in the Envoy repository.
+Change to the ``opentelemetry`` directory.
 
 To build this sandbox example, and start the example services run the following commands:
 
 .. code-block:: console
 
     $ pwd
-    envoy/examples/opentelemetry
+    examples/opentelemetry
     $ docker compose pull
     $ docker compose up --build -d
     $ docker compose ps
