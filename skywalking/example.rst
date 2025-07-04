@@ -8,7 +8,7 @@ Skywalking tracing
    .. include:: _include/docker-env-setup-link.rst
 
    :ref:`curl <start_sandboxes_setup_curl>`
-        Used to make ``HTTP`` requests.
+        Used to make HTTP requests.
 
 The Skywalking tracing sandbox demonstrates Envoy's :ref:`request tracing <arch_overview_tracing>`
 capabilities using `Skywalking <https://skywalking.io/>`_ as the tracing provider.
@@ -46,14 +46,14 @@ The Skywalking web UI for viewing the collected traces is available on port ``80
 Step 1: Build the sandbox
 *************************
 
-Change directory to ``examples/skywalking`` in the Envoy repository.
+Change to the ``skywalking`` directory.
 
 To build this sandbox example, and start the example services run the following commands:
 
 .. code-block:: console
 
     $ pwd
-    envoy/examples/skywalking
+    examples/skywalking
     $ docker compose pull
     $ docker compose up --build -d
     $ docker compose ps

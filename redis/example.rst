@@ -17,14 +17,14 @@ The Envoy proxy configuration includes a Redis filter that routes egress request
 Step 1: Build the sandbox
 *************************
 
-Change to the ``examples/redis`` directory.
+Change to the ``redis`` directory.
 
 Build and start the containers.
 
 .. code-block:: console
 
   $ pwd
-  envoy/examples/redis
+  examples/redis
   $ docker compose pull
   $ docker compose up --build -d
   $ docker compose ps

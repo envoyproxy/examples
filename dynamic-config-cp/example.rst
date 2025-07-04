@@ -8,10 +8,10 @@ Dynamic configuration (control plane)
    .. include:: _include/docker-env-setup-link.rst
 
    :ref:`curl <start_sandboxes_setup_curl>`
-        Used to make ``HTTP`` requests.
+        Used to make HTTP requests.
 
    :ref:`jq <start_sandboxes_setup_jq>`
-        Parse ``json`` output from the upstream echo servers.
+        Parse JSON output from the upstream echo servers.
 
 This example walks through configuring Envoy using the `Go Control Plane <https://github.com/envoyproxy/go-control-plane>`_
 reference implementation.
@@ -22,18 +22,18 @@ and provides a trivial example of how to update Envoy's configuration dynamicall
 Step 1: Start the proxy container
 *********************************
 
-Change directory to ``examples/dynamic-config-cp`` in the Envoy repository.
+Change to the ``dynamic-config-cp`` directory.
 
 First build the containers and start the ``proxy`` container.
 
-This should also start two upstream ``HTTP`` echo servers, ``service1`` and ``service2``.
+This should also start two upstream HTTP echo servers, ``service1`` and ``service2``.
 
 The control plane has not yet been started.
 
 .. code-block:: console
 
     $ pwd
-    envoy/examples/dynamic-config-cp
+    examples/dynamic-config-cp
     $ docker compose pull
     $ docker compose up --build -d proxy
     $ docker compose ps
@@ -143,8 +143,8 @@ The Envoy proxy should continue proxying responses from ``service1``.
    $ curl http://localhost:10000 | grep "served by"
    Request served by service1
 
-Step 7: Edit ``go`` file and restart the control plane
-******************************************************
+Step 7: Edit ``.go`` file and restart the control plane
+*******************************************************
 
 The example setup starts the ``go-control-plane``
 service with a custom :download:`resource.go </start/sandboxes/_include/dynamic-config-cp/resource.go>` file which
@@ -220,4 +220,4 @@ is configured to proxy to ``service2``:
       Configure Envoy using filesystem-based dynamic configuration.
 
    `Go control plane <https://github.com/envoyproxy/go-control-plane>`_
-      Reference implementation of Envoy control plane written in ``go``.
+      Reference implementation of Envoy control plane written in Golang.

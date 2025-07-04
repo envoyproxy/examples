@@ -12,7 +12,7 @@ WebSockets
 
 This example walks through some of the ways that Envoy can be configured to proxy WebSockets.
 
-It demonstrates terminating a WebSocket connection with and without ``TLS``, and provides some basic examples
+It demonstrates terminating a WebSocket connection with and without TLS, and provides some basic examples
 of proxying to encrypted and non-encrypted upstream sockets.
 
 .. warning::
@@ -20,7 +20,7 @@ of proxying to encrypted and non-encrypted upstream sockets.
    For the sake of simplicity, the examples provided here do not authenticate any client certificates,
    or validate any of the provided certificates.
 
-   When using ``TLS``, you are strongly encouraged to :ref:`validate <start_quick_start_securing_validation>`
+   When using TLS, you are strongly encouraged to :ref:`validate <start_quick_start_securing_validation>`
    all certificates wherever possible.
 
    You should also :ref:`authenticate clients <start_quick_start_securing_mtls>`
@@ -29,12 +29,12 @@ of proxying to encrypted and non-encrypted upstream sockets.
 Step 1: Create a certificate file for wss
 *****************************************
 
-Change directory to ``examples/websocket`` in the Envoy repository.
+Change to the ``websocket`` directory.
 
 .. code-block:: console
 
    $ pwd
-   envoy/examples/websocket
+   examples/websocket
    $ mkdir -p certs
    $ openssl req -batch -new -x509 -nodes -keyout certs/key.pem -out certs/cert.pem
    Generating a RSA private key
@@ -71,11 +71,11 @@ The socket servers are very trivial implementations, that simply output ``[ws] H
   websocket_service-ws_1              websocat -E ws-listen:0.0. ... Up
   websocket_service-wss_1             websocat wss-listen:0.0.0. ... Up
 
-Step 3: Test proxying ``ws`` -> ``ws``
-**************************************
+Step 3: Test proxying WS -> WS
+******************************
 
-The proxy listening on port ``10000`` terminates the WebSocket connection without ``TLS`` and then proxies
-to an upstream socket, also without ``TLS``.
+The proxy listening on port ``10000`` terminates the WebSocket connection without TLS and then proxies
+to an upstream socket, also without TLS.
 
 In order for Envoy to terminate the WebSocket connection, the
 :ref:`upgrade_configs <envoy_v3_api_msg_extensions.filters.network.http_connection_manager.v3.HttpConnectionManager.UpgradeConfig>`
@@ -100,11 +100,11 @@ You can start an interactive session with the socket as follows:
 
 Type ``Ctrl-c`` to exit the socket session.
 
-Step 4: Test proxying ``ws`` -> ``ws`` on specific route
-********************************************************
+Step 4: Test proxying WS -> WS on specific route
+************************************************
 
-The proxy listening on port ``15000`` terminates the WebSocket connection without ``TLS`` on specific route ``/ws`` and then proxies
-to an upstream socket, also without ``TLS``.
+The proxy listening on port ``15000`` terminates the WebSocket connection without TLS on specific route ``/ws`` and then proxies
+to an upstream socket, also without TLS.
 
 In order for Envoy to terminate the WebSocket connection, the
 :ref:`upgrade_configs <envoy_v3_api_msg_config.route.v3.RouteAction.UpgradeConfig>`
@@ -136,16 +136,16 @@ You can start an interactive session with the socket as follows:
 
 Type ``Ctrl-c`` to exit the socket session.
 
-Step 5: Test proxying ``wss`` -> ``wss``
-****************************************
+Step 5: Test proxying WSS -> WSS
+********************************
 
-The proxy listening on port ``20000`` terminates the WebSocket connection with ``TLS`` and then proxies
-to an upstream ``TLS`` WebSocket.
+The proxy listening on port ``20000`` terminates the WebSocket connection with TLS and then proxies
+to an upstream TLS WebSocket.
 
 In addition to the
 :ref:`upgrade_configs <envoy_v3_api_msg_extensions.filters.network.http_connection_manager.v3.HttpConnectionManager.UpgradeConfig>`
 in :ref:`HttpConnectionManager <envoy_v3_api_msg_extensions.filters.network.http_connection_manager.v3.HttpConnectionManager>`,
-the :download:`wss -> wss configuration <_include/websocket/envoy-wss.yaml>` adds a ``TLS``
+the :download:`wss -> wss configuration <_include/websocket/envoy-wss.yaml>` adds a TLS
 :ref:`transport_socket <extension_envoy.transport_sockets.tls>` to both the
 :ref:`listener <envoy_v3_api_msg_config.listener.v3.Listener>` and the
 :ref:`cluster <envoy_v3_api_msg_config.cluster.v3.Cluster>`.
@@ -162,13 +162,13 @@ You can start an interactive session with the socket as follows:
 
 Type ``Ctrl-c`` to exit the socket session.
 
-Step 6: Test proxying ``wss`` passthrough
-*****************************************
+Step 6: Test proxying WSS passthrough
+*************************************
 
-The proxy listening on port ``30000`` passes through all ``TCP`` traffic to an upstream ``TLS`` WebSocket.
+The proxy listening on port ``30000`` passes through all TCP traffic to an upstream TLS WebSocket.
 
-The :download:`wss passthrough configuration <_include/websocket/envoy-wss-passthrough.yaml>` requires no ``TLS``
-or ``HTTP`` setup, and instead uses a simple
+The :download:`wss passthrough configuration <_include/websocket/envoy-wss-passthrough.yaml>` requires no TLS
+or HTTP setup, and instead uses a simple
 :ref:`tcp_proxy  <envoy_v3_api_msg_extensions.filters.network.tcp_proxy.v3.TcpProxy>`.
 
 You can start an interactive session with the socket as follows:
@@ -190,7 +190,7 @@ Type ``Ctrl-c`` to exit the socket session.
 
    :ref:`Double proxy sandbox <install_sandboxes_double_proxy>`
       An example of securing traffic between proxies with validation and
-      mutual authentication using ``mTLS`` with non-``HTTP`` traffic.
+      mutual authentication using mTLS with non-HTTP traffic.
 
    :ref:`TLS sandbox <install_sandboxes_tls>`
-      Examples of various ``TLS`` termination patterns with Envoy.
+      Examples of various TLS termination patterns with Envoy.

@@ -1,7 +1,7 @@
 .. _install_sandboxes_double_proxy:
 
-Double proxy (with ``mTLS`` encryption)
-=======================================
+Double proxy (with mTLS encryption)
+===================================
 
 .. sidebar:: Requirements
 
@@ -13,7 +13,7 @@ Double proxy (with ``mTLS`` encryption)
    :ref:`openssl <start_sandboxes_setup_openssl>`
         Generate ``SSL`` keys and certificates.
 
-This sandbox demonstrates a basic "double proxy" configuration, in which a simple ``aiohttp`` app
+This sandbox demonstrates a basic "double proxy" configuration, in which a simple aiohttp app
 connects to a PostgreSQL database, with two Envoy proxies in between.
 
 ``Envoy (front)`` -> ``aiohttp`` -> ``Envoy (postgres-front)`` -> ``Envoy (postgres-back)`` -> ``PostgreSQL``
@@ -27,16 +27,16 @@ Another common use case is with Envoy configured to provide "Points of presence"
 and to relay requests to upstream servers and services.
 
 This example encrypts the transmission of data between the two middle proxies and provides mutual authentication
-using ``mTLS``.
+using mTLS.
 
 This can be useful if the proxies are physically separated or transmit data over untrusted networks.
 
-In order to  use the sandbox you will first need to generate the necessary ``SSL`` keys and certificates.
+In order to  use the sandbox you will first need to generate the necessary SSL keys and certificates.
 
 This example walks through creating a certificate authority, and using it to create a domain key and sign
 certificates for the proxies.
 
-Change to the ``examples/double-proxy`` directory.
+Change to the ``double-proxy`` directory.
 
 Step 1: Create a certificate authority
 **************************************
@@ -46,7 +46,7 @@ First create a key for the certificate authority:
 .. code-block:: console
 
    $ pwd
-   envoy/examples/double-proxy
+   examples/double-proxy
    $ mkdir -p certs
    $ openssl genrsa -out certs/ca.key 4096
    Generating RSA private key, 4096 bit long modulus (2 primes)
@@ -158,7 +158,7 @@ This will load the required keys and certificates into the frontend and backend 
 .. code-block:: console
 
    $ pwd
-   envoy/examples/double-proxy
+   examples/double-proxy
    $ docker compose pull
    $ docker compose up --build -d
    $ docker compose ps
@@ -171,10 +171,10 @@ This will load the required keys and certificates into the frontend and backend 
    double-proxy_proxy-postgres-backend_1    /docker-entrypoint.sh /usr ... Up           10000/tcp
    double-proxy_proxy-postgres-frontend_1   /docker-entrypoint.sh /usr ... Up           10000/tcp
 
-Step 6: Check the ``aiohttp`` app can connect to the database
-*************************************************************
+Step 6: Check the aiohttp app can connect to the database
+*********************************************************
 
-Checking the response at http://localhost:10000, you should see the output from the ``aiohttp`` app:
+Checking the response at http://localhost:10000, you should see the output from the aiohttp app:
 
 .. code-block:: console
 
@@ -187,4 +187,4 @@ Checking the response at http://localhost:10000, you should see the output from 
       Outline of key concepts for securing Envoy.
 
    :ref:`TLS sandbox <install_sandboxes_tls>`
-      Examples of various ``TLS`` termination patterns with Envoy.
+      Examples of various TLS termination patterns with Envoy.

@@ -8,13 +8,13 @@ Front proxy
    .. include:: _include/docker-env-setup-link.rst
 
    :ref:`curl <start_sandboxes_setup_curl>`
-        Used to make ``HTTP`` requests.
+        Used to make HTTP requests.
 
 To get a flavor of what Envoy has to offer as a front proxy, we are releasing a
 `docker compose <https://docs.docker.com/compose/>`_ sandbox that deploys a front Envoy and a
-couple of services (simple ``aiohttp`` apps) colocated with a running service Envoy.
+couple of services (simple aiohttp apps) colocated with a running service Envoy.
 
-The three containers will be deployed inside a virtual network called ``envoymesh``.
+The three containers will be deployed inside a virtual Docker network.
 
 Below you can see a graphic showing the docker compose deployment:
 
@@ -22,14 +22,14 @@ Below you can see a graphic showing the docker compose deployment:
   :width: 100%
 
 All incoming requests are routed via the front Envoy, which is acting as a reverse proxy sitting on
-the edge of the ``envoymesh`` network. Port ``8080``, ``8443``, and ``8001`` are exposed by docker
-compose (see :download:`docker-compose.yaml <_include/front-proxy/docker-compose.yaml>`) to handle
-``HTTP``, ``HTTPS`` calls to the services and requests to ``/admin`` respectively.
+the edge of the Docker network. Port ``8080``, ``8443``, and ``8001`` are exposed by Docker
+Compose (see :download:`docker-compose.yaml <_include/front-proxy/docker-compose.yaml>`) to handle
+HTTP, HTTPS calls to the services and requests to ``/admin`` respectively.
 
 Moreover, notice that all traffic routed by the front Envoy to the service containers is actually
 routed to the service Envoys (routes setup in :download:`envoy.yaml <_include/front-proxy/envoy.yaml>`).
 
-In turn the service Envoys route the request to the ``aiohttp`` app via the loopback
+In turn the service Envoys route the request to the aiohttp app via the loopback
 address (routes setup in :download:`service-envoy.yaml <_include/front-proxy/service-envoy.yaml>`). This
 setup illustrates the advantage of running service Envoys collocated with your services: all
 requests are handled by the service Envoy, and efficiently routed to your services.
@@ -37,12 +37,12 @@ requests are handled by the service Envoy, and efficiently routed to your servic
 Step 1: Start all of our containers
 ***********************************
 
-Change to the ``examples/front-proxy`` directory.
+Change to the ``front-proxy`` directory.
 
 .. code-block:: console
 
     $ pwd
-    envoy/examples/front-proxy
+    examples/front-proxy
     $ docker compose pull
     $ docker compose up --build -d
     $ docker compose ps
@@ -105,7 +105,7 @@ For ``service2``:
 Notice that each request, while sent to the front Envoy, was correctly routed to the respective
 application.
 
-We can also use ``HTTPS`` to call services behind the front Envoy. For example, calling ``service1``:
+We can also use HTTPS to call services behind the front Envoy. For example, calling ``service1``:
 
 .. code-block:: console
 

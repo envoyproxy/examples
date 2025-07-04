@@ -1,7 +1,7 @@
 .. _install_sandboxes_ext_authz:
 
-External authorization (``ext_authz``) filter
-=============================================
+External authorization (ext_authz) filter
+=========================================
 
 .. sidebar:: Requirements
 
@@ -10,28 +10,28 @@ External authorization (``ext_authz``) filter
    :ref:`curl <start_sandboxes_setup_curl>`
         Used to make ``HTTP`` requests.
 
-The External Authorization sandbox demonstrates Envoy's :ref:`ext_authz filter <config_http_filters_ext_authz>`
+This sandbox demonstrates Envoy's :ref:`ext_authz filter <config_http_filters_ext_authz>`
 capability to delegate authorization of incoming requests through Envoy to an external services.
 
-While ext_authz can also be employed as a network filter, this sandbox is limited to exhibit
-ext_authz HTTP Filter, which supports to call HTTP or gRPC service.
+While ext_authz can also be employed as a network filter, this sandbox is limited to demonstrating the
+ext_authz HTTP filter, which supports calling HTTP or gRPC services.
 
-The setup of this sandbox is very similar to front-proxy deployment, however calls to upstream
+The setup of this sandbox is very similar to a front-proxy deployment, however calls to the upstream
 service behind the proxy will be checked by an external HTTP or gRPC service. In this sandbox,
-for every authorized call, the external authorization service adds additional ``x-current-user``
-header entry to the original request headers to be forwarded to the upstream service.
+for every authorized call, the external authorization service adds an additional ``x-current-user``
+header to the headers forwarded to the upstream service.
 
 Step 1: Start all of our containers
 ***********************************
 
-Change to the ``examples/ext_authz`` directory.
+Change to the ``ext_authz`` directory.
 
 To build this sandbox example and start the example services, run the following commands:
 
 .. code-block:: console
 
     $ pwd
-    envoy/examples/ext_authz
+    examples/ext_authz
     $ docker compose pull
     $ docker compose up --build -d
     $ docker compose ps
@@ -45,8 +45,8 @@ To build this sandbox example and start the example services, run the following 
 
 .. note::
 
-    This sandbox has multiple setup controlled by ``FRONT_ENVOY_YAML`` environment variable which
-    points to the effective Envoy configuration to be used. The default value of ``FRONT_ENVOY_YAML``
+    This sandbox has multiple configurations set up. The configuration is controlled by thge ``FRONT_ENVOY_YAML`` environment
+    variable when selecting the Envoy configuration to be used. The default value of ``FRONT_ENVOY_YAML``
     can be defined in the ``.env`` file or provided inline when running the ``docker compose up``
     command.
 
@@ -65,7 +65,7 @@ For example, to run Envoy with ext_authz HTTP filter with HTTP service will be:
 .. code-block:: console
 
     $ pwd
-    envoy/examples/ext_authz
+    examples/ext_authz
     $ docker compose pull
     $ # Tearing down the currently running setup
     $ docker compose down
@@ -75,7 +75,7 @@ For example, to run Envoy with ext_authz HTTP filter with HTTP service will be:
 Step 4: Access the upstream-service behind the Front Envoy
 **********************************************************
 
-You can now try to send a request to upstream-service via the front-envoy as follows:
+You can now try to send a request to upstream-service via the front Envoy as follows:
 
 .. code-block:: console
 
@@ -133,7 +133,7 @@ as the authorization server. To run this example:
 .. code-block:: console
 
     $ pwd
-    envoy/examples/ext_authz
+    examples/ext_authz
     $ docker compose pull
     $ # Tearing down the currently running setup
     $ docker compose down
@@ -162,7 +162,7 @@ And sending a request to the upstream service (via the Front Envoy) gives:
     * Connection #0 to host localhost left intact
     Hello OPA from behind Envoy!
 
-From the logs, we can observe the policy decision message from the Open Policy Agent server (for
+From the logs, we can observe the policy decision message from the Open Policy Agent (OPA) server (for
 the above request against the defined policy in
 :download:`config/opa-service/policy.rego <_include/ext_authz/config/opa-service/policy.rego>`):
 
@@ -222,7 +222,7 @@ Trying to send a request with method other than ``GET`` gives a rejection:
 .. seealso::
 
    :ref:`ext_authz filter <config_http_filters_ext_authz>`
-      Learn more about using Envoy's ``ext_authz`` filter.
+      Learn more about using Envoy's ext_authz filter.
 
    `Open Policy Agent <https://www.openpolicyagent.org/>`_
       Policy-based control for cloud native environments.

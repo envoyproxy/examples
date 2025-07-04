@@ -67,12 +67,12 @@ the request will be forwarded to the ``service2-mirror`` cluster.
 Step 1: Build the sandbox
 *************************
 
-Change to the ``examples/route-mirror`` directory.
+Change to the ``route-mirror`` directory.
 
 .. code-block:: console
 
     $ pwd
-    envoy/examples/route-mirror
+    examples/route-mirror
     $ docker compose build
     $ docker compose up -d
     $ docker compose ps
@@ -87,7 +87,7 @@ Step 2: Make a request to the statically mirrored route
 *******************************************************
 
 Let's send a request to the ``envoy-front-proxy`` service which forwards the request to
-``service1`` and also sends the request to the service 1 mirror, ``service1-mirror``.
+``service1`` and also sends the request to ``service1-mirror``.
 
 .. code-block:: console
 

@@ -10,11 +10,11 @@ gRPC bridge
 The gRPC bridge sandbox is an example usage of Envoy's
 :ref:`gRPC bridge filter <config_http_filters_grpc_bridge>`.
 
-This is an example of a key-value store where an ``http``-based client CLI, written in ``Python``,
-updates a remote store, written in ``Go``, using the stubs generated for both languages.
+This is an example of a key-value store where an HTTP-based client CLI, written in Python,
+updates a remote store, written in Golang, using the stubs generated for both languages.
 
-The client send messages through a proxy that upgrades the HTTP requests from ``http/1.1`` to ``http/2`` or
-``http/3``
+The client send messages through a proxy that upgrades the HTTP requests from HTTP/1.1 to HTTP/2 or
+HTTP/3:
 
 ``[client](http/1.1) -> [client-egress-proxy](http/2) -> [server-ingress-proxy](http/2) -> [server]``
 
@@ -24,13 +24,13 @@ base routing via its route configuration.
 Step 1: Generate the protocol stubs
 ***********************************
 
-Change to the ``examples/grpc-bridge`` directory.
+Change to the ``grpc-bridge`` directory.
 
 A docker compose file is provided that generates the stubs for both ``client`` and ``server`` from the
 specification in the ``protos`` directory.
 
 Inspecting the :download:`docker-compose-protos.yaml <_include/grpc-bridge/docker-compose-protos.yaml>` file,
-you will see that it contains both the ``python`` and ``go`` gRPC protoc commands necessary for generating the
+you will see that it contains both the Python and Go gRPC protoc commands necessary for generating the
 protocol stubs.
 
 Generate the stubs as follows:
@@ -38,7 +38,7 @@ Generate the stubs as follows:
 .. code-block:: console
 
   $ pwd
-  envoy/examples/grpc-bridge
+  examples/grpc-bridge
   $ docker compose -f docker-compose-protos.yaml up
   Starting grpc-bridge_stubs_python_1 ... done
   Starting grpc-bridge_stubs_go_1     ... done
@@ -63,7 +63,7 @@ respective directories:
   $ ls -la server/kv/kv.pb.go
   -rw-r--r--  1 mdesales  CORP\Domain Users  9994 Nov  6 21:59 server/kv/kv.pb.go
 
-These generated ``python`` and ``go`` stubs can be included as external modules.
+These generated Python and Go stubs can be included as external modules.
 
 Step 2: Start all of our containers
 ***********************************
@@ -73,7 +73,7 @@ To build this sandbox example and start the example services, run the following 
 .. code-block:: console
 
     $ pwd
-    envoy/examples/grpc-bridge
+    examples/grpc-bridge
     $ docker compose pull
     $ docker compose up --build -d
     $ docker compose ps
@@ -93,7 +93,7 @@ To use the Python service and send gRPC requests:
 .. code-block:: console
 
   $ pwd
-  envoy/examples/grpc-bridge
+  examples/grpc-bridge
 
 Set a key:
 

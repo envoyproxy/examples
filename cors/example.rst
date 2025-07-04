@@ -33,12 +33,12 @@ The CORS enforcement choices are:
 Step 1: Start all of our containers
 ***********************************
 
-Change to the ``examples/cors/frontend`` directory, and start the containers:
+Change to the ``cors/frontend`` directory, and start the containers:
 
 .. code-block:: console
 
   $ pwd
-  envoy/examples/cors/frontend
+  examples/cors/frontend
   $ docker compose pull
   $ docker compose up --build -d
   $ docker compose ps
@@ -53,7 +53,7 @@ Now, switch to the ``backend`` directory in the ``cors`` example, and start the 
 .. code-block:: console
 
   $ pwd
-  envoy/examples/cors/backend
+  examples/cors/backend
   $ docker compose pull
   $ docker compose up --build -d
   $ docker compose ps
@@ -68,9 +68,9 @@ Step 2: Test Envoy's CORS capabilities
 
 You can now open a browser to view your frontend service at http://localhost:8000.
 
-Results of the cross-origin request will be shown on the page under *Request Results*.
+Results of the cross-origin request will be shown on the page under *Request results*.
 
-Your browser's ``CORS`` enforcement logs can be found in the browser console.
+Your browser's CORS enforcement logs can be found in the browser console.
 
 For example:
 
@@ -87,10 +87,10 @@ When Envoy runs, it can listen to ``admin`` requests if a port is configured.
 In the example configs, the backend admin is bound to port ``8003``.
 
 If you browse to http://localhost:8003/stats you will be able to view
-all of the Envoy stats for the backend. You should see the ``CORS`` stats for
+all of the Envoy stats for the backend. You should see the CORS stats for
 invalid and valid origins increment as you make requests from the frontend cluster.
 
-.. code-block:: none
+.. code-block:: yaml
 
   http.ingress_http.cors.origin_invalid: 2
   http.ingress_http.cors.origin_valid: 7

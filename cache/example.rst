@@ -11,16 +11,16 @@ Cache filter
    :ref:`curl <start_sandboxes_setup_curl>`
         Used to make ``HTTP`` requests.
 
-In this example, we demonstrate how HTTP caching can be utilized in Envoy by using the Cache Filter.
+In this example, we demonstrate how HTTP caching can be utilized in Envoy by using the Cache filter.
 The setup of this sandbox is based on the setup of the :ref:`Front Proxy sandbox <install_sandboxes_front_proxy>`.
 
 All incoming requests are routed via the front Envoy, which acts as a reverse proxy sitting on
-the edge of the ``envoymesh`` network.
+the edge of the Docker network.
 
-Port ``8000`` is exposed by :download:`docker-compose.yaml <_include/cache/docker-compose.yaml>` to handle ``HTTP`` calls
+Port ``8000`` is exposed by :download:`docker-compose.yaml <_include/cache/docker-compose.yaml>` to handle HTTP calls
 to the services. Two backend services are deployed behind the front Envoy, each with a sidecar Envoy.
 
-The front Envoy is configured to run the Cache Filter, which stores cacheable responses in an in-memory cache,
+The front Envoy is configured to run the Cache filter, which stores cacheable responses in an in-memory cache,
 and serves it to subsequent requests.
 
 In this demo, the responses that are served by the deployed services are stored in :download:`responses.yaml <_include/cache/responses.yaml>`.
@@ -37,12 +37,12 @@ Responses served from the backend service have no ``age`` header, and their ``da
 Step 1: Start all of our containers
 ***********************************
 
-Change to the ``examples/cache`` directory.
+Change to the ``cache`` directory.
 
 .. code-block:: console
 
     $ pwd
-    envoy/examples/cache
+    examples/cache
     $ docker compose pull
     $ docker compose up --build -d
     $ docker compose ps
@@ -56,13 +56,18 @@ Change to the ``examples/cache`` directory.
 Step 2: Test Envoy's HTTP caching capabilities
 **********************************************
 
-You can now send a request to both services via the ``front-envoy``. Note that since the two services have different routes,
-identical requests to different services have different cache entries (i.e. a request sent to service 2 will not be served by a cached
-response produced by service 1).
+You can now send a request to both services via the ``front-envoy``.
+
+.. note::
+   Since the two services have different routes,
+   identical requests to different services have different cache entries (i.e. a request sent to service 2 will not be served by a cached
+   response produced by service 1).
 
 To send a request:
 
-``curl -i localhost:8000/service/<service_no>/<response>``
+.. code-block:: console
+
+   $ curl -i localhost:8000/service/<service_no>/<response>
 
 ``service_no``: The service to send the request to, 1 or 2.
 

@@ -8,7 +8,7 @@ Lua cluster specifier
    .. include:: _include/docker-env-setup-link.rst
 
    :ref:`curl <start_sandboxes_setup_curl>`
-        Used to make ``HTTP`` requests.
+        Used to make HTTP requests.
 
 In this example, we show how the `Lua <https://www.lua.org/>`_ cluster specifier can be used with the
 Envoy proxy.
@@ -25,12 +25,12 @@ The example Envoy proxy configuration includes a Lua cluster specifier plugin th
 Step 1: Build the sandbox
 *************************
 
-Change to the ``examples/lua-cluster-specifier`` directory, and bring up the composition.
+Change to the ``lua-cluster-specifier`` directory, and bring up the composition.
 
 .. code-block:: console
 
   $ pwd
-  envoy/examples/lua-cluster-specifier
+  examples/lua-cluster-specifier
   $ docker compose pull
   $ docker compose up --build -d
   $ docker compose ps
@@ -42,7 +42,7 @@ Change to the ``examples/lua-cluster-specifier`` directory, and bring up the com
 Step 2: Send a request to the normal service
 ********************************************
 
-The output from the ``curl`` command below should return 200, since the lua code select the normal service.
+The output from the ``curl`` command below should return ``200``, since the lua code select the normal service.
 
 .. code-block:: console
 

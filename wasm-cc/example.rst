@@ -8,7 +8,7 @@ Wasm C++ filter
    .. include:: _include/docker-env-setup-link.rst
 
    :ref:`curl <start_sandboxes_setup_curl>`
-        Used to make ``HTTP`` requests.
+        Used to make HTTP requests.
 
 .. sidebar:: Compatibility
 
@@ -16,7 +16,7 @@ Wasm C++ filter
    with the ``arm64`` architecture, change directory to ``examples/wasm-cc`` and skip to Step 3.
 
 This sandbox demonstrates a basic :ref:`Envoy Wasm filter <config_http_filters_wasm>` written in C++ which injects
-content into the body of an ``HTTP`` response, and adds and updates some headers.
+content into the body of an HTTP response, and adds and updates some headers.
 
 It also takes you through the steps required to build your own C++ :ref:`Wasm filter <config_http_filters_wasm>`,
 and run it with Envoy.
@@ -25,16 +25,16 @@ Step 1: Start all of our containers
 ***********************************
 
 First lets start the containers - an Envoy proxy which uses a Wasm Filter, and a backend which echos back our request.
-The Envoy configuration exposes two listeners, the first one listens in port 8000 which contains the wasm filter in
-the listener filter chain. The second one listens in port 8001 routing to a cluster containing the wasm filter in the
+The Envoy configuration exposes two listeners, the first one listens in port ``8000`` which contains the wasm filter in
+the listener filter chain. The second one listens in port ``8001`` routing to a cluster containing the wasm filter in the
 cluster filter chain.
 
-Change to the ``examples/wasm-cc`` folder in the Envoy repo, and start the composition:
+Change to the ``wasm-cc`` directory, and start the composition:
 
 .. code-block:: console
 
     $ pwd
-    envoy/examples/wasm-cc
+    examples/wasm-cc
     $ docker compose pull
     $ docker compose up --build -d
     $ docker compose ps
@@ -47,7 +47,7 @@ Change to the ``examples/wasm-cc`` folder in the Envoy repo, and start the compo
 Step 2: Check web response
 **************************
 
-The Wasm filter should inject "Hello, world" at the end of the response body when you make a request to the proxy.
+The Wasm filter should inject ``Hello, world`` at the end of the response body when you make a request to the proxy.
 
 .. code-block:: console
 
@@ -155,7 +155,7 @@ Now, rebuild and start the proxy container.
 Step 5: Check the proxy has been updated
 ****************************************
 
-The Wasm filter should instead inject "Hello, Wasm world" at the end of the response body.
+The Wasm filter should instead inject ``Hello, Wasm world`` at the end of the response body.
 
 .. code-block:: console
 

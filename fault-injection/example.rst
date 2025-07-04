@@ -16,14 +16,14 @@ response.
 Step 1: Start all of our containers
 ***********************************
 
-Change to the ``examples/fault_injection`` directory.
+Change to the ``fault_injection`` directory.
 
 Terminal 1
 
 .. code-block:: console
 
   $ pwd
-  envoy/examples/fault-injection
+  examples/fault-injection
   $ docker compose pull
   $ docker compose up --build -d
   $ docker compose ps
@@ -41,7 +41,7 @@ Terminal 2
 .. code-block:: console
 
   $ pwd
-  envoy/examples/fault-injection
+  examples/fault-injection
   $ docker compose exec envoy bash
   $ bash send_request.sh
 
@@ -64,7 +64,7 @@ Terminal 3
   $ docker compose exec envoy bash
   $ bash enable_abort_fault_injection.sh
 
-The script above enables ``HTTP`` aborts for 100% of requests.
+The script above enables HTTP aborts for 100% of requests.
 
 You should now see a continuous sequence of ``HTTP 503`` responses for all requests.
 
@@ -88,7 +88,7 @@ Terminal 3
   $ docker compose exec envoy bash
   $ bash enable_delay_fault_injection.sh
 
-The script above will add a 3-second delay to 50% of ``HTTP`` requests.
+The script above will add a 3-second delay to 50% of HTTP requests.
 
 You should now see a continuous sequence of ``HTTP 200`` responses for all requests, but half of the requests
 will take 3 seconds to complete.
@@ -115,4 +115,4 @@ Terminal 3
 .. seealso::
 
    :ref:`Fault injection <config_http_filters_fault_injection>`
-      Learn more about Envoy's ``HTTP`` fault injection filter.
+      Learn more about Envoy's HTTP fault injection filter.
