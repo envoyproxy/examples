@@ -13,7 +13,7 @@ export PORT_STATS="${CORS_PORT_STATS:-10312}"
 
 run_log "Test service"
 responds_with \
-    "Envoy CORS Webpage" \
+    "Envoy CORS webpage" \
     "http://localhost:${PORT_PROXY}"
 
 run_log "Test cors server: disabled"
