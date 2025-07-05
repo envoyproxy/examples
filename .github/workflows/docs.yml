@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   docs:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
       with:
@@ -26,5 +26,14 @@ jobs:
       with:
         path: examples
     - run: |
-        bazel build --override_repository=envoy_examples=../examples --config=ci //docs
-      working-directory: envoy
+        export UID
+        docker compose run --quiet --quiet-pull --quiet-build docs
+      working-directory: examples
+      env:
+        BAZEL_BUILD_EXTRA_OPTIONS: >-
+          --override_repository=envoy_examples=../examples
+          --config=ci
+          --@rules_python//python/config_settings:bootstrap_impl=script
+        DOCKER_BUILDKIT: 1
+        COMPOSE_BAKE: true
+        BUILDKIT_PROGRESS: quiet

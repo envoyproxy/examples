@@ -29,3 +29,4 @@ ignore:
 - "**/*template.yaml"
 - examples/single-page-app/_github-clusters.yml
 - test/config/integration/server_xds.cds.with_unknown_field.yaml
+- "**/node_modules/**"
