@@ -18,6 +18,7 @@ services:
     - |
       ./ci/do_ci.sh docs
     environment:
+      DOCS_BUILD_RST: "${DOCS_BUILD_RST:-}"
       BAZEL_BUILD_EXTRA_OPTIONS: >-
         ${BAZEL_BUILD_EXTRA_OPTIONS:-
         --override_repository=envoy_examples=../examples

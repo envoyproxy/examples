@@ -16,5 +16,7 @@ common:examples --action_env=BUILDKIT_PROGRESS
 common:examples --host_action_env=BUILDKIT_PROGRESS
 common:examples --sandbox_writable_path=/var/run/docker.sock
 
+common --@rules_python//python/config_settings:bootstrap_impl=script
+
 try-import %workspace%/user.bazelrc
 try-import %workspace%/repo.bazelrc
