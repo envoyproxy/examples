@@ -1,7 +1,6 @@
-FROM envoyproxy/envoy-build-ubuntu:f94a38f62220a2b017878b790b6ea98a0f6c5f9c@sha256:2dd96b6f43c08ccabd5f4747fce5854f5f96af509b32e5cf6493f136e9833649
+FROM envoyproxy/envoy-build:ci-cdfbb76bc18c115270127132c6f7c67000cd2e74@sha256:48a8b1bc24ed771560126642dcbba33c50c6b837722ba9c75270b858ef7ab3a6
 ENV DEBIAN_FRONTEND=noninteractive
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
-    apt-get -qq install --no-install-recommends -y gosu \
-    && groupadd -f envoygroup \
-    && useradd -g envoygroup -m -d /home/envoybuild envoybuild
+    apt-get -qq update \
+    && apt-get -qq install --no-install-recommends -y gosu
