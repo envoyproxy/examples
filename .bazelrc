@@ -1,4 +1,4 @@
-
+common --enable_bzlmod=0
 common --color=yes
 common:ci --noshow_progress
 common:ci --noshow_loading_progress
