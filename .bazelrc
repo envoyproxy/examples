@@ -3,3 +3,9 @@ common --color=yes
 common:ci --noshow_progress
 common:ci --noshow_loading_progress
 common:ci --test_output=errors
+
+common:examples --action_env=DEV_CONTAINER_ID
+common:examples --host_action_env=DEV_CONTAINER_ID
+
+try-import %workspace%/user.bazelrc
+try-import %workspace%/repo.bazelrc

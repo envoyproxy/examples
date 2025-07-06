@@ -43,7 +43,6 @@ jobs:
         sudo systemctl start docker
       if: steps.cache.outputs.cache-hit != 'true' && github.event_name != 'pull_request'
 
-
     - run: |
         TEMPDIR=/cache/docker
         sudo mkdir -p "${TEMPDIR}"
@@ -62,11 +61,11 @@ jobs:
         DEV_CONTAINER_ID=$(docker inspect --format='{{.Id}}' envoyproxy/envoy:dev)
         echo "DEV_CONTAINER_ID=${DEV_CONTAINER_ID}" >> $GITHUB_ENV
     - run: |
+        echo "common:examples --sandbox_writable_path=$HOME/.docker/" > repo.bazelrc
+        echo "common:examples --sandbox_writable_path=$HOME" >> repo.bazelrc
         bazel run --config=ci \
-                  --action_env="DEV_CONTAINER_ID=${DEV_CONTAINER_ID}" \
-                  --host_action_env="DEV_CONTAINER_ID=${DEV_CONTAINER_ID}" \
-                  --sandbox_writable_path="${HOME}/.docker/" \
-                  --sandbox_writable_path=$HOME :verify_examples
+                  --config=examples \
+                  //:verify_examples
 
     - run: |
         sudo systemctl stop docker docker.socket

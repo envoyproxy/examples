@@ -45,6 +45,7 @@ TAGS
 /tools/spelling/.aspell.en.pws
 clang-tidy-fixes.yaml
 clang.bazelrc
+repo.bazelrc
 user.bazelrc
 CMakeLists.txt
 cmake-build-debug
