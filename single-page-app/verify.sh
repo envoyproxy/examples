@@ -118,29 +118,16 @@ test_auth () {
         "${proxy_scheme}://localhost:${proxy_port}" \
         "${curl_args[@]}"
 
-    run_log "Check whether PKCE is supported (${name})"
-    SUPPORT_PKCE="false" # Whether PKCE is supported in this version of Envoy
-    LOCATION=$(_curl "${curl_args[@]}" --head "${proxy_scheme}://localhost:${proxy_port}/login" | grep location)
-    if [[ "$LOCATION" == *"code_challenge"* ]]; then
-        SUPPORT_PKCE="true"
-    fi
-
     run_log "Inititiate login (${name})"
     responds_with_header \
-        "HTTP/1.1 302 Found" \
+    "HTTP/1.1 302 Found" \
+    "${proxy_scheme}://localhost:${proxy_port}/login" \
+    "${curl_args[@]}"
+    responds_with_header \
+        "location: http://localhost:${PORT_MYHUB}/authorize?client_id=0123456789&code_challenge=[A-Za-z0-9_-]\{1,\}&code_challenge_method=S256&redirect_uri=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Fauthorize&response_type=code&scope=user%3Aemail&state=[A-Za-z0-9_-]\{1,\}" \
         "${proxy_scheme}://localhost:${proxy_port}/login" \
         "${curl_args[@]}"
-    if [[ "$SUPPORT_PKCE" == "true" ]]; then
-        responds_with_header \
-            "location: http://localhost:${PORT_MYHUB}/authorize?client_id=0123456789&code_challenge=[A-Za-z0-9_-]\{1,\}&code_challenge_method=S256&redirect_uri=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Fauthorize&response_type=code&scope=user%3Aemail&state=[A-Za-z0-9_-]\{1,\}" \
-            "${proxy_scheme}://localhost:${proxy_port}/login" \
-            "${curl_args[@]}"
-    else
-        responds_with_header \
-            "location: http://localhost:${PORT_MYHUB}/authorize?client_id=0123456789&redirect_uri=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Fauthorize&response_type=code&scope=user%3Aemail&state=[A-Za-z0-9_-]\{1,\}" \
-            "${proxy_scheme}://localhost:${proxy_port}/login" \
-            "${curl_args[@]}"
-    fi
+
     responds_with_header \
         "set-cookie: OauthNonce=" \
         "${proxy_scheme}://localhost:${proxy_port}/login" \
@@ -153,34 +140,18 @@ test_auth () {
     code_verifier="Fc1bBwAAAAAVzVsHAAAAABjf6i_Hvf8T2dEuEhPhhDNMlp16az-0dxisL-TzJKaZjOMF8nov_pG377FHmpKcsA"
     code_challenge="YRQaBq_UpkWzfr6JvtNnh7LMfmPVcIKVYdV98ugwmLY"
     run_log "Fetch the myhub authorization page (${name})"
-    if [[ "$SUPPORT_PKCE" == "true" ]]; then
-        responds_with_header \
-            "HTTP/1.1 302 Found" \
-            "http://localhost:${PORT_MYHUB}/authorize?client_id=0123456789&code_challenge=${code_challenge}&code_challenge_method=S256&redirect_uri=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Fauthorize&response_type=code&scope=user%3Aemail&state=${encoded_state}" \
-            "${curl_args[@]}"
-        responds_with_header \
-            "Location: ${proxy_scheme}://localhost:${proxy_port}/authorize?code=" \
-            "http://localhost:${PORT_MYHUB}/authorize?client_id=0123456789&code_challenge=${code_challenge}&code_challenge_method=S256&redirect_uri=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Fauthorize&response_type=code&scope=user%3Aemail&state=${encoded_state}" \
-            "${curl_args[@]}"
-    else
-        responds_with_header \
-            "HTTP/1.1 302 Found" \
-            "http://localhost:${PORT_MYHUB}/authorize?client_id=0123456789&redirect_uri=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Fauthorize&response_type=code&scope=user%3Aemail&state=${encoded_state}" \
-            "${curl_args[@]}"
-        responds_with_header \
-            "Location: ${proxy_scheme}://localhost:${proxy_port}/authorize?code=" \
-            "http://localhost:${PORT_MYHUB}/authorize?client_id=0123456789&redirect_uri=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Fauthorize&response_type=code&scope=user%3Aemail&state=${encoded_state}" \
-            "${curl_args[@]}"
-    fi
+    responds_with_header \
+        "HTTP/1.1 302 Found" \
+        "http://localhost:${PORT_MYHUB}/authorize?client_id=0123456789&code_challenge=${code_challenge}&code_challenge_method=S256&redirect_uri=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Fauthorize&response_type=code&scope=user%3Aemail&state=${encoded_state}" \
+        "${curl_args[@]}"
+    responds_with_header \
+        "Location: ${proxy_scheme}://localhost:${proxy_port}/authorize?code=" \
+        "http://localhost:${PORT_MYHUB}/authorize?client_id=0123456789&code_challenge=${code_challenge}&code_challenge_method=S256&redirect_uri=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Fauthorize&response_type=code&scope=user%3Aemail&state=${encoded_state}" \
+        "${curl_args[@]}"
 
     run_log "Return to the app and receive creds (${name})"
-    if [[ "$SUPPORT_PKCE" == "true" ]]; then
-        CODE=$(_curl "${curl_args[@]}" --head "http://localhost:${PORT_MYHUB}/authorize?client_id=0123456789&code_challenge=${code_challenge}&code_challenge_method=S256&redirect_uri=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Fauthorize&response_type=code&scope=user%3Aemail&state=${encoded_state}" | grep Location | cut -d= -f2 | cut -d\& -f1)
-        RESPONSE=$(_curl "${curl_args[@]}" --cookie "OauthNonce=${csrf_token}" --cookie "CodeVerifier=${code_verifier}" --head "${proxy_scheme}://localhost:${proxy_port}/authorize?code=$CODE&state=${encoded_state}")
-    else
-        CODE=$(_curl "${curl_args[@]}" --head "http://localhost:${PORT_MYHUB}/authorize?client_id=0123456789&redirect_uri=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Fauthorize&response_type=code&scope=user%3Aemail&state=${encoded_state}" | grep Location | cut -d= -f2 | cut -d\& -f1)
-        RESPONSE=$(_curl "${curl_args[@]}" --cookie "OauthNonce=${csrf_token}" --head "${proxy_scheme}://localhost:${proxy_port}/authorize?code=$CODE&state=${encoded_state}")
-    fi
+    CODE=$(_curl "${curl_args[@]}" --head "http://localhost:${PORT_MYHUB}/authorize?client_id=0123456789&code_challenge=${code_challenge}&code_challenge_method=S256&redirect_uri=${proxy_scheme}%3A%2F%2Flocalhost%3A${proxy_port}%2Fauthorize&response_type=code&scope=user%3Aemail&state=${encoded_state}" | grep Location | cut -d= -f2 | cut -d\& -f1)
+    RESPONSE=$(_curl "${curl_args[@]}" --cookie "OauthNonce=${csrf_token}" --cookie "CodeVerifier=${code_verifier}" --head "${proxy_scheme}://localhost:${proxy_port}/authorize?code=$CODE&state=${encoded_state}")
     echo "$RESPONSE" | grep "HTTP/1.1 302 Found"
     echo "$RESPONSE" | grep "location: ${proxy_scheme}://localhost:${proxy_port}/login"
     echo "$RESPONSE" | grep "set-cookie: OauthHMAC="
@@ -329,15 +300,10 @@ run_log "Inititiate dev login (Github)"
 responds_with_header \
     "HTTP/1.1 302 Found" \
     "http://localhost:${PORT_DEV_PROXY}/login"
-if [[ "$SUPPORT_PKCE" == "true" ]]; then
-    responds_with_header \
-        "location: https://github.com/login/oauth/authorize?client_id=XXX&code_challenge=[A-Za-z0-9_-]\{1,\}&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A${PORT_DEV_PROXY}%2Fauthorize&response_type=code&scope=user%3Aemail&state=[A-Za-z0-9_-]\{1,\}" \
-        "http://localhost:${PORT_DEV_PROXY}/login"
-else
-    responds_with_header \
-        "location: https://github.com/login/oauth/authorize?client_id=XXX&redirect_uri=http%3A%2F%2Flocalhost%3A${PORT_DEV_PROXY}%2Fauthorize&response_type=code&scope=user%3Aemail&state=[A-Za-z0-9_-]\{1,\}" \
-        "http://localhost:${PORT_DEV_PROXY}/login"
-fi
+responds_with_header \
+    "location: https://github.com/login/oauth/authorize?client_id=XXX&code_challenge=[A-Za-z0-9_-]\{1,\}&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A${PORT_DEV_PROXY}%2Fauthorize&response_type=code&scope=user%3Aemail&state=[A-Za-z0-9_-]\{1,\}" \
+    "http://localhost:${PORT_DEV_PROXY}/login"
+
 responds_with_header \
     "set-cookie: OauthNonce=" \
     "http://localhost:${PORT_DEV_PROXY}/login"
@@ -347,17 +313,10 @@ responds_with \
     "Envoy single page app example" \
     "https://localhost:${PORT_PROXY}" \
     -k
-if [[ "$SUPPORT_PKCE" == "true" ]]; then
-    responds_with_header \
-        "location: https://github.com/login/oauth/authorize?client_id=XXX&code_challenge=[A-Za-z0-9_-]\{1,\}&code_challenge_method=S256&redirect_uri=https%3A%2F%2Flocalhost%3A${PORT_PROXY}%2Fauthorize&response_type=code&scope=user%3Aemail&state=[A-Za-z0-9_-]\{1,\}" \
-        "https://localhost:${PORT_PROXY}/login" \
-        -k
-else
-    responds_with_header \
-        "location: https://github.com/login/oauth/authorize?client_id=XXX&redirect_uri=https%3A%2F%2Flocalhost%3A${PORT_PROXY}%2Fauthorize&response_type=code&scope=user%3Aemail&state=[A-Za-z0-9_-]\{1,\}" \
-        "https://localhost:${PORT_PROXY}/login" \
-        -k
-fi
+responds_with_header \
+    "location: https://github.com/login/oauth/authorize?client_id=XXX&code_challenge=[A-Za-z0-9_-]\{1,\}&code_challenge_method=S256&redirect_uri=https%3A%2F%2Flocalhost%3A${PORT_PROXY}%2Fauthorize&response_type=code&scope=user%3Aemail&state=[A-Za-z0-9_-]\{1,\}" \
+    "https://localhost:${PORT_PROXY}/login" \
+    -k
 responds_with_header \
     "set-cookie: OauthNonce=" \
     "https://localhost:${PORT_PROXY}/login" \
