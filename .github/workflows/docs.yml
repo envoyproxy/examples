@@ -27,13 +27,15 @@ jobs:
         path: examples
     - run: |
         export UID
-        docker compose run --quiet --quiet-pull --quiet-build docs
+        echo 'load("@envoy_examples//bazel:env.bzl", "envoy_examples_env")' >> ../envoy/WORKSPACE
+        echo 'envoy_examples_env()' >> ../envoy/WORKSPACE
+        docker compose run docs
       working-directory: examples
       env:
         BAZEL_BUILD_EXTRA_OPTIONS: >-
           --override_repository=envoy_examples=../examples
           --config=ci
           --@rules_python//python/config_settings:bootstrap_impl=script
-        DOCKER_BUILDKIT: 1
-        COMPOSE_BAKE: true
         BUILDKIT_PROGRESS: quiet
+        COMPOSE_BAKE: true
+        DOCKER_BUILDKIT: 1

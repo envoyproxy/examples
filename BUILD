@@ -4,6 +4,7 @@ load("//:examples.bzl", "envoy_examples")
 
 licenses(["notice"])  # Apache 2
 
+# Excluding build tests - eg wasm - these should be run directly
 EXAMPLE_TESTS = [
     "brotli",
     "cache",
@@ -40,7 +41,6 @@ EXAMPLE_TESTS = [
     "udp",
     "vrp-litmus",
     # "vrp-local",
-    # "wasm-cc",
     "websocket",
     "zipkin",
     "zstd",
@@ -66,7 +66,7 @@ filegroup(
             "postgres/*",
             "kafka/*.yaml",
         ],
-    ),
+    ) + ["@envoy-example-wasmcc//:configs"],
     visibility = ["//visibility:public"],
 )
 
@@ -95,7 +95,7 @@ filegroup(
 
 filegroup(
     name = "docs_rst",
-    srcs = glob(["**/example.rst"]) + ["//wasm-cc:example.rst"],
+    srcs = glob(["**/example.rst"]) + ["@envoy-example-wasmcc//:example.rst"],
 )
 
 pkg_files(
@@ -112,8 +112,12 @@ genrule(
     cmd = """
     TEMP=$$(mktemp -d)
     for location in $(locations :docs_rst); do
-        example=$$(echo $$location | sed -e 's#^external/[^/]*/##' | cut -d/ -f1)
-        cp -a $$location "$${TEMP}/$${example}.rst"
+        if [[ "$$location" == *"/envoy-example"* ]]; then
+            example="$$(echo "$$location" | cut -d- -f3- | cut -d/ -f1)"
+        else
+            example=$$(echo $$location | sed -e 's#^external/[^/]*/##' | cut -d/ -f1)
+        fi
+        cp -aL $$location "$${TEMP}/$${example}.rst"
         echo "    $${example}" >> "$${TEMP}/_toctree.rst"
     done
     echo ".. toctree::" > "$${TEMP}/toctree.rst"
@@ -121,7 +125,7 @@ genrule(
     echo "" >> "$${TEMP}/toctree.rst"
     cat "$${TEMP}/_toctree.rst" | sort >> "$${TEMP}/toctree.rst"
     rm "$${TEMP}/_toctree.rst"
-    tar czf $@ -C $${TEMP} .
+    tar chzf $@ -C $${TEMP} .
     """,
 )
 
@@ -134,24 +138,21 @@ filegroup(
 filegroup(
     name = "files",
     srcs = glob(
-        [
-            "**/*",
-        ],
+        ["**/*"],
         exclude = [
             "**/*~",
             "**/.*",
             "**/#*",
             ".*/**/*",
             "BUILD",
-            ".git/**/*",
+            "README.md",
+            "WORKSPACE",
             "bazel-*/**/*",
             "**/node_modules/**",
             "**/*.rst",
             "win32*",
         ],
-    ) + [
-        "//wasm-cc:files",
-    ],
+    ),
 )
 
 pkg_tar(
@@ -159,7 +160,10 @@ pkg_tar(
     srcs = [":examples_files"],
     extension = "tar.gz",
     package_dir = "start/sandboxes",
-    deps = [":examples_docs"],
+    deps = [
+        ":examples_docs",
+        "@envoy-example-wasmcc//:includes",
+    ],
     visibility = ["//visibility:public"],
 )
 
