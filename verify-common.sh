@@ -62,6 +62,9 @@ bring_up_example () {
         run_log "Snooze for ${DELAY} while ${NAME} gets started"
         sleep "$DELAY"
     fi
+    if [[ -z "$ENVOY_EXAMPLES_DEBUG" ]]; then
+        return
+    fi
     for path in "${paths[@]}"; do
         pushd "$path" > /dev/null || return 1
         "${DOCKER_COMPOSE[@]}" ps
