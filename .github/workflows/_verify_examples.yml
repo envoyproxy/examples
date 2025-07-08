@@ -24,6 +24,7 @@ jobs:
         key: ${{ runner.os }}-docker-${{ hashFiles('**/Dockerfile*') }}
     - run: |
         TEMPDIR=/cache/docker
+        sudo mkdir -p /var/lib/docker-examples
         zstd --stdout -d "${TEMPDIR}/docker.tar.zst" | sudo tar --warning=no-timestamp -xf - -C /var/lib/docker-examples
         sudo umount "$TEMPDIR"
       if: steps.cache.outputs.cache-hit == 'true'
