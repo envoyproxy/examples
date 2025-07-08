@@ -1,21 +1,14 @@
-name: Verify
+name: Verify/Examples
 
 permissions:
   contents: read
 
 on:
-  pull_request:
-  push:
-    branches:
-    - main
-
-concurrency:
-  group: >-
-    ${{ github.event.inputs.head_ref || github.run_id }}
+  workflow_call:
 
 
 jobs:
-  verify:
+  examples:
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
@@ -30,18 +23,10 @@ jobs:
         path: /cache/docker
         key: ${{ runner.os }}-docker-${{ hashFiles('**/Dockerfile*') }}
     - run: |
-        sudo systemctl stop docker docker.socket
-        sudo rm -rf /var/lib/docker/{*,.*}
         TEMPDIR=/cache/docker
-        zstd --stdout -d "${TEMPDIR}/docker.tar.zst" | sudo tar --warning=no-timestamp -xf - -C /var/lib/docker
+        zstd --stdout -d "${TEMPDIR}/docker.tar.zst" | sudo tar --warning=no-timestamp -xf - -C /var/lib/docker-examples
         sudo umount "$TEMPDIR"
-        sudo systemctl start docker
       if: steps.cache.outputs.cache-hit == 'true'
-    - run: |
-        sudo systemctl stop docker docker.socket
-        sudo rm -rf /var/lib/docker/{*,.*}
-        sudo systemctl start docker
-      if: steps.cache.outputs.cache-hit != 'true' && github.event_name != 'pull_request'
 
     - run: |
         TEMPDIR=/cache/docker
@@ -54,23 +39,21 @@ jobs:
         key: ${{ runner.os }}-bazel-${{ hashFiles('**/BUILD', '**/*bzl', 'WORKSPACE') }}
 
     - run: |
-        sudo apt-get update
-        sudo apt-get -qq install -y --no-install-recommends expect gettext yq whois
-    - run: |
         docker pull envoyproxy/envoy:dev
         DEV_CONTAINER_ID=$(docker inspect --format='{{.Id}}' envoyproxy/envoy:dev)
         echo "DEV_CONTAINER_ID=${DEV_CONTAINER_ID}" >> $GITHUB_ENV
     - run: |
-        echo "common:examples --sandbox_writable_path=$HOME/.docker/" > repo.bazelrc
-        echo "common:examples --sandbox_writable_path=$HOME" >> repo.bazelrc
-        bazel run --config=ci \
-                  --config=examples \
-                  //:verify_examples
+        export UID
+        echo "common --config=ci" >> repo.bazelrc
+        docker compose run --quiet --quiet-pull --quiet-build examples
+      env:
+        DOCKER_BUILDKIT: 1
+        COMPOSE_BAKE: true
+        BUILDKIT_PROGRESS: quiet
 
     - run: |
-        sudo systemctl stop docker docker.socket
         TEMPDIR=/cache/docker
-        sudo tar cf - -C /var/lib/docker . | zstd - -q -T0 -o "${TEMPDIR}/docker.tar.zst"
+        sudo tar cf - -C /var/lib/docker-examples . | zstd - -q -T0 -o "${TEMPDIR}/docker.tar.zst"
         ls -alh "${TEMPDIR}/docker.tar.zst"
       if: steps.cache.outputs.cache-hit != 'true' && github.event_name != 'pull_request'
     - uses: actions/cache/save@v4

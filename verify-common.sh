@@ -71,6 +71,9 @@ bring_up_example () {
 }
 
 bring_down_example () {
+    if [[ -n "$DEBUG_EXIT" ]]; then
+        return
+    fi
     local path paths
     read -ra paths <<< "$(echo "$PATHS" | tr ',' ' ')"
     for path in "${paths[@]}"; do
@@ -233,6 +236,11 @@ wait_for () {
         echo "Wait (${seconds}) failed: ${*}" >&2
     fi
     return "$returns"
+}
+
+debug_exit () {
+    DEBUG_EXIT=1
+    exit 0
 }
 
 trap 'cleanup' EXIT

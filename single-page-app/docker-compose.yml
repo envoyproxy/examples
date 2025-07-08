@@ -40,6 +40,7 @@ services:
       touch /var/lib/envoy/lds.yml
       chmod +w /var/lib/envoy/lds.yml
       exec envoy "$${@}"
+      rm /var/lib/envoy/lds.yml
     volumes:
     - ${SECRETS_PATH:-./secrets}:/etc/envoy/secrets
     - ${XDS_PATH:-./xds}:/var/lib/envoy

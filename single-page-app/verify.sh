@@ -17,6 +17,9 @@ BACKUP_FILES=(
 
 
 finally () {
+    if [[ -n "$DEBUG_EXIT" ]]; then
+        return
+    fi
     rm -rf .local.ci
     for file in "${BACKUP_FILES[@]}"; do
         move_if_exists "${file}.bak" "${file}"
@@ -133,7 +136,7 @@ test_auth () {
         "${proxy_scheme}://localhost:${proxy_port}/login" \
         "${curl_args[@]}"
 
-    random=$(head /dev/urandom | xxd -p | head -c 16)
+    random=$(openssl rand -hex 8 | head -c -1)
     hmac=$(echo -n "${random}" | openssl dgst -sha256 -hmac "${HMAC_SECRET}" -binary|base64)
     csrf_token=${random}.${hmac}
     encoded_state=$(echo -n "{\"url\":\"${proxy_scheme}://localhost:${proxy_port}/login\",\"csrf_token\":\"${csrf_token}\"}" | basenc --base64url --wrap=0 | sed 's/=//g')
@@ -287,11 +290,13 @@ echo "VITE_APP_AUTH_PROVIDER=github" > .local.ci/ui/.env.local
 
 run_log "Rebuild the app and restart Envoy (Github)"
 export ENVOY_CONFIG=.local.ci/envoy.yml
+# without this the image does not get rebuilt with the new config
+export COMPOSE_BAKE=false
 docker compose run --rm ui build.sh
 docker compose up --build -d envoy
 
 run_log "Test dev app (Github)"
-wait_for 5 \
+wait_for 10 \
     bash -c "\
         responds_with \
             \"Envoy single page app example\" \
@@ -300,6 +305,7 @@ run_log "Inititiate dev login (Github)"
 responds_with_header \
     "HTTP/1.1 302 Found" \
     "http://localhost:${PORT_DEV_PROXY}/login"
+
 responds_with_header \
     "location: https://github.com/login/oauth/authorize?client_id=XXX&code_challenge=[A-Za-z0-9_-]\{1,\}&code_challenge_method=S256&redirect_uri=http%3A%2F%2Flocalhost%3A${PORT_DEV_PROXY}%2Fauthorize&response_type=code&scope=user%3Aemail&state=[A-Za-z0-9_-]\{1,\}" \
     "http://localhost:${PORT_DEV_PROXY}/login"
