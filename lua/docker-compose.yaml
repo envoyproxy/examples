@@ -9,6 +9,5 @@ services:
     - "${PORT_PROXY:-10000}:10000"
 
   web_service:
-    image: ${COMPOSE_PROJECT_NAME}-echo
     build:
       context: ../shared/echo
