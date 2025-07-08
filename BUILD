@@ -11,7 +11,7 @@ EXAMPLE_TESTS = [
     "cors",
     "csrf",
     "double-proxy",
-    # "dynamic-config-cp",
+    "dynamic-config-cp",
     "dynamic-config-fs",
     "ext_authz",
     # "fault-injection",
