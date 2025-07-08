@@ -5,7 +5,8 @@ EXAMPLE_DIR="${2}"
 TMPOUT=$(mktemp)
 RUNDIR=$(mktemp -d)
 
-export TERM=xterm-256color
+export COMPOSE_INTERACTIVE_NO_CLI=1
+export COMPOSE_PROGRESS=quiet
 
 complete () {
     EXITCODE="$(tail -n 1 "${TMPOUT}" | grep -oP '(?<=COMMAND_EXIT_CODE=")[0-9]+')"
@@ -37,7 +38,7 @@ verify () {
     else
         cd "${EXAMPLE_NAME}"
     fi
-    script -q -c "unbuffer ./verify.sh" "$TMPOUT" >/dev/null
+    script -q -c "./verify.sh" "$TMPOUT" >/dev/null
 }
 
 trap complete EXIT
