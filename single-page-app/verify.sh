@@ -242,7 +242,7 @@ mkdir -p .local.ci/production
 cp -a xds .local.ci/production
 cp -a ui/index.html .local.ci/ui/
 export XDS_PATH=./.local.ci/production/xds
-docker compose up --build -d envoy
+docker compose up --build --pull missing --quiet-pull -d --force-recreate envoy
 docker compose run --rm ui build.sh
 
 run_log "Check the created routes"
@@ -293,7 +293,7 @@ export ENVOY_CONFIG=.local.ci/envoy.yml
 # without this the image does not get rebuilt with the new config
 export COMPOSE_BAKE=false
 docker compose run --rm ui build.sh
-docker compose up --build -d envoy
+docker compose up --build --pull missing --quiet-pull -d --force-recreate envoy
 
 run_log "Test dev app (Github)"
 wait_for 10 \
