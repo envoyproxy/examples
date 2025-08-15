@@ -161,6 +161,7 @@ test_auth () {
     echo "$RESPONSE" | grep "set-cookie: OauthExpires="
     echo "$RESPONSE" | grep "set-cookie: BearerToken="
 
+    # TODO: Remove this comment after CI runs fine
     HMAC=$(echo "$RESPONSE" | grep "set-cookie: OauthHMAC=" | cut -d' ' -f2-)
     OAUTH_EXPIRES=$(echo "$RESPONSE" | grep "set-cookie: OauthExpires=" | cut -d' ' -f2-)
     TOKEN=$(echo "$RESPONSE" | grep "set-cookie: BearerToken=" | cut -d' ' -f2-)
