@@ -13,6 +13,6 @@ def load_envoy_example_wasmcc_packages():
         python_interpreter_target = "@python_3_12//:python",
     )
     bazel_features_deps()
-    emscripten_deps(emscripten_version = "4.0.6")
+    emscripten_deps(emscripten_version = "4.0.13")
     default_envoy_build_config(name = "envoy_build_config")
     proto_bazel_features(name = "proto_bazel_features")
