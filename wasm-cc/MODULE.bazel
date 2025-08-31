@@ -1,0 +1,97 @@
+module(
+    name = "envoy-example-wasmcc",
+    version = "0.0.0-dev",
+)
+
+bazel_dep(name = "aspect_bazel_lib", version = "2.16.0")
+bazel_dep(name = "bazel_skylib", version = "1.8.1")
+bazel_dep(name = "emsdk", version = "4.0.13")
+bazel_dep(name = "envoy", version = "0.0.0-dev")
+git_override(
+    module_name = "envoy",
+    commit = "9416048f843abbbd6a467e2e75574cac81d13d1c",
+    remote = "https://github.com/mmorel-35/envoy.git",
+)
+
+bazel_dep(name = "envoy_api", version = "0.0.0-dev")
+git_override(
+    module_name = "envoy_api",
+    commit = "9416048f843abbbd6a467e2e75574cac81d13d1c",
+    remote = "https://github.com/mmorel-35/envoy.git",
+    strip_prefix = "api",
+)
+
+bazel_dep(name = "envoy_examples", version = "0.0.0-dev")
+local_path_override(
+    module_name = "envoy_examples",
+    path = "..",
+)
+
+bazel_dep(name = "envoy_build_config", version = "0.0.0-dev")
+git_override(
+    module_name = "envoy_build_config",
+    commit = "9416048f843abbbd6a467e2e75574cac81d13d1c",
+    remote = "https://github.com/mmorel-35/envoy.git",
+    strip_prefix = "mobile/envoy_build_config",
+)
+
+bazel_dep(name = "envoy_toolshed", version = "0.3.3")
+git_override(
+    module_name = "envoy_toolshed",
+    commit = "f536601588f6a523346091adb3420d39b4692d3a",
+    remote = "https://github.com/envoyproxy/toolshed.git",
+    strip_prefix = "bazel",
+)
+
+bazel_dep(name = "googleurl", version = "0.0.0-dev", repo_name = "com_googlesource_googleurl")
+git_override(
+    module_name = "googleurl",
+    commit = "e6c272102e0554e02c1bb317edff927ee56c7d0b",
+    remote = "https://quiche.googlesource.com/googleurl",
+)
+
+bazel_dep(name = "rules_cc", version = "0.2.2")
+bazel_dep(name = "rules_foreign_cc", version = "0.15.0")
+bazel_dep(name = "rules_perl", version = "0.4.1")
+bazel_dep(name = "rules_pkg", version = "1.1.0")
+bazel_dep(name = "rules_python", version = "1.4.1")
+bazel_dep(name = "rules_rust", version = "0.63.0")
+bazel_dep(name = "rules_fuzzing", version = "0.6.0")
+bazel_dep(name = "toolchains_llvm", version = "1.4.0")
+# -- bazel_dep definitions -- #
+
+llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm", dev_dependency = True)
+llvm.toolchain(llvm_version = "18.1.8")
+use_repo(llvm, "llvm_toolchain")
+
+register_toolchains(
+    "@llvm_toolchain//:all",
+    dev_dependency = True,
+)
+
+tools = use_extension("@rules_foreign_cc//foreign_cc:extensions.bzl", "tools")
+use_repo(
+    tools,
+    "cmake_3.31.7_toolchains",
+    "ninja_1.12.1_toolchains",
+)
+
+register_toolchains(
+    "@cmake_3.31.7_toolchains//:all",
+    "@ninja_1.12.1_toolchains//:all",
+    "@rules_foreign_cc//toolchains:all",
+)
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    is_default = True,
+    python_version = "3.12",
+)
+use_repo(
+    python,
+    "python_3_12",
+    python = "python_versions",
+)
+# -- use_repo_rule statements -- #
+
+# -- repo definitions -- #
