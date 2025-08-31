@@ -10,7 +10,7 @@ def load_envoy_example_wasmcc_packages():
     pip_parse(
         name = "toolshed_pip3",
         requirements_lock = "@envoy_toolshed//:requirements.txt",
-        python_interpreter_target = "@python3_12_host//:python",
+        python_interpreter_target = "@python_3_12//:python",
     )
     bazel_features_deps()
     emscripten_deps(emscripten_version = "4.0.6")
