@@ -4,41 +4,41 @@ services:
   downstream-envoy:
     image: debug/envoy:latest
     volumes:
-      - ./initiator-envoy.yaml:/etc/downstream-envoy.yaml
+    - ./initiator-envoy.yaml:/etc/downstream-envoy.yaml
     command: envoy -c /etc/downstream-envoy.yaml --concurrency 1 -l trace --drain-time-s 3
     ports:
-      # Admin interface
-      - "8888:8888"
-      # Reverse connection API listener
-      - "9000:9000"
-      # Ingress HTTP listener
-      - "6060:6060"
+    # Admin interface
+    - "8888:8888"
+    # Reverse connection API listener
+    - "9000:9000"
+    # Ingress HTTP listener
+    - "6060:6060"
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+    - "host.docker.internal:host-gateway"
     networks:
-      - envoy-network
+    - envoy-network
     depends_on:
-      - downstream-service
+    - downstream-service
 
   downstream-service:
     image: nginxdemos/hello:plain-text
     networks:
-      - envoy-network
+    - envoy-network
 
   upstream-envoy:
     image: debug/envoy:latest
     volumes:
-      - ./responder-envoy.yaml:/etc/upstream-envoy.yaml
+    - ./responder-envoy.yaml:/etc/upstream-envoy.yaml
     command: envoy -c /etc/upstream-envoy.yaml --concurrency 1 -l trace --drain-time-s 3
     ports:
-      # Admin interface
-      - "8889:8888"
-      # Reverse connection API listener
-      - "9001:9000"
-      # Egress listener
-      - "8085:8085"
+    # Admin interface
+    - "8889:8888"
+    # Reverse connection API listener
+    - "9001:9000"
+    # Egress listener
+    - "8085:8085"
     networks:
-      - envoy-network
+    - envoy-network
 
 networks:
   envoy-network:
