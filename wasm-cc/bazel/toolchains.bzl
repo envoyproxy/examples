@@ -10,7 +10,7 @@ def load_envoy_example_wasmcc_toolchains(go=True):
     envoy_api_dependencies()
     register_emscripten_toolchains()
     python_register_toolchains(
-        name = "python%s" % VERSIONS["python"].replace(".", "_"),
+        name = "python_%s" % VERSIONS["python"].replace(".", "_"),
         python_version = VERSIONS["python"].replace("-", "_"),
     )
     if go:
