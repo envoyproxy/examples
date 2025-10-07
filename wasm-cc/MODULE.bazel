@@ -9,14 +9,14 @@ bazel_dep(name = "emsdk", version = "4.0.13")
 bazel_dep(name = "envoy", version = "0.0.0-dev")
 git_override(
     module_name = "envoy",
-    commit = "9416048f843abbbd6a467e2e75574cac81d13d1c",
+    commit = "b9f68615191822749f1cc9b0e7f3cb12540e29e9",
     remote = "https://github.com/mmorel-35/envoy.git",
 )
 
 bazel_dep(name = "envoy_api", version = "0.0.0-dev")
 git_override(
     module_name = "envoy_api",
-    commit = "9416048f843abbbd6a467e2e75574cac81d13d1c",
+    commit = "b9f68615191822749f1cc9b0e7f3cb12540e29e9",
     remote = "https://github.com/mmorel-35/envoy.git",
     strip_prefix = "api",
 )
@@ -30,9 +30,17 @@ local_path_override(
 bazel_dep(name = "envoy_build_config", version = "0.0.0-dev")
 git_override(
     module_name = "envoy_build_config",
-    commit = "9416048f843abbbd6a467e2e75574cac81d13d1c",
+    commit = "b9f68615191822749f1cc9b0e7f3cb12540e29e9",
     remote = "https://github.com/mmorel-35/envoy.git",
     strip_prefix = "mobile/envoy_build_config",
+)
+
+bazel_dep(name = "envoy_mobile", version = "0.0.0-dev")
+git_override(
+    module_name = "envoy_mobile",
+    commit = "b9f68615191822749f1cc9b0e7f3cb12540e29e9",
+    remote = "https://github.com/mmorel-35/envoy.git",
+    strip_prefix = "mobile",
 )
 
 bazel_dep(name = "envoy_toolshed", version = "0.3.3")

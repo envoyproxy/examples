@@ -15,7 +15,7 @@ go_binary(
     deps = [
         "@envoy//contrib/golang/common/go/api",
         "@envoy//contrib/golang/filters/network/source/go/pkg/network",
-        "@com_github_cncf_xds_go//xds/type/v3:type",
+        "@xds//xds/type/v3:pkg_go_proto",
         "@org_golang_google_protobuf//types/known/anypb",
     ],
 )
