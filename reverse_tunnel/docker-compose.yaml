@@ -1,18 +1,17 @@
-version: '2'
 services:
 
-  downstream-envoy:
-    image: debug/envoy:latest
-    volumes:
-    - ./initiator-envoy.yaml:/etc/downstream-envoy.yaml
-    command: envoy -c /etc/downstream-envoy.yaml --concurrency 1 -l trace --drain-time-s 3
+  initiator-envoy:
+    build:
+      context: .
+      dockerfile: ../shared/envoy/Dockerfile
+      args:
+        ENVOY_CONFIG: initiator-envoy.yaml
+    command: ["envoy", "-c", "/etc/envoy.yaml", "--concurrency", "1", "-l", "trace", "--drain-time-s", "3"]
     ports:
     # Admin interface
-    - "8888:8888"
+    - "${PORT_ADMIN_DOWNSTREAM:-8888}:8888"
     # Reverse connection API listener
-    - "9000:9000"
-    # Ingress HTTP listener
-    - "6060:6060"
+    - "${PORT_REVERSE_API_DOWNSTREAM:-9000}:9000"
     extra_hosts:
     - "host.docker.internal:host-gateway"
     networks:
@@ -25,18 +24,20 @@ services:
     networks:
     - envoy-network
 
-  upstream-envoy:
-    image: debug/envoy:latest
-    volumes:
-    - ./responder-envoy.yaml:/etc/upstream-envoy.yaml
-    command: envoy -c /etc/upstream-envoy.yaml --concurrency 1 -l trace --drain-time-s 3
+  responder-envoy:
+    build:
+      context: .
+      dockerfile: ../shared/envoy/Dockerfile
+      args:
+        ENVOY_CONFIG: responder-envoy.yaml
+    command: ["envoy", "-c", "/etc/envoy.yaml", "--concurrency", "1", "-l", "trace", "--drain-time-s", "3"]
     ports:
     # Admin interface
-    - "8889:8888"
+    - "${PORT_ADMIN_UPSTREAM:-8889}:8888"
     # Reverse connection API listener
-    - "9001:9000"
+    - "${PORT_REVERSE_API_UPSTREAM:-9001}:9000"
     # Egress listener
-    - "8085:8085"
+    - "${PORT_PROXY:-8085}:8085"
     networks:
     - envoy-network
 
