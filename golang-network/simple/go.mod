@@ -1,15 +1,15 @@
 module github.com/envoyproxy/examples/golang-network/simple
 
 // the version should >= 1.18
-go 1.22
+go 1.23
 
 toolchain go1.24.1
 
 // NOTICE: these lines could be generated automatically by "go mod tidy"
 require (
 	github.com/cncf/xds/go v0.0.0-20231128003011-0fa0005c9caa
-	github.com/envoyproxy/envoy v1.34.5
-	google.golang.org/protobuf v1.36.6
+	github.com/envoyproxy/envoy v1.36.2
+	google.golang.org/protobuf v1.36.10
 )
 
 require (
