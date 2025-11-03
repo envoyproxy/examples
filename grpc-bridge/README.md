@@ -1,5 +1,5 @@
 To learn about this sandbox and for instructions on how to run it please head over
-to the [envoy docs](https://www.envoyproxy.io/docs/envoy/latest/start/sandboxes/grpc_bridge)
+to the [envoy docs](https://www.envoyproxy.io/docs/envoy/latest/start/sandboxes/grpc-bridge.html)
 
 # gRPC HTTP/1.1 to HTTP/2 bridge
 
