@@ -2,7 +2,7 @@ module github.com/envoyproxy/envoy/examples/grpc-bridge/server
 
 go 1.24.0
 
-toolchain go1.24.1
+toolchain go1.24.9
 
 require (
 	github.com/golang/protobuf v1.5.4

@@ -1,6 +1,6 @@
 
 VERSIONS = {
-    "go": "1.23.1",
+    "go": "1.24.9",
     "python": "3.12",
 
     "io_bazel_rules_go": {
