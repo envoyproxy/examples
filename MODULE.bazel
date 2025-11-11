@@ -1,0 +1,4 @@
+module(
+    name = "envoy_examples",
+    version = "0.1.4-dev",
+)

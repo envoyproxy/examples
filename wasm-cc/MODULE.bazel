@@ -1,0 +1,5 @@
+module(
+    name = "envoy_example_wasmcc",
+    version = "0.1.4-dev",
+    repo_name = "envoy-example-wasmcc"
+)
