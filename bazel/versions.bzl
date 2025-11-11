@@ -1,8 +1,6 @@
-
 VERSIONS = {
     "go": "1.23.1",
     "python": "3.12",
-
     "io_bazel_rules_go": {
         "type": "github_archive",
         "repo": "bazelbuild/rules_go",
@@ -10,7 +8,6 @@ VERSIONS = {
         "sha256": "b78f77458e77162f45b4564d6b20b6f92f56431ed59eaaab09e7819d1d850313",
         "url": "https://github.com/bazelbuild/rules_go/releases/download/v{version}/rules_go-v{version}.zip",
     },
-
     "rules_pkg": {
         "type": "github_archive",
         "repo": "bazelbuild/rules_pkg",
@@ -18,7 +15,6 @@ VERSIONS = {
         "sha256": "b7215c636f22c1849f1c3142c72f4b954bb12bb8dcf3cbe229ae6e69cc6479db",
         "url": "https://github.com/bazelbuild/rules_pkg/releases/download/{version}/rules_pkg-{version}.tar.gz",
     },
-
     "rules_python": {
         "type": "github_archive",
         "repo": "bazelbuild/rules_python",
@@ -27,5 +23,12 @@ VERSIONS = {
         "url": "https://github.com/{repo}/releases/download/{version}/{name}-{version}.tar.gz",
         "strip_prefix": "{name}-{version}",
     },
-
+    "rules_shell": {
+        "type": "github_archive",
+        "repo": "bazelbuild/rules_shell",
+        "version": "0.6.1",
+        "sha256": "e6b87c89bd0b27039e3af2c5da01147452f240f75d505f5b6880874f31036307",
+        "url": "https://github.com/{repo}/releases/download/v{version}/{name}-v{version}.tar.gz",
+        "strip_prefix": "{name}-{version}",
+    },
 }

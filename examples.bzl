@@ -1,7 +1,6 @@
-
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 
 def envoy_example(name, shared = ":shared_files", common_fun = ":verify-common.sh"):
-
     native.filegroup(
         name = "%s_files" % name,
         srcs = native.glob(["%s/**/*" % name]),
@@ -32,7 +31,7 @@ def envoy_example(name, shared = ":shared_files", common_fun = ":verify-common.s
         ],
     )
 
-    native.sh_binary(
+    sh_binary(
         name = "verify_%s" % name,
         srcs = [":verify_example.sh"],
         args = [
@@ -50,7 +49,7 @@ def envoy_examples(examples):
         name = "shared_files",
         srcs = native.glob(
             ["shared/**/*"],
-            exclude=[
+            exclude = [
                 "**/*~",
                 "**/.*",
                 "**/#*",
@@ -75,7 +74,7 @@ def envoy_examples(examples):
         RESULTS.append("%s_result" % example)
         RESULT_FILES.append("$(location %s)" % ("%s_result" % example))
 
-    native.sh_binary(
+    sh_binary(
         name = "verify_examples",
         srcs = [":verify_examples.sh"],
         args = RESULT_FILES,
