@@ -24,4 +24,4 @@ services:
       dockerfile: ../shared/golang/Dockerfile
       target: golang-lrs
     volumes:
-    - /go/src/github.com/envoyproxy/envoy/examples/load-reporting-service
+    - /go/src/github.com/envoyproxy/examples/load-reporting-service

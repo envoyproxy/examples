@@ -1,4 +1,4 @@
-module github.com/envoyproxy/envoy/examples/load-reporting-service
+module github.com/envoyproxy/examples/load-reporting-service
 
 go 1.24.0
 

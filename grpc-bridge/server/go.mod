@@ -1,4 +1,4 @@
-module github.com/envoyproxy/envoy/examples/grpc-bridge/server
+module github.com/envoyproxy/examples/grpc-bridge/server
 
 go 1.24.0
 

@@ -1,4 +1,4 @@
-module github.com/envoyproxy/envoy/examples/golang-http/simple
+module github.com/envoyproxy/examples/golang-http/simple
 
 // the version should >= 1.18
 go 1.24.0

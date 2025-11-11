@@ -123,9 +123,9 @@ grpc-client-proxy_1  | [2019-11-07T16:34:50.455Z] "POST /kv.KV/Get HTTP/1.1" 200
 
 ```console
 $ go build -o server
-go: finding github.com/envoyproxy/envoy/examples/grpc-bridge latest
-go: finding github.com/envoyproxy/envoy/examples latest
-go: finding github.com/envoyproxy/envoy/examples/grpc-bridge/server/kv latest
-go: finding github.com/envoyproxy/envoy/examples/grpc-bridge/server latest
-build github.com/envoyproxy/envoy: cannot load github.com/envoyproxy/envoy/examples/grpc-bridge/server/kv: no matching versions for query "latest"
+go: finding github.com/envoyproxy/examples/grpc-bridge latest
+go: finding github.com/envoyproxy/examples latest
+go: finding github.com/envoyproxy/examples/grpc-bridge/server/kv latest
+go: finding github.com/envoyproxy/examples/grpc-bridge/server latest
+build github.com/envoyproxy/envoy: cannot load github.com/envoyproxy/examples/grpc-bridge/server/kv: no matching versions for query "latest"
 ```

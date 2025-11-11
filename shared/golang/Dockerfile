@@ -64,13 +64,13 @@ ENTRYPOINT /bin/server
 
 
 FROM golang-base AS golang-lrs-builder
-COPY ./server /go/src/github.com/envoyproxy/envoy/example/load-reporting-service/server
-COPY *.go /go/src/github.com/envoyproxy/envoy/example/load-reporting-service/
-COPY go.sum /go/src/github.com/envoyproxy/envoy/example/load-reporting-service
-COPY go.mod /go/src/github.com/envoyproxy/envoy/example/load-reporting-service
-WORKDIR /go/src/github.com/envoyproxy/envoy/example/load-reporting-service
+COPY ./server /go/src/github.com/envoyproxy/examples/load-reporting-service/server
+COPY *.go /go/src/github.com/envoyproxy/examples/load-reporting-service/
+COPY go.sum /go/src/github.com/envoyproxy/examples/load-reporting-service
+COPY go.mod /go/src/github.com/envoyproxy/examples/load-reporting-service
+WORKDIR /go/src/github.com/envoyproxy/examples/load-reporting-service
 RUN go mod download \
-    && go install /go/src/github.com/envoyproxy/envoy/example/load-reporting-service
+    && go install /go/src/github.com/envoyproxy/examples/load-reporting-service
 
 
 FROM os-base AS golang-lrs

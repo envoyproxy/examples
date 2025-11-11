@@ -9,7 +9,7 @@ go_binary(
     ],
     out = "simple.so",
     cgo = True,
-    importpath = "github.com/envoyproxy/envoy/examples/golang-network/simple",
+    importpath = "github.com/envoyproxy/examples/golang-network/simple",
     linkmode = "c-shared",
     visibility = ["//visibility:public"],
     deps = [

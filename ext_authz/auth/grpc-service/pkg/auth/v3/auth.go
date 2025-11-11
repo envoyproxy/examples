@@ -11,7 +11,7 @@ import (
 	"google.golang.org/genproto/googleapis/rpc/code"
 	"google.golang.org/genproto/googleapis/rpc/status"
 
-	"github.com/envoyproxy/envoy/examples/ext_authz/auth/grpc-service/pkg/auth"
+	"github.com/envoyproxy/examples/ext_authz/auth/grpc-service/pkg/auth"
 )
 
 type server struct {
