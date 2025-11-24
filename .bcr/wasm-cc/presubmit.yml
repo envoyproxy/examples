@@ -13,4 +13,4 @@ tasks:
     platform: ${{ unix_platform }}
     bazel: ${{ bazel }}
     build_targets:
-    - "@envoy-examples-wasmcc//..."
+    - "@envoy_example_wasm_cc//..."

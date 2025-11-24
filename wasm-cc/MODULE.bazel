@@ -1,5 +1,6 @@
 module(
-    name = "envoy-example-wasmcc",
+    name = "envoy_example_wasm_cc",
+    repo_name = "envoy-example-wasmcc",
 )
 
 bazel_dep(name = "emsdk", version = "4.0.13")
