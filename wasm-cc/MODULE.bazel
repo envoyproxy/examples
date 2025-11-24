@@ -1,5 +1,23 @@
 module(
-    name = "envoy_example_wasmcc",
-    version = "0.1.4-dev",
-    repo_name = "envoy-example-wasmcc"
+    name = "envoy-example-wasmcc",
 )
+
+bazel_dep(name = "emsdk", version = "4.0.13")
+bazel_dep(name = "grpc", version = "1.72.0", repo_name = "com_github_grpc_grpc")
+bazel_dep(name = "rules_cc", version = "0.1.1")
+bazel_dep(name = "rules_fuzzing", version = "0.6.0")
+bazel_dep(name = "rules_go", version = "0.53.0", repo_name = "io_bazel_rules_go")
+bazel_dep(name = "rules_perl", version = "0.4.1")
+bazel_dep(name = "rules_proto_grpc", version = "5.0.0")
+bazel_dep(name = "rules_pkg", version = "1.1.0")
+bazel_dep(name = "rules_python", version = "1.4.1")
+bazel_dep(name = "rules_rust", version = "0.56.0")
+bazel_dep(name = "toolchains_llvm", version = "1.4.0")
+
+llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
+llvm.toolchain(
+    llvm_version = "18.1.8",
+)
+use_repo(llvm, "llvm_toolchain")
+
+register_toolchains("@llvm_toolchain//:all")
