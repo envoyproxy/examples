@@ -3,7 +3,13 @@ load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 def envoy_example(name, shared = ":shared_files", common_fun = ":verify-common.sh"):
     native.filegroup(
         name = "%s_files" % name,
-        srcs = native.glob(["%s/**/*" % name]),
+        srcs = native.glob(
+            ["%s/**/*" % name],
+            exclude = [
+                "%s/**/node_modules/**" % name,
+                "%s/**/dist/**" % name,
+            ],
+        ),
     )
 
     native.genrule(
