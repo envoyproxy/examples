@@ -11,7 +11,7 @@ jobs:
   examples:
     runs-on: ubuntu-24.04
     steps:
-    - uses: envoyproxy/toolshed/gh-actions/bind-mounts@actions-v0.3.27
+    - uses: envoyproxy/toolshed/actions/bind-mounts@598eacce15ab5f208102a2fd5669292868002701  # v0.4.0
       with:
         mounts: |
           - src: /mnt/docker
@@ -19,7 +19,9 @@ jobs:
             rm: true
             command-pre: sudo systemctl stop docker
             command-post: sudo systemctl start docker
-
+          - src: /mnt/runner-cache
+            target: /home/runner/.cache
+            chown: "runner:runner"
     - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
     - run: |
         TEMPDIR=/cache/docker
@@ -37,12 +39,14 @@ jobs:
         zstd --stdout -d "${TEMPDIR}/docker.tar.zst" | sudo tar --warning=no-timestamp -xf - -C /var/lib/docker-examples
         sudo umount "$TEMPDIR"
       if: steps.cache.outputs.cache-hit == 'true'
-
     - run: |
         TEMPDIR=/cache/docker
         sudo mkdir -p "${TEMPDIR}"
         sudo mount -t tmpfs none "$TEMPDIR"
         sudo chown runner "$TEMPDIR"
+        sudo du -ch /var/lib/docker | grep total
+        sudo du -ch /var/lib/docker-examples | grep total
+        sudo df -h
     - uses: actions/cache@v4
       with:
         path: /home/runner/.cache
