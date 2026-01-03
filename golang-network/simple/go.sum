@@ -1,11 +1,9 @@
 cel.dev/expr v0.24.0 h1:56OvJKSH3hDGL0ml5uSxZmz3/3Pq4tJ+fb1unVLAFcY=
 cel.dev/expr v0.24.0/go.mod h1:hLPLo1W4QUmuYdA72RBX06QTs6MXw941piREPl3Yfiw=
-github.com/cncf/xds/go v0.0.0-20251031190108-5cf4b1949528 h1:/LeN/a7nXz/nkJkihmSFToTx0L8fvolwdEjwv1GygXE=
-github.com/cncf/xds/go v0.0.0-20251031190108-5cf4b1949528/go.mod h1:KdCmV+x/BuvyMxRnYBlmVaq4OLiKW6iRQfvC62cvdkI=
 github.com/cncf/xds/go v0.0.0-20251110193048-8bfbf64dc13e h1:gt7U1Igw0xbJdyaCM5H2CnlAlPSkzrhsebQB6WQWjLA=
 github.com/cncf/xds/go v0.0.0-20251110193048-8bfbf64dc13e/go.mod h1:KdCmV+x/BuvyMxRnYBlmVaq4OLiKW6iRQfvC62cvdkI=
-github.com/envoyproxy/envoy v1.36.2 h1:87+0C7ZCbGJdDfD9sVsvqGLVvGk2OIKuxzzm9oNpvDM=
-github.com/envoyproxy/envoy v1.36.2/go.mod h1:mgMEye9tOlNiUTG+iYhQYgCzQcX46MMS0Jo6bVwRt1U=
+github.com/envoyproxy/envoy v1.36.3 h1:0ZT3QZHcIQ/Xx4mVrmGBgIUUfd4Qad8qrge5tFNPTCY=
+github.com/envoyproxy/envoy v1.36.3/go.mod h1:mgMEye9tOlNiUTG+iYhQYgCzQcX46MMS0Jo6bVwRt1U=
 github.com/envoyproxy/protoc-gen-validate v1.2.1 h1:DEo3O99U8j4hBFwbJfrz9VtgcDfUKS7KJ7spH3d86P8=
 github.com/envoyproxy/protoc-gen-validate v1.2.1/go.mod h1:d/C80l/jxXLdfEIhX1W2TmLfsJ31lvEjwamM4DxlWXU=
 github.com/google/go-cmp v0.7.0 h1:wk8382ETsv4JYUZwIsn6YpYiWiBsYLSJiTsyBybVuN8=
