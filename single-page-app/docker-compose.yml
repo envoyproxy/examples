@@ -37,7 +37,7 @@ services:
     - -c
     - |
       set -eo pipefail
-      touch /var/lib/envoy/lds.yml
+      echo "resources: []" > /var/lib/envoy/lds.yml
       chmod +w /var/lib/envoy/lds.yml
       exec envoy "$${@}"
       rm /var/lib/envoy/lds.yml
