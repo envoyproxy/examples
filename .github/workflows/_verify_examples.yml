@@ -19,7 +19,9 @@ jobs:
             rm: true
             command-pre: sudo systemctl stop docker
             command-post: sudo systemctl start docker
-
+          - src: /mnt/runner-cache
+            target: /home/runner/.cache
+            chown: "runner:runner"
     - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
     - run: |
         TEMPDIR=/cache/docker
@@ -37,12 +39,14 @@ jobs:
         zstd --stdout -d "${TEMPDIR}/docker.tar.zst" | sudo tar --warning=no-timestamp -xf - -C /var/lib/docker-examples
         sudo umount "$TEMPDIR"
       if: steps.cache.outputs.cache-hit == 'true'
-
     - run: |
         TEMPDIR=/cache/docker
         sudo mkdir -p "${TEMPDIR}"
         sudo mount -t tmpfs none "$TEMPDIR"
         sudo chown runner "$TEMPDIR"
+        sudo du -ch /var/lib/docker | grep total
+        sudo du -ch /var/lib/docker-examples | grep total
+        sudo df -h
     - uses: actions/cache@v5
       with:
         path: /home/runner/.cache
