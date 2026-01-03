@@ -11,7 +11,7 @@ jobs:
   examples:
     runs-on: ubuntu-24.04
     steps:
-    - uses: envoyproxy/toolshed/gh-actions/bind-mounts@actions-v0.3.27
+    - uses: envoyproxy/toolshed/actions/bind-mounts@598eacce15ab5f208102a2fd5669292868002701  # v0.4.0
       with:
         mounts: |
           - src: /mnt/docker
