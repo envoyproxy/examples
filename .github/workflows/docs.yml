@@ -18,11 +18,25 @@ jobs:
   docs:
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
+    - uses: envoyproxy/toolshed/actions/bind-mounts@598eacce15ab5f208102a2fd5669292868002701  # v0.4.0
+      with:
+        mounts: |
+          - src: /mnt/docker
+            target: /var/lib/docker
+            rm: true
+            command-pre: sudo systemctl stop docker
+            command-post: sudo systemctl start docker
+          - src: /mnt/workspace
+            target: GITHUB_WORKSPACE
+            chown: "runner:runner"
+          - src: /mnt/runner-cache
+            target: /home/runner/.cache
+            chown: "runner:runner"
+    - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
       with:
         repository: envoyproxy/envoy
         path: envoy
-    - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
+    - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
       with:
         path: examples
     - run: |

@@ -11,7 +11,7 @@ jobs:
   examples:
     runs-on: ubuntu-24.04
     steps:
-    - uses: envoyproxy/toolshed/gh-actions/bind-mounts@actions-v0.3.27
+    - uses: envoyproxy/toolshed/actions/bind-mounts@598eacce15ab5f208102a2fd5669292868002701  # v0.4.0
       with:
         mounts: |
           - src: /mnt/docker
@@ -19,14 +19,16 @@ jobs:
             rm: true
             command-pre: sudo systemctl stop docker
             command-post: sudo systemctl start docker
-
-    - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
+          - src: /mnt/runner-cache
+            target: /home/runner/.cache
+            chown: "runner:runner"
+    - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
     - run: |
         TEMPDIR=/cache/docker
         sudo mkdir -p "${TEMPDIR}"
         sudo mount -t tmpfs none "$TEMPDIR"
         sudo chown runner "$TEMPDIR"
-    - uses: actions/cache/restore@v4
+    - uses: actions/cache/restore@v5
       id: cache
       with:
         path: /cache/docker
@@ -37,13 +39,15 @@ jobs:
         zstd --stdout -d "${TEMPDIR}/docker.tar.zst" | sudo tar --warning=no-timestamp -xf - -C /var/lib/docker-examples
         sudo umount "$TEMPDIR"
       if: steps.cache.outputs.cache-hit == 'true'
-
     - run: |
         TEMPDIR=/cache/docker
         sudo mkdir -p "${TEMPDIR}"
         sudo mount -t tmpfs none "$TEMPDIR"
         sudo chown runner "$TEMPDIR"
-    - uses: actions/cache@v4
+        sudo du -ch /var/lib/docker | grep total
+        sudo du -ch /var/lib/docker-examples | grep total
+        sudo df -h
+    - uses: actions/cache@v5
       with:
         path: /home/runner/.cache
         key: ${{ runner.os }}-bazel-${{ hashFiles('**/BUILD', '**/*bzl', 'WORKSPACE') }}
@@ -66,7 +70,7 @@ jobs:
         sudo tar cf - -C /var/lib/docker-examples . | zstd - -q -T0 -o "${TEMPDIR}/docker.tar.zst"
         ls -alh "${TEMPDIR}/docker.tar.zst"
       if: steps.cache.outputs.cache-hit != 'true' && github.event_name != 'pull_request'
-    - uses: actions/cache/save@v4
+    - uses: actions/cache/save@v5
       if: steps.cache.outputs.cache-hit != 'true' && github.event_name != 'pull_request'
       with:
         path: /cache/docker
