@@ -82,6 +82,7 @@ done
 
 run_log "Test consumer group coordination"
 # Run a consumer in a group - it will timeout after 5s
+# The timeout is expected since there are no new messages, so we ignore the exit code
 kafka_client kafka-console-consumer --bootstrap-server proxy:10000 \
     --topic $TOPIC --group test-group --timeout-ms 5000 || true
 
