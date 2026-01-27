@@ -14,10 +14,10 @@ kafka_client () {
 }
 
 run_log "Produce message to topic 'apples' (routes to cluster1)"
-kafka_client /bin/bash -c "echo 'hello from apples' | kafka-console-producer --broker-list proxy:10000 --topic apples"
+kafka_client /bin/bash -c "echo 'hello from apples' | kafka-console-producer --request-required-acks 1 --producer-property enable.idempotence=false --broker-list proxy:10000 --topic apples"
 
 run_log "Produce message to topic 'bananas' (routes to cluster2)"
-kafka_client /bin/bash -c "echo 'hello from bananas' | kafka-console-producer --broker-list proxy:10000 --topic bananas"
+kafka_client /bin/bash -c "echo 'hello from bananas' | kafka-console-producer --request-required-acks 1 --producer-property enable.idempotence=false --broker-list proxy:10000 --topic bananas"
 
 run_log "Verify message landed in cluster1 (consume directly from cluster1)"
 kafka_client kafka-console-consumer --bootstrap-server kafka-cluster1:9092 --topic apples --from-beginning --max-messages 1 | grep "hello from apples"

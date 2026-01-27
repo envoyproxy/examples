@@ -58,7 +58,7 @@ this to **cluster1**.
 .. code-block:: console
 
    $ docker compose run --rm kafka-client \
-       /bin/bash -c "echo 'hello from apples' | kafka-console-producer --broker-list proxy:10000 --topic apples"
+       /bin/bash -c "echo 'hello from apples' | kafka-console-producer --request-required-acks 1 --producer-property enable.idempotence=false --broker-list proxy:10000 --topic apples"
 
 
 Step 3: Produce a message to the ``bananas`` topic
@@ -70,7 +70,7 @@ this to **cluster2**.
 .. code-block:: console
 
    $ docker compose run --rm kafka-client \
-       /bin/bash -c "echo 'hello from bananas' | kafka-console-producer --broker-list proxy:10000 --topic bananas"
+       /bin/bash -c "echo 'hello from bananas' | kafka-console-producer --request-required-acks 1 --producer-property enable.idempotence=false --broker-list proxy:10000 --topic bananas"
 
 
 Step 4: Verify the message landed in cluster1
