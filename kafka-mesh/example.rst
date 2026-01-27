@@ -109,12 +109,18 @@ Step 6: Consume through the mesh filter
 The mesh filter also routes fetch (consume) requests to the correct upstream. 
 Clients can consume through Envoy without knowing which cluster holds the data.
 
+.. note::
+
+   The mesh filter supports only Produce and Fetch Kafka APIs. Consumer group 
+   coordination (FIND_COORDINATOR, etc.) is not supported, so we disable the 
+   consumer group by setting ``group.id=`` (empty string).
+
 Consume the ``apples`` topic through Envoy:
 
 .. code-block:: console
 
    $ docker compose run --rm kafka-client \
-       kafka-console-consumer --bootstrap-server proxy:10000 --topic apples --from-beginning --max-messages 1
+       kafka-console-consumer --bootstrap-server proxy:10000 --topic apples --from-beginning --max-messages 1 --consumer-property group.id=
    hello from apples
 
 Consume the ``bananas`` topic through Envoy:
@@ -122,7 +128,7 @@ Consume the ``bananas`` topic through Envoy:
 .. code-block:: console
 
    $ docker compose run --rm kafka-client \
-       kafka-console-consumer --bootstrap-server proxy:10000 --topic bananas --from-beginning --max-messages 1
+       kafka-console-consumer --bootstrap-server proxy:10000 --topic bananas --from-beginning --max-messages 1 --consumer-property group.id=
    hello from bananas
 
 
