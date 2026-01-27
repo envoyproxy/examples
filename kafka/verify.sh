@@ -79,3 +79,40 @@ for stat in "${EXPECTED_BROKER_STATS[@]}"; do
         "$stat" \
         "http://localhost:${PORT_ADMIN}/stats?filter=${filter}"
 done
+
+run_log "Test consumer group coordination"
+# Run a consumer in a group - it will timeout after 5s
+# The timeout is expected since there are no new messages, so we ignore the exit code
+kafka_client kafka-console-consumer --bootstrap-server proxy:10000 \
+    --topic $TOPIC --group test-group --timeout-ms 5000 || true
+
+run_log "Check consumer group metrics"
+EXPECTED_GROUP_STATS=(
+    "kafka.kafka_broker.request.find_coordinator_request"
+    "kafka.kafka_broker.request.join_group_request"
+    "kafka.kafka_broker.response.find_coordinator_response"
+    "kafka.kafka_broker.response.join_group_response")
+for stat in "${EXPECTED_GROUP_STATS[@]}"; do
+    has_metric_with_at_least_1 "${stat}"
+done
+
+run_log "Test alter topic config"
+kafka_client kafka-configs --bootstrap-server proxy:10000 \
+    --alter --entity-type topics --entity-name $TOPIC \
+    --add-config retention.ms=86400000
+
+run_log "Check incremental_alter_configs metric"
+has_metric_with_at_least_1 "kafka.kafka_broker.request.incremental_alter_configs_request"
+
+run_log "Test add partitions"
+kafka_client kafka-topics --bootstrap-server proxy:10000 \
+    --alter --topic $TOPIC --partitions 3
+
+run_log "Check create_partitions metric"
+has_metric_with_at_least_1 "kafka.kafka_broker.request.create_partitions_request"
+
+run_log "Test delete topic"
+kafka_client kafka-topics --bootstrap-server proxy:10000 --delete --topic $TOPIC
+
+run_log "Check delete_topics metric"
+has_metric_with_at_least_1 "kafka.kafka_broker.request.delete_topics_request"
