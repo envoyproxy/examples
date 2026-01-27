@@ -1,0 +1,36 @@
+static_resources:
+  listeners:
+  - address:
+      socket_address:
+        address: 0.0.0.0
+        port_value: 10000
+    filter_chains:
+    - filters:
+      - name: envoy.filters.network.kafka_broker
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.kafka_broker.v3.KafkaBroker
+          stat_prefix: kafka_mesh
+          force_response_rewrite: true
+      - name: envoy.filters.network.kafka_mesh
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.kafka_mesh.v3alpha.KafkaMesh
+          advertised_host: "proxy"
+          advertised_port: 10000
+          upstream_clusters:
+          - cluster_name: kafka_cluster1
+            bootstrap_servers: kafka-cluster1:9092
+            partition_count: 1
+          - cluster_name: kafka_cluster2
+            bootstrap_servers: kafka-cluster2:9092
+            partition_count: 1
+          forwarding_rules:
+          - target_cluster: kafka_cluster1
+            topic_prefix: a
+          - target_cluster: kafka_cluster2
+            topic_prefix: b
+
+admin:
+  address:
+    socket_address:
+      address: 0.0.0.0
+      port_value: 8001
