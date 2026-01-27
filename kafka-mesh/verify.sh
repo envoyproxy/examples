@@ -1,8 +1,8 @@
 #!/bin/bash -e
 
 export NAME=kafka-mesh
-export PORT_PROXY="${KAFKA_MESH_PORT_PROXY:-11200}"
-export PORT_ADMIN="${KAFKA_MESH_PORT_ADMIN:-11201}"
+export PORT_PROXY="${KAFKA_MESH_PORT_PROXY:-11110}"
+export PORT_ADMIN="${KAFKA_MESH_PORT_ADMIN:-11111}"
 
 UPARGS="proxy kafka-cluster1 kafka-cluster2 zookeeper"
 
