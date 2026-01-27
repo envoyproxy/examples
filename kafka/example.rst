@@ -133,7 +133,7 @@ Consumer groups allow multiple consumers to coordinate consumption of a topic.
 When consumers join a group, they use the Kafka group coordination protocol
 which Envoy proxies transparently.
 
-Start a consumer in a group. It will wait for messages and then exit after 
+Start a consumer in a group. It will wait for messages and then exit after
 a timeout:
 
 .. code-block:: console
