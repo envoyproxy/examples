@@ -31,8 +31,8 @@ kafka_client kafka-console-consumer --bootstrap-server proxy:10000 --topic apple
 run_log "Consume 'bananas' through mesh filter"
 kafka_client kafka-console-consumer --bootstrap-server proxy:10000 --topic bananas --from-beginning --max-messages 1 | grep "hello from bananas"
 
-run_log "Check Envoy stats for produce requests"
-_curl "http://localhost:${PORT_ADMIN}/stats?filter=kafka" | grep "produce_request" | grep -v ": 0"
-
-run_log "Check Envoy stats for fetch requests"
-_curl "http://localhost:${PORT_ADMIN}/stats?filter=kafka" | grep "fetch_request" | grep -v ": 0"
+run_log "Check Envoy stats for produce and fetch requests"
+stats_output=$(_curl "http://localhost:${PORT_ADMIN}/stats?filter=kafka")
+echo "$stats_output" | grep "produce_request" | grep -v ": 0"
+echo "$stats_output" | grep "fetch_request" | grep -v ": 0"
+echo "$stats_output" | grep "metadata_request" | grep -v ": 0"
