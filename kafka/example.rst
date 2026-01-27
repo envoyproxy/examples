@@ -181,8 +181,8 @@ Check the admin operation metrics:
 
 .. code-block:: console
 
-   $ curl -s "http://localhost:8001/stats?filter=kafka.kafka_broker" | grep -E "(alter_configs|create_partitions)" | grep -v ": 0"
-   kafka.kafka_broker.request.alter_configs_request: 1
+   $ curl -s "http://localhost:8001/stats?filter=kafka.kafka_broker" | grep -E "(incremental_alter_configs|create_partitions)" | grep -v ": 0"
+   kafka.kafka_broker.request.incremental_alter_configs_request: 1
    kafka.kafka_broker.request.create_partitions_request: 1
 
 

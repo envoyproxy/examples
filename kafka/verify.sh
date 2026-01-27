@@ -100,8 +100,8 @@ kafka_client kafka-configs --bootstrap-server proxy:10000 \
     --alter --entity-type topics --entity-name $TOPIC \
     --add-config retention.ms=86400000
 
-run_log "Check alter_configs metric"
-has_metric_with_at_least_1 "kafka.kafka_broker.request.alter_configs_request"
+run_log "Check incremental_alter_configs metric"
+has_metric_with_at_least_1 "kafka.kafka_broker.request.incremental_alter_configs_request"
 
 run_log "Test add partitions"
 kafka_client kafka-topics --bootstrap-server proxy:10000 \
