@@ -112,15 +112,15 @@ Clients can consume through Envoy without knowing which cluster holds the data.
 .. note::
 
    The mesh filter supports only Produce and Fetch Kafka APIs. Consumer group 
-   coordination (FIND_COORDINATOR, etc.) is not supported, so we disable the 
-   consumer group by setting ``group.id=`` (empty string).
+   coordination (FIND_COORDINATOR, etc.) is not supported, so we consume by 
+   directly specifying the partition with ``--partition 0``.
 
 Consume the ``apples`` topic through Envoy:
 
 .. code-block:: console
 
    $ docker compose run --rm kafka-client \
-       kafka-console-consumer --bootstrap-server proxy:10000 --topic apples --from-beginning --max-messages 1 --consumer-property group.id=
+       kafka-console-consumer --bootstrap-server proxy:10000 --topic apples --partition 0 --from-beginning --max-messages 1
    hello from apples
 
 Consume the ``bananas`` topic through Envoy:
@@ -128,7 +128,7 @@ Consume the ``bananas`` topic through Envoy:
 .. code-block:: console
 
    $ docker compose run --rm kafka-client \
-       kafka-console-consumer --bootstrap-server proxy:10000 --topic bananas --from-beginning --max-messages 1 --consumer-property group.id=
+       kafka-console-consumer --bootstrap-server proxy:10000 --topic bananas --partition 0 --from-beginning --max-messages 1
    hello from bananas
 
 

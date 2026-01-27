@@ -26,10 +26,10 @@ run_log "Verify message landed in cluster2 (consume directly from cluster2)"
 kafka_client kafka-console-consumer --bootstrap-server kafka-cluster2:9092 --topic bananas --from-beginning --max-messages 1 | grep "hello from bananas"
 
 run_log "Consume 'apples' through mesh filter"
-kafka_client kafka-console-consumer --bootstrap-server proxy:10000 --topic apples --from-beginning --max-messages 1 --consumer-property group.id= | grep "hello from apples"
+kafka_client kafka-console-consumer --bootstrap-server proxy:10000 --topic apples --partition 0 --from-beginning --max-messages 1 | grep "hello from apples"
 
 run_log "Consume 'bananas' through mesh filter"
-kafka_client kafka-console-consumer --bootstrap-server proxy:10000 --topic bananas --from-beginning --max-messages 1 --consumer-property group.id= | grep "hello from bananas"
+kafka_client kafka-console-consumer --bootstrap-server proxy:10000 --topic bananas --partition 0 --from-beginning --max-messages 1 | grep "hello from bananas"
 
 run_log "Check Envoy stats for produce and fetch requests"
 stats_output=$(_curl "http://localhost:${PORT_ADMIN}/stats?filter=kafka")
