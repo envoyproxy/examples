@@ -106,6 +106,16 @@ updates:
     time: "06:00"
 
 - package-ecosystem: "docker"
+  directory: "/kafka-mesh"
+  groups:
+    examples-kafka-mesh:
+      patterns:
+      - "*"
+  schedule:
+    interval: daily
+    time: "06:00"
+
+- package-ecosystem: "docker"
   directory: "/local_ratelimit"
   groups:
     examples-local-ratelimit:
