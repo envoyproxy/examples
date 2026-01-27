@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@chakra-ui/react": "^3.28.1",
+    "@chakra-ui/react": "^3.31.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "framer-motion": "^12.29.2",
