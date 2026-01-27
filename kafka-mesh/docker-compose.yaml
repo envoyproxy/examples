@@ -1,0 +1,61 @@
+services:
+
+  kafka-client:
+    build:
+      context: .
+      dockerfile: Dockerfile-kafka
+    restart: "no"
+    deploy:
+      replicas: 0
+
+  proxy:
+    build:
+      context: .
+      dockerfile: ../shared/envoy/Dockerfile
+      args:
+        ENVOY_VARIANT: contrib-dev
+    ports:
+    - "${PORT_PROXY:-10000}:10000"
+    - "${PORT_ADMIN:-8001}:8001"
+
+  kafka-cluster1:
+    build:
+      context: .
+      dockerfile: Dockerfile-kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181/cluster1
+      KAFKA_LISTENERS: PLAINTEXT://kafka-cluster1:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-cluster1:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  kafka-cluster2:
+    build:
+      context: .
+      dockerfile: Dockerfile-kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181/cluster2
+      KAFKA_LISTENERS: PLAINTEXT://kafka-cluster2:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-cluster2:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  zookeeper:
+    build:
+      context: .
+      dockerfile: Dockerfile-zookeeper
+    healthcheck:
+      test: ["CMD", "sh", "-c", "echo ruok | nc 127.0.0.1 2181 || exit -1"]
+      interval: 5s
+      timeout: 60s
+      retries: 120
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      KAFKA_OPTS: "-Dzookeeper.4lw.commands.whitelist=ruok"

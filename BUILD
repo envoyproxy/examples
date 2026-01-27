@@ -22,6 +22,7 @@ EXAMPLE_TESTS = [
     "gzip",
     "jaeger-tracing",
     "kafka",
+    "kafka-mesh",
     "load-reporting-service",
     "locality-load-balancing",
     "local_ratelimit",
@@ -79,6 +80,7 @@ filegroup(
             "mysql/*.yaml",
             "postgres/*.yaml",
             "kafka/*.yaml",
+            "kafka-mesh/*.yaml",
         ],
         exclude = [
             "**/*docker-compose*.yaml",
