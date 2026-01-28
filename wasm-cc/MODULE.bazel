@@ -1,5 +1,61 @@
 module(
-    name = "envoy_example_wasmcc",
-    version = "0.1.4-dev",
-    repo_name = "envoy-example-wasmcc"
+    name = "envoy_example_wasm_cc",
+    version = "0.1.6-dev",
+    repo_name = "envoy-example-wasmcc",
 )
+
+bazel_dep(name = "emsdk", version = "4.0.13")
+bazel_dep(name = "envoy", version = "1.36.4-dev")
+bazel_dep(name = "envoy_api", version = "1.36.4-dev")
+bazel_dep(name = "envoy_build_config", version = "1.36.4-dev")
+bazel_dep(name = "envoy_mobile", version = "1.36.4-dev")
+bazel_dep(name = "envoy_toolshed", version = "0.3.25")
+bazel_dep(name = "grpc", version = "1.72.0", repo_name = "com_github_grpc_grpc")
+bazel_dep(name = "rules_cc", version = "0.1.1")
+bazel_dep(name = "rules_fuzzing", version = "0.6.0")
+bazel_dep(name = "rules_go", version = "0.59.0", repo_name = "io_bazel_rules_go")
+bazel_dep(name = "rules_perl", version = "0.4.1")
+bazel_dep(name = "rules_proto_grpc", version = "5.0.0")
+bazel_dep(name = "rules_pkg", version = "1.1.0")
+bazel_dep(name = "rules_python", version = "1.7.0")
+bazel_dep(name = "rules_rust", version = "0.68.1")
+
+bazel_dep(name = "toolchains_llvm", version = "1.4.0", dev_dependency = True)
+
+# Git overrides for bzlmod migration
+git_override(
+    module_name = "envoy",
+    commit = "f75d37791e180ac9f5a09a9535ef912f0fb0bcc9",
+    remote = "https://github.com/mmorel-35/envoy",
+)
+
+git_override(
+    module_name = "envoy_api",
+    commit = "f75d37791e180ac9f5a09a9535ef912f0fb0bcc9",
+    remote = "https://github.com/mmorel-35/envoy",
+    strip_prefix = "api",
+)
+
+git_override(
+    module_name = "envoy_build_config",
+    commit = "f75d37791e180ac9f5a09a9535ef912f0fb0bcc9",
+    remote = "https://github.com/mmorel-35/envoy",
+    strip_prefix = "mobile/envoy_build_config",
+)
+
+git_override(
+    module_name = "envoy_mobile",
+    commit = "f75d37791e180ac9f5a09a9535ef912f0fb0bcc9",
+    remote = "https://github.com/mmorel-35/envoy",
+    strip_prefix = "mobile",
+)
+
+git_override(
+    module_name = "toolchains_llvm",
+    commit = "fb29f3d53757790dad17b90df0794cea41f1e183",
+    remote = "https://github.com/bazel-contrib/toolchains_llvm",
+)
+
+# LLVM extension removed - can only be used by root module.
+# The LLVM toolchain will be configured by the root module (envoy).
+# See: https://github.com/mmorel-35/envoy/blob/copilot/document-bzlmod-migration/docs/bzlmod_migration.md#blocker-2-llvm-extension-in-envoy_example_wasm_cc

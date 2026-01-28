@@ -1,4 +1,14 @@
 module(
     name = "envoy_examples",
-    version = "0.1.4-dev",
+    version = "0.1.6-dev",
+)
+
+bazel_dep(name = "rules_go", version = "0.59.0", repo_name = "io_bazel_rules_go")
+bazel_dep(name = "rules_pkg", version = "1.1.0")
+bazel_dep(name = "rules_python", version = "1.7.0")
+bazel_dep(name = "rules_shell", version = "0.6.1")
+bazel_dep(name = "envoy_example_wasm_cc", version = "0.1.6-dev")
+local_path_override(
+    module_name = "envoy_example_wasm_cc",
+    path = "wasm-cc",
 )
