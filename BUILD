@@ -66,6 +66,7 @@ filegroup(
             "mysql/*",
             "postgres/*",
             "kafka/*.yaml",
+            "kafka-mesh/*.yaml",
         ],
     ) + ["@envoy-example-wasmcc//:configs"],
     visibility = ["//visibility:public"],
