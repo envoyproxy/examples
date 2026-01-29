@@ -111,6 +111,36 @@ kafka_client kafka-topics --bootstrap-server proxy:10000 \
 run_log "Check create_partitions metric"
 has_metric_with_at_least_1 "kafka.kafka_broker.request.create_partitions_request"
 
+run_log "Test consumer with empty topic (long-polling behavior)"
+EMPTY_TOPIC="empty-topic-test"
+
+# Create a new empty topic
+kafka_client kafka-topics --bootstrap-server proxy:10000 --create --topic $EMPTY_TOPIC
+
+# Get the current fetch_request count
+initial_fetch_count=$(_curl "http://localhost:${PORT_ADMIN}/stats?filter=kafka.kafka_broker.request.fetch_request" | grep "fetch_request:" | cut -f2 -d':' | tr -d ' ')
+initial_fetch_count=${initial_fetch_count:-0}
+run_log "Initial fetch_request count: $initial_fetch_count"
+
+# Try to consume from the empty topic (will timeout after 5s with no messages, which is expected)
+kafka_client kafka-console-consumer --bootstrap-server proxy:10000 --topic $EMPTY_TOPIC --timeout-ms 5000 || true
+
+# Get the updated fetch_request count
+updated_fetch_count=$(_curl "http://localhost:${PORT_ADMIN}/stats?filter=kafka.kafka_broker.request.fetch_request" | grep "fetch_request:" | cut -f2 -d':' | tr -d ' ')
+updated_fetch_count=${updated_fetch_count:-0}
+run_log "Updated fetch_request count: $updated_fetch_count"
+
+# Verify that fetch requests increased (proving Envoy proxied the requests even though no data was returned)
+if [[ $updated_fetch_count -gt $initial_fetch_count ]]; then
+    run_log "SUCCESS: Fetch requests increased from $initial_fetch_count to $updated_fetch_count"
+else
+    echo "ERROR: Fetch requests did not increase (initial: $initial_fetch_count, updated: $updated_fetch_count)" >&2
+    exit 1
+fi
+
+# Clean up the empty topic
+kafka_client kafka-topics --bootstrap-server proxy:10000 --delete --topic $EMPTY_TOPIC
+
 run_log "Test delete topic"
 kafka_client kafka-topics --bootstrap-server proxy:10000 --delete --topic $TOPIC
 

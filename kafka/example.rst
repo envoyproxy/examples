@@ -186,8 +186,55 @@ Check the admin operation metrics:
    kafka.kafka_broker.request.create_partitions_request: 1
 
 
-Step 10: Delete the topic
-*************************
+Step 10: Test consumer behavior with empty topic
+************************************************
+
+Kafka consumers can "long-poll" for messages - they connect and wait for data
+even when none is available yet. This is normal Kafka behavior, and Envoy
+correctly proxies these fetch requests even when they return no data.
+
+Create a new empty topic to test this:
+
+.. code-block:: console
+
+   $ export EMPTY_TOPIC="empty-topic-test"
+   $ docker compose run --rm kafka-client kafka-topics --bootstrap-server proxy:10000 --create --topic $EMPTY_TOPIC
+
+Check the current fetch request count before consuming:
+
+.. code-block:: console
+
+   $ curl -s "http://localhost:8001/stats?filter=kafka.kafka_broker.request.fetch_request" | grep "fetch_request:"
+   kafka.kafka_broker.request.fetch_request: 2
+
+Now try to consume from the empty topic. The consumer will poll the broker
+multiple times waiting for messages, then timeout after 5 seconds:
+
+.. code-block:: console
+
+   $ docker compose run --rm kafka-client kafka-console-consumer --bootstrap-server proxy:10000 --topic $EMPTY_TOPIC --timeout-ms 5000
+
+Even though no messages were received, Envoy proxied the fetch requests.
+Check that the fetch metric increased:
+
+.. code-block:: console
+
+   $ curl -s "http://localhost:8001/stats?filter=kafka.kafka_broker.request.fetch_request" | grep "fetch_request:"
+   kafka.kafka_broker.request.fetch_request: 12
+
+The increased count proves that Envoy correctly handles long-polling fetch
+requests, even when the topic is empty. This is important for applications
+that need to wait for data to arrive.
+
+Clean up the empty topic:
+
+.. code-block:: console
+
+   $ docker compose run --rm kafka-client kafka-topics --bootstrap-server proxy:10000 --delete --topic $EMPTY_TOPIC
+
+
+Step 11: Delete the main topic
+******************************
 
 Clean up by deleting the test topic:
 
