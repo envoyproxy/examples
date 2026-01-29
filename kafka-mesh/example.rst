@@ -150,11 +150,11 @@ Step 8: Test high-volume producing with batched records
 *******************************************************
 
 In production, Kafka producers often batch multiple records into a single
-ProduceRequest to improve throughput. The mesh filter must correctly handle
+``ProduceRequest`` to improve throughput. The mesh filter must correctly handle
 these batched requests and route records to the appropriate upstream cluster.
 
 Send multiple messages rapidly to the ``apricots`` topic (which routes to
-cluster1 based on the ``a`` prefix). The producer will automatically batch
+``cluster1`` based on the ``a`` prefix). The producer will automatically batch
 these into fewer requests:
 
 .. code-block:: console
@@ -164,7 +164,7 @@ these into fewer requests:
            echo \"apricot message \$i\"; \
        done | kafka-console-producer --request-required-acks 1 --producer-property enable.idempotence=false --broker-list proxy:10000 --topic apricots"
 
-Now verify that all 20 messages arrived at cluster1 by consuming directly
+Now verify that all 20 messages arrived at ``cluster1`` by consuming directly
 from the upstream:
 
 .. code-block:: console
@@ -174,7 +174,7 @@ from the upstream:
    20
 
 This confirms that even though the producer may have batched the records into
-multiple ProduceRequests, the mesh filter correctly routed all messages to the
+multiple ``ProduceRequest``s, the mesh filter correctly routed all messages to the
 appropriate cluster. This is critical for high-throughput production workloads.
 
 
