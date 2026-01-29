@@ -146,6 +146,38 @@ produce and fetch request counts:
    kafka.kafka_mesh.request.metadata_request: 8
 
 
+Step 8: Test high-volume producing with batched records
+*******************************************************
+
+In production, Kafka producers often batch multiple records into a single
+``ProduceRequest`` to improve throughput. The mesh filter must correctly handle
+these batched requests and route records to the appropriate upstream cluster.
+
+Send multiple messages rapidly to the ``apricots`` topic (which routes to
+``cluster1`` based on the ``a`` prefix). The producer will automatically batch
+these into fewer requests:
+
+.. code-block:: console
+
+   $ docker compose run --rm kafka-client /bin/bash -c " \
+       for i in {1..20}; do \
+           echo \"apricot message \$i\"; \
+       done | kafka-console-producer --request-required-acks 1 --producer-property enable.idempotence=false --broker-list proxy:10000 --topic apricots"
+
+Now verify that all 20 messages arrived at ``cluster1`` by consuming directly
+from the upstream:
+
+.. code-block:: console
+
+   $ docker compose run --rm kafka-client \
+       kafka-console-consumer --bootstrap-server kafka-cluster1:9092 --topic apricots --from-beginning --max-messages 20 | wc -l
+   20
+
+This confirms that even though the producer may have batched the records into
+multiple ``ProduceRequest``s, the mesh filter correctly routed all messages to the
+appropriate cluster. This is critical for high-throughput production workloads.
+
+
 .. seealso::
 
    :ref:`Envoy Kafka mesh filter <config_network_filters_kafka_mesh>`
