@@ -119,6 +119,7 @@ kafka_client kafka-topics --bootstrap-server proxy:10000 --create --topic $EMPTY
 
 # Get the current fetch_request count
 initial_fetch_count=$(_curl "http://localhost:${PORT_ADMIN}/stats?filter=kafka.kafka_broker.request.fetch_request" | grep "fetch_request:" | cut -f2 -d':' | tr -d ' ')
+initial_fetch_count=${initial_fetch_count:-0}
 run_log "Initial fetch_request count: $initial_fetch_count"
 
 # Try to consume from the empty topic (will timeout after 5s with no messages, which is expected)
@@ -126,6 +127,7 @@ kafka_client kafka-console-consumer --bootstrap-server proxy:10000 --topic $EMPT
 
 # Get the updated fetch_request count
 updated_fetch_count=$(_curl "http://localhost:${PORT_ADMIN}/stats?filter=kafka.kafka_broker.request.fetch_request" | grep "fetch_request:" | cut -f2 -d':' | tr -d ' ')
+updated_fetch_count=${updated_fetch_count:-0}
 run_log "Updated fetch_request count: $updated_fetch_count"
 
 # Verify that fetch requests increased (proving Envoy proxied the requests even though no data was returned)

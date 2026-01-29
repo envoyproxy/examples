@@ -47,6 +47,7 @@ kafka_client /bin/bash -c " \
 run_log "Verify all 20 messages arrived at cluster1"
 # Consume all messages and count them
 message_count=$(kafka_client kafka-console-consumer --bootstrap-server kafka-cluster1:9092 --topic apricots --from-beginning --max-messages 20 2>/dev/null | wc -l)
+message_count=${message_count:-0}
 run_log "Received $message_count messages from apricots topic"
 
 if [[ "$message_count" -eq 20 ]]; then
@@ -60,6 +61,7 @@ run_log "Verify produce metrics reflect the batched requests"
 # Get the produce_request count - it should be greater than 0 and likely less than 20 (due to batching)
 stats_output=$(_curl "http://localhost:${PORT_ADMIN}/stats?filter=kafka.kafka_mesh.request.produce_request")
 produce_count=$(echo "$stats_output" | grep "produce_request:" | cut -f2 -d':' | tr -d ' ')
+produce_count=${produce_count:-0}
 run_log "Total produce_request count: $produce_count"
 
 if [[ "$produce_count" -gt 0 ]]; then
