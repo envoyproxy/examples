@@ -70,3 +70,23 @@ else
     echo "ERROR: No produce requests tracked" >&2
     exit 1
 fi
+
+run_log "Test high-volume producing to second cluster with batched records"
+# Send 20 messages rapidly to blueberries topic (routes to cluster2)
+kafka_client /bin/bash -c " \
+    for i in {1..20}; do \
+        echo \"blueberry message \$i\"; \
+    done | kafka-console-producer --request-required-acks 1 --producer-property enable.idempotence=false --broker-list proxy:10000 --topic blueberries"
+
+run_log "Verify all 20 messages arrived at cluster2"
+# Consume all messages and count them
+message_count=$(kafka_client kafka-console-consumer --bootstrap-server kafka-cluster2:9092 --topic blueberries --from-beginning --max-messages 20 2>/dev/null | wc -l)
+message_count=${message_count:-0}
+run_log "Received $message_count messages from blueberries topic"
+
+if [[ "$message_count" -eq 20 ]]; then
+    run_log "SUCCESS: All 20 messages arrived at cluster2"
+else
+    echo "ERROR: Expected 20 messages but received $message_count" >&2
+    exit 1
+fi

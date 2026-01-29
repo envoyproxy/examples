@@ -177,6 +177,31 @@ This confirms that even though the producer may have batched the records into
 multiple ProduceRequests, the mesh filter correctly routed all messages to the
 appropriate cluster. This is critical for high-throughput production workloads.
 
+Next, send 20 messages rapidly to the ``blueberries`` topic (which routes to
+cluster2 based on the ``b`` prefix). This demonstrates that the mesh filter
+correctly splits batched ProduceRequests when they need to go to different
+upstream clusters:
+
+.. code-block:: console
+
+   $ docker compose run --rm kafka-client /bin/bash -c " \
+       for i in {1..20}; do \
+           echo \"blueberry message \$i\"; \
+       done | kafka-console-producer --request-required-acks 1 --producer-property enable.idempotence=false --broker-list proxy:10000 --topic blueberries"
+
+Verify that all 20 messages arrived at cluster2:
+
+.. code-block:: console
+
+   $ docker compose run --rm kafka-client \
+       kafka-console-consumer --bootstrap-server kafka-cluster2:9092 --topic blueberries --from-beginning --max-messages 20 | wc -l
+   20
+
+This demonstrates the mesh filter's ability to handle batched records destined
+for different clusters. In production environments where a single producer
+sends to multiple topics across different clusters, this ensures records are
+correctly routed based on their destination.
+
 
 .. seealso::
 
