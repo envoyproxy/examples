@@ -41,13 +41,13 @@ run_log "Test high-volume producing with batched records"
 # Send 20 messages rapidly to trigger producer batching
 kafka_client /bin/bash -c " \
     for i in {1..20}; do \
-        echo \"cherry message \$i\"; \
-    done | kafka-console-producer --request-required-acks 1 --producer-property enable.idempotence=false --broker-list proxy:10000 --topic cherries"
+        echo \"apricot message \$i\"; \
+    done | kafka-console-producer --request-required-acks 1 --producer-property enable.idempotence=false --broker-list proxy:10000 --topic apricots"
 
 run_log "Verify all 20 messages arrived at cluster1"
 # Consume all messages and count them
-message_count=$(kafka_client kafka-console-consumer --bootstrap-server kafka-cluster1:9092 --topic cherries --from-beginning --max-messages 20 2>/dev/null | wc -l)
-run_log "Received $message_count messages from cherries topic"
+message_count=$(kafka_client kafka-console-consumer --bootstrap-server kafka-cluster1:9092 --topic apricots --from-beginning --max-messages 20 2>/dev/null | wc -l)
+run_log "Received $message_count messages from apricots topic"
 
 if [[ "$message_count" -eq 20 ]]; then
     run_log "SUCCESS: All 20 messages arrived at cluster1"
