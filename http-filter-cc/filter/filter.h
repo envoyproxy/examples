@@ -27,9 +27,6 @@ public:
 private:
   const FilterConfigSharedPtr config_;
   Http::StreamDecoderFilterCallbacks* decoder_callbacks_{nullptr};
-
-  const Http::LowerCaseString headerKey() const;
-  const std::string headerValue() const;
 };
 
 } // namespace Sample

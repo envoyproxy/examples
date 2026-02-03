@@ -11,6 +11,11 @@ responds_with \
     '"x-custom-header": "custom-value"' \
     "http://localhost:${PORT_PROXY}/"
 
+run_log "Test per-route configuration override"
+responds_with \
+    '"x-overridden-header": "overridden-value"' \
+    "http://localhost:${PORT_PROXY}/override"
+
 run_log "Test that the backend receives the request"
 responds_with \
     '"hostname": "echo"' \

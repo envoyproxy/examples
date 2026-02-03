@@ -16,14 +16,6 @@ void Filter::setDecoderFilterCallbacks(Http::StreamDecoderFilterCallbacks& callb
   Http::PassThroughDecoderFilter::setDecoderFilterCallbacks(callbacks);
 }
 
-const Http::LowerCaseString Filter::headerKey() const {
-  return Http::LowerCaseString(config_->key());
-}
-
-const std::string Filter::headerValue() const {
-  return config_->val();
-}
-
 Http::FilterHeadersStatus Filter::decodeHeaders(Http::RequestHeaderMap& headers, bool) {
   std::string key = config_->key();
   std::string val = config_->val();
