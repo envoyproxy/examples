@@ -86,7 +86,25 @@ Test the per-route override:
 
 This demonstrates that different routes can have different filter behavior without requiring separate filter instances.
 
-Step 4: How it works
+Step 4: Test upstream filter functionality
+*******************************************
+
+The filter is also configured to run in the upstream HTTP filter chain, which processes requests after routing decisions are made and before they are sent to the upstream service.
+
+The upstream filter is configured in the cluster's ``typed_extension_protocol_options`` to add a header ``x-upstream-header: upstream-value`` to all upstream requests:
+
+.. code-block:: console
+
+   $ curl -s http://localhost:10000/ | grep x-upstream-header
+   "x-upstream-header": "upstream-value"
+
+This demonstrates that the same filter implementation can be used in both downstream (listener) and upstream (cluster) filter chains. Upstream filters are particularly useful for:
+
+- Adding authentication tokens or tracing headers before requests reach backends
+- Modifying requests based on cluster-specific requirements
+- Implementing cluster-specific retry or timeout logic
+
+Step 5: How it works
 ********************
 
 The filter implementation follows Envoy best practices with a modular structure:
@@ -112,6 +130,11 @@ The filter implementation follows Envoy best practices with a modular structure:
 **factory/factory.cc**
    Registers the filter factory with Envoy using ``DualFactoryBase`` and the ``REGISTER_FACTORY`` macro, allowing the filter to be referenced as ``sample`` in the Envoy configuration.
    
+   The factory is registered for both downstream and upstream use:
+   
+   - ``REGISTER_FACTORY(FilterFactory, Server::Configuration::NamedHttpFilterConfigFactory)`` - for downstream (listener) filter chains
+   - ``REGISTER_FACTORY(FilterFactory, Server::Configuration::UpstreamHttpFilterConfigFactory)`` - for upstream (cluster) filter chains
+   
    Implements ``createRouteSpecificFilterConfigTyped()`` to parse per-route configuration and create ``PerRouteFilterConfig`` instances.
 
 **MODULE.bazel**
@@ -128,12 +151,38 @@ The filter implementation follows Envoy best practices with a modular structure:
       :language: starlark
       :lines: 1-16
 
-The filter is configured in :download:`envoy.yaml <_include/http-filter-cc/envoy.yaml>`:
+The filter is configured in :download:`envoy.yaml <_include/http-filter-cc/envoy.yaml>` in both downstream and upstream filter chains.
+
+**Downstream filter configuration** (in the listener's HTTP connection manager):
 
 .. literalinclude:: _include/http-filter-cc/envoy.yaml
    :language: yaml
    :lines: 14-19
    :emphasize-lines: 1-6
+
+**Upstream filter configuration** (in the cluster's typed_extension_protocol_options):
+
+.. code-block:: yaml
+
+   clusters:
+   - name: service_backend
+     # ... other cluster config ...
+     typed_extension_protocol_options:
+       envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+         "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+         upstream_http_protocol_options:
+           auto_sni: true
+         explicit_http_config:
+           http_protocol_options: {}
+         http_filters:
+         - name: sample
+           typed_config:
+             "@type": type.googleapis.com/sample.Decoder
+             key: "x-upstream-header"
+             val: "upstream-value"
+         - name: envoy.filters.http.upstream_codec
+           typed_config:
+             "@type": type.googleapis.com/envoy.extensions.filters.http.upstream_codec.v3.UpstreamCodec
 
 Per-route configuration overrides are defined within route definitions:
 
@@ -150,7 +199,7 @@ Per-route configuration overrides are defined within route definitions:
          key: "x-overridden-header"
          val: "overridden-value"
 
-Step 5: Modify the filter
+Step 6: Modify the filter
 **************************
 
 You can modify the filter configuration in ``envoy.yaml`` to change the header name and value.
@@ -177,6 +226,9 @@ Then rebuild and restart the proxy:
 
    :ref:`Envoy HTTP filters <config_http_filters>`
       Learn more about Envoy HTTP filters.
+
+   :ref:`Envoy upstream HTTP filters <envoy_v3_api_msg_extensions.filters.network.http_connection_manager.v3.HttpConnectionManager.UpgradeConfig>`
+      Documentation on upstream HTTP filter configuration.
 
    `Envoy bzlmod support <https://github.com/envoyproxy/envoy/pull/42890>`_
       The Envoy PR that adds bzlmod support.
