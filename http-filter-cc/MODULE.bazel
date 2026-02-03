@@ -22,3 +22,17 @@ git_override(
     remote = "https://github.com/envoyproxy/envoy",
     strip_prefix = "api",
 )
+
+git_override(
+    module_name = "envoy_build_config",
+    commit = "ee0903e918951681ab9f052ac44019419a0863a2",
+    remote = "https://github.com/envoyproxy/envoy",
+    strip_prefix = "mobile/envoy_build_config",
+)
+
+git_override(
+    module_name = "envoy_mobile",
+    commit = "ee0903e918951681ab9f052ac44019419a0863a2",
+    remote = "https://github.com/envoyproxy/envoy",
+    strip_prefix = "mobile",
+)
