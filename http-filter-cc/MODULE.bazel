@@ -1,0 +1,24 @@
+module(
+    name = "envoy_example_http_filter_cc",
+    version = "0.1.0-dev",
+)
+
+bazel_dep(name = "envoy", version = "1.36.4-dev")
+bazel_dep(name = "envoy_api", version = "1.36.4-dev")
+bazel_dep(name = "protoc-gen-validate", version = "1.3.0", repo_name = "com_envoyproxy_protoc_gen_validate")
+bazel_dep(name = "bazel_skylib", version = "1.8.2")
+bazel_dep(name = "rules_pkg", version = "1.1.0")
+
+# Pin to bzlmod PR branch until merged to main
+git_override(
+    module_name = "envoy",
+    commit = "ee0903e918951681ab9f052ac44019419a0863a2",
+    remote = "https://github.com/envoyproxy/envoy",
+)
+
+git_override(
+    module_name = "envoy_api", 
+    commit = "ee0903e918951681ab9f052ac44019419a0863a2",
+    remote = "https://github.com/envoyproxy/envoy",
+    strip_prefix = "api",
+)

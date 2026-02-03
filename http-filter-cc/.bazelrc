@@ -1,0 +1,4 @@
+# Enable bzlmod
+common --enable_bzlmod
+
+common --color=yes

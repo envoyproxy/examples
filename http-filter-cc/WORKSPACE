@@ -1,0 +1,1 @@
+workspace(name = "envoy_example_http_filter_cc")
