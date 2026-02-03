@@ -17,7 +17,7 @@ git_override(
 )
 
 git_override(
-    module_name = "envoy_api", 
+    module_name = "envoy_api",
     commit = "ee0903e918951681ab9f052ac44019419a0863a2",
     remote = "https://github.com/envoyproxy/envoy",
     strip_prefix = "api",
