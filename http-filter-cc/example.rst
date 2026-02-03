@@ -104,6 +104,10 @@ This demonstrates that the same filter implementation can be used in both downst
 - Modifying requests based on cluster-specific requirements
 - Implementing cluster-specific retry or timeout logic
 
+.. note::
+
+   Per-route configuration overrides only apply when the filter runs in downstream (listener) filter chains. In upstream (cluster) filter chains, only the cluster-level configuration is used since routing has already been completed.
+
 Step 5: How it works
 ********************
 
@@ -170,8 +174,6 @@ The filter is configured in :download:`envoy.yaml <_include/http-filter-cc/envoy
      typed_extension_protocol_options:
        envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
          "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
-         upstream_http_protocol_options:
-           auto_sni: true
          explicit_http_config:
            http_protocol_options: {}
          http_filters:
@@ -227,7 +229,7 @@ Then rebuild and restart the proxy:
    :ref:`Envoy HTTP filters <config_http_filters>`
       Learn more about Envoy HTTP filters.
 
-   :ref:`Envoy upstream HTTP filters <envoy_v3_api_msg_extensions.filters.network.http_connection_manager.v3.HttpConnectionManager.UpgradeConfig>`
+   :ref:`Upstream HTTP filters <envoy_v3_api_msg_extensions.upstreams.http.v3.HttpProtocolOptions>`
       Documentation on upstream HTTP filter configuration.
 
    `Envoy bzlmod support <https://github.com/envoyproxy/envoy/pull/42890>`_
