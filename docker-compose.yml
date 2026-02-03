@@ -12,20 +12,37 @@ services:
     - "${PWD}/_docker/docs-entrypoint-extra.sh:/entrypoint-extra.sh"
     - "${HOME}/.cache/envoy/examples:/home/envoybuild/.cache"
     working_dir: /workspace/envoy
-    command:
-    - bash
-    - -c
-    - |
-      ./ci/do_ci.sh docs
     environment:
       DOCS_BUILD_RST: "${DOCS_BUILD_RST:-}"
       BAZEL_BUILD_EXTRA_OPTIONS: >-
         ${BAZEL_BUILD_EXTRA_OPTIONS:-
-        --override_repository=envoy_examples=../examples
-        --@rules_python//python/config_settings:bootstrap_impl=script}
-      BUILD_UID: "${UID:-1000}"
+        --override_repository=envoy_examples=../examples}
+      USER_UID: "${UID:-1000}"
+      GROUP_UID: "${GID:-1000}"
       GITHUB_TOKEN: "${GITHUB_TOKEN:-}"
+    entrypoint:
+    - "/bin/bash"
+    - "-c"
+    - |
+      set -e
 
+      usermod -u "$$USER_UID" envoybuild
+      groupmod -g "$$GROUP_UID" envoybuild
+
+      chown envoybuild:envoybuild /home/envoybuild/.cache
+      chown envoybuild:envoybuild /workspace/envoy
+      chown envoybuild:envoybuild /workspace/envoy/generated
+      chown envoybuild:envoybuild /workspace/envoy/generated/docs
+      exec sudo -EH -u envoybuild "$@"
+    - "--"
+    command:
+    - /bin/bash
+    - -c
+    - |
+      set -e
+
+      git config --global --add safe.directory /workspace/envoy
+      exec ./ci/do_ci.sh docs
   examples:
     build:
       context: .
