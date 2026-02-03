@@ -75,19 +75,24 @@ You can also check Envoy's admin interface to see stats and config:
 Step 3: How it works
 ********************
 
-The filter implementation consists of several components:
+The filter implementation follows Envoy best practices with a modular structure:
 
-**http_filter.proto**
+**api/http_filter.proto**
    Defines the filter's configuration protobuf with two required fields:
 
    - ``key``: The header name to add
    - ``val``: The header value to add
 
-**http_filter.h / http_filter.cc**
-   Implements the filter logic by extending ``PassThroughDecoderFilter`` and overriding ``decodeHeaders()`` to inject the custom header.
+   Also defines ``DecoderPerRoute`` for per-route configuration overrides.
 
-**http_filter_config.cc**
-   Registers the filter factory with Envoy using ``NamedHttpFilterConfigFactory``, allowing the filter to be referenced as ``sample`` in the Envoy configuration.
+**common/config.h / config.cc**
+   Holds the parsed configuration in the ``FilterConfig`` class, using the ``Envoy::Extensions::HttpFilters::Sample`` namespace.
+
+**filter/filter.h / filter.cc**
+   Implements the core filter logic by extending ``PassThroughDecoderFilter`` and overriding ``decodeHeaders()`` to inject the custom header.
+
+**factory/factory.cc**
+   Registers the filter factory with Envoy using ``DualFactoryBase`` and the ``REGISTER_FACTORY`` macro, allowing the filter to be referenced as ``sample`` in the Envoy configuration.
 
 **MODULE.bazel**
    Declares Envoy as a bzlmod dependency:
@@ -96,12 +101,12 @@ The filter implementation consists of several components:
       :language: starlark
       :lines: 1-10
 
-**BUILD**
+**BUILD.bazel**
    Defines the build targets:
 
-   .. literalinclude:: _include/http-filter-cc/BUILD
+   .. literalinclude:: _include/http-filter-cc/BUILD.bazel
       :language: starlark
-      :lines: 1-39
+      :lines: 1-16
 
 The filter is configured in :download:`envoy.yaml <_include/http-filter-cc/envoy.yaml>`:
 
