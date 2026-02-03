@@ -1,17 +1,17 @@
-FROM rust:1.88.0 AS builder
-WORKDIR /usr/src/echo
-COPY . .
-RUN rustup install nightly && rustup default nightly && cargo build --release
+FROM debian:trixie-slim
 
+ARG BINS_VERSION=0.1.47
+ARG ECHO_VERSION=0.1.0
+ARG TARGETARCH
 
-FROM debian:bookworm-slim
 RUN --mount=type=tmpfs,target=/var/cache/apt \
     --mount=type=tmpfs,target=/var/lib/apt/lists \
     apt-get -qq update \
-    && apt-get -qq install -y libssl-dev ca-certificates
-COPY --from=builder \
-    /usr/src/echo/target/release/example-echo \
-    /usr/local/bin/example-echo
+    && apt-get -qq install -y libssl-dev ca-certificates curl
+
+RUN curl -fsSL "https://github.com/envoyproxy/toolshed/releases/download/bins-v${BINS_VERSION}/echo-${ECHO_VERSION}-${TARGETARCH}" \
+         -o /usr/local/bin/example-echo \
+    && chmod +x /usr/local/bin/example-echo
 EXPOSE 8080
 COPY <<EOF /etc/config.yaml
 listeners:
