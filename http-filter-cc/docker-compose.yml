@@ -1,0 +1,41 @@
+services:
+
+  envoy-build:
+    build:
+      context: ../shared/build
+    command:
+    - bash
+    - -c
+    - |
+      set -eo pipefail
+      bazel build --experimental_repository_downloader_retries=2 --disk_cache=/tmp/disk_cache \
+          --repository_cache=/tmp/repository_cache --experimental_repository_cache_hardlinks \
+          //:envoy
+      cp -af bazel-bin/envoy /output/envoy
+    environment:
+    - BUILD_UID=${UID:-1000}
+    entrypoint: /source/shared/build/build-entrypoint.sh
+    working_dir: /source/http-filter-cc
+    volumes:
+    - ${ENVOY_EXAMPLES_CACHE_DIR:-${HOME}/.cache/envoy/examples}:/home/envoybuild/.cache
+    - ..:/source
+    - ./bin:/output
+
+  proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+    - "${PORT_PROXY:-10000}:10000"
+
+  backend:
+    build:
+      context: ../shared/echo
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
