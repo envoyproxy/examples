@@ -1,0 +1,22 @@
+services:
+
+  proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        GITHUB_TOKEN: "${GITHUB_TOKEN}"
+    depends_on:
+      backend:
+        condition: service_started
+    ports:
+    - "${PORT_PROXY:-10000}:10000"
+
+  backend:
+    build:
+      context: ../shared/echo
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 5s
+      timeout: 3s
+      retries: 3

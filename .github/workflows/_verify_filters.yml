@@ -1,0 +1,28 @@
+name: Verify/Filters
+
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+
+
+jobs:
+  http-filter-cc:
+    permissions:
+      packages: read
+      contents: read
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+    - run: |
+        docker pull envoyproxy/envoy:dev
+        DEV_CONTAINER_ID=$(docker inspect --format='{{.Id}}' envoyproxy/envoy:dev)
+        echo "DEV_CONTAINER_ID=${DEV_CONTAINER_ID}" >> $GITHUB_ENV
+    - run: |
+        echo "build --config=rbe" > repo.bazelrc
+        echo "build --config=ci" >> repo.bazelrc
+        ./verify.sh
+      working-directory: http-filter-cc
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
