@@ -22,9 +22,9 @@ public:
 
   absl::StatusOr<Http::FilterFactoryCb>
   createFilterFactoryFromProtoTyped(const sample::Decoder& proto_config,
-                                    const std::string& stats_prefix,
-                                    DualInfo info,
-                                    Server::Configuration::ServerFactoryContext& context) override {
+                                    const std::string& /*stats_prefix*/,
+                                    DualInfo /*info*/,
+                                    Server::Configuration::ServerFactoryContext& /*context*/) override {
     auto config = std::make_shared<FilterConfig>(proto_config);
     return [config](Http::FilterChainFactoryCallbacks& callbacks) -> void {
       callbacks.addStreamDecoderFilter(std::make_shared<Filter>(config));
