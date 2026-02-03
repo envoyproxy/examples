@@ -20,45 +20,26 @@ This approach replaces the obsolete WORKSPACE-based method and shows how to use 
 .. note::
 
    This example requires Bazel 7.6.2 or later and uses the Envoy bzlmod support.
+   Building the custom Envoy binary will take significant time and disk space (4-5GB) on the first run.
 
-Step 1: Build the custom Envoy binary
-**************************************
-
-The first step is to compile the custom Envoy binary with the HTTP filter statically linked.
-
-This uses the ``envoy-build`` service which runs Bazel inside a build container.
-
-.. warning::
-
-   This step uses the
-   `envoyproxy/envoy-build <https://hub.docker.com/r/envoyproxy/envoy-build/tags>`_ image.
-   You will need 4-5GB of disk space and the build will take some time on the first run.
-
-Export ``UID`` from your host system to ensure the binary has the correct permissions:
-
-.. code-block:: console
-
-   $ export UID
-   $ cd http-filter-cc
-   $ docker compose run --rm envoy-build
-
-The compiled binary will be placed in the ``bin/`` directory:
-
-.. code-block:: console
-
-   $ ls -lh bin/
-   total 200M
-   -rwxr-xr-x 1 user user 200M Feb  3 10:00 envoy
-
-Step 2: Start the containers
+Step 1: Start the containers
 *****************************
 
-Now start the proxy and backend services:
+The example consists of two services:
+
+- **proxy**: A custom Envoy binary with the HTTP filter statically linked
+- **backend**: An echo service that responds to HTTP requests
+
+The custom Envoy binary is compiled during the Docker build process.
+
+Change to the ``http-filter-cc`` directory and start the containers:
 
 .. code-block:: console
 
+    $ pwd
+    examples/http-filter-cc
     $ docker compose pull
-    $ docker compose up --build -d proxy backend
+    $ docker compose up --build -d
     $ docker compose ps
 
           Name                    Command                  State           Ports
@@ -66,7 +47,7 @@ Now start the proxy and backend services:
     http-filter-cc_proxy_1     /usr/local/bin/envoy -c ...   Up      0.0.0.0:10000->10000/tcp
     http-filter-cc_backend_1   example-echo -c /etc/con...   Up      8080/tcp
 
-Step 3: Test the custom filter
+Step 2: Test the custom filter
 *******************************
 
 The custom filter is configured to add a header ``x-custom-header: custom-value`` to all requests.
@@ -91,7 +72,7 @@ You can also check Envoy's admin interface to see stats and config:
    $ docker compose exec proxy curl -s http://localhost:9001/stats | grep http
    $ docker compose exec proxy curl -s http://localhost:9001/config_dump
 
-Step 4: How it works
+Step 3: How it works
 ********************
 
 The filter implementation consists of several components:
@@ -129,7 +110,7 @@ The filter is configured in :download:`envoy.yaml <_include/http-filter-cc/envoy
    :lines: 14-19
    :emphasize-lines: 1-6
 
-Step 5: Modify the filter
+Step 4: Modify the filter
 **************************
 
 You can modify the filter configuration in ``envoy.yaml`` to change the header name and value.
