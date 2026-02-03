@@ -11,5 +11,6 @@ envoy_cc_library(
     repository = "@envoy",
     deps = [
         "//api:pkg_cc_proto",
+        "@envoy//envoy/router:router_interface",
     ],
 )

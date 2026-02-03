@@ -30,6 +30,13 @@ public:
       callbacks.addStreamDecoderFilter(std::make_shared<Filter>(config));
     };
   }
+
+  Router::RouteSpecificFilterConfigConstSharedPtr
+  createRouteSpecificFilterConfigTyped(const sample::DecoderPerRoute& proto_config,
+                                        Server::Configuration::ServerFactoryContext&,
+                                        ProtobufMessage::ValidationVisitor&) override {
+    return std::make_shared<PerRouteFilterConfig>(proto_config);
+  }
 };
 
 REGISTER_FACTORY(FilterFactory, Server::Configuration::NamedHttpFilterConfigFactory);

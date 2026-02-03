@@ -27,6 +27,15 @@ static_resources:
               domains: ["*"]
               routes:
               - match:
+                  prefix: "/override"
+                route:
+                  cluster: service_backend
+                typed_per_filter_config:
+                  sample:
+                    "@type": type.googleapis.com/sample.DecoderPerRoute
+                    key: "x-overridden-header"
+                    val: "overridden-value"
+              - match:
                   prefix: "/"
                 route:
                   cluster: service_backend

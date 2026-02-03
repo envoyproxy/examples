@@ -1,6 +1,7 @@
 #pragma once
 
 #include "source/extensions/filters/http/common/pass_through_filter.h"
+#include "source/common/http/utility.h"
 
 #include "common/config.h"
 
@@ -21,9 +22,11 @@ public:
   void onDestroy() override;
   Http::FilterHeadersStatus decodeHeaders(Http::RequestHeaderMap& headers, bool end_stream) override;
   Http::FilterDataStatus decodeData(Buffer::Instance& data, bool end_stream) override;
+  void setDecoderFilterCallbacks(Http::StreamDecoderFilterCallbacks& callbacks) override;
 
 private:
   const FilterConfigSharedPtr config_;
+  Http::StreamDecoderFilterCallbacks* decoder_callbacks_{nullptr};
 
   const Http::LowerCaseString headerKey() const;
   const std::string headerValue() const;

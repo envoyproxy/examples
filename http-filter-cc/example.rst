@@ -72,7 +72,21 @@ You can also check Envoy's admin interface to see stats and config:
    $ docker compose exec proxy curl -s http://localhost:9001/stats | grep http
    $ docker compose exec proxy curl -s http://localhost:9001/config_dump
 
-Step 3: How it works
+Step 3: Test per-route configuration
+*************************************
+
+The filter also supports per-route configuration overrides. The example includes a route with prefix ``/override`` that overrides the filter's header configuration.
+
+Test the per-route override:
+
+.. code-block:: console
+
+   $ curl -s http://localhost:10000/override | grep x-overridden-header
+   "x-overridden-header": "overridden-value"
+
+This demonstrates that different routes can have different filter behavior without requiring separate filter instances.
+
+Step 4: How it works
 ********************
 
 The filter implementation follows Envoy best practices with a modular structure:
@@ -87,12 +101,18 @@ The filter implementation follows Envoy best practices with a modular structure:
 
 **common/config.h / config.cc**
    Holds the parsed configuration in the ``FilterConfig`` class, using the ``Envoy::Extensions::HttpFilters::Sample`` namespace.
+   
+   The ``PerRouteFilterConfig`` class extends ``Router::RouteSpecificFilterConfig`` and stores per-route overrides for the header key and value.
 
 **filter/filter.h / filter.cc**
    Implements the core filter logic by extending ``PassThroughDecoderFilter`` and overriding ``decodeHeaders()`` to inject the custom header.
+   
+   The filter uses ``Http::Utility::resolveMostSpecificPerFilterConfig()`` to check for per-route configuration overrides before adding headers.
 
 **factory/factory.cc**
    Registers the filter factory with Envoy using ``DualFactoryBase`` and the ``REGISTER_FACTORY`` macro, allowing the filter to be referenced as ``sample`` in the Envoy configuration.
+   
+   Implements ``createRouteSpecificFilterConfigTyped()`` to parse per-route configuration and create ``PerRouteFilterConfig`` instances.
 
 **MODULE.bazel**
    Declares Envoy as a bzlmod dependency:
@@ -115,7 +135,22 @@ The filter is configured in :download:`envoy.yaml <_include/http-filter-cc/envoy
    :lines: 14-19
    :emphasize-lines: 1-6
 
-Step 4: Modify the filter
+Per-route configuration overrides are defined within route definitions:
+
+.. code-block:: yaml
+
+   routes:
+   - match:
+       prefix: "/override"
+     route:
+       cluster: service_backend
+     typed_per_filter_config:
+       sample:
+         "@type": type.googleapis.com/sample.DecoderPerRoute
+         key: "x-overridden-header"
+         val: "overridden-value"
+
+Step 5: Modify the filter
 **************************
 
 You can modify the filter configuration in ``envoy.yaml`` to change the header name and value.

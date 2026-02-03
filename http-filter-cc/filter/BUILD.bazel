@@ -12,5 +12,6 @@ envoy_cc_library(
     deps = [
         "//common:config_lib",
         "@envoy//source/extensions/filters/http/common:pass_through_filter_lib",
+        "@envoy//source/common/http:utility_lib",
     ],
 )
