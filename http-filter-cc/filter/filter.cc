@@ -28,10 +28,6 @@ Http::FilterDataStatus Filter::decodeData(Buffer::Instance&, bool) {
   return Http::FilterDataStatus::Continue;
 }
 
-void Filter::setDecoderFilterCallbacks(Http::StreamDecoderFilterCallbacks& callbacks) {
-  decoder_callbacks_ = &callbacks;
-}
-
 } // namespace Sample
 } // namespace HttpFilters
 } // namespace Extensions
