@@ -58,4 +58,3 @@ git_override(
 
 # LLVM extension removed - can only be used by root module.
 # The LLVM toolchain will be configured by the root module (envoy).
-# See: https://github.com/mmorel-35/envoy/blob/copilot/document-bzlmod-migration/docs/bzlmod_migration.md#blocker-2-llvm-extension-in-envoy_example_wasm_cc

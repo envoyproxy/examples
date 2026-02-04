@@ -1,10 +1,13 @@
+x-envoy-config: &envoy-config
+  ENVOY_COMMIT: "${ENVOY_COMMIT:-e1d1bcc84e310bc35d46bb2d78297159fc4f3e9f}"
+  REGISTRY_URL: "${REGISTRY_URL:-https://raw.githubusercontent.com/phlax/bazel-central-registry/b739c7fa56b971d695af9600b88099236dcfef76}"
+
 services:
   wasm_compile_update:
     build:
       context: ../shared/build
       args:
-        ENVOY_COMMIT: "${ENVOY_COMMIT:-e1d1bcc84e310bc35d46bb2d78297159fc4f3e9f}"
-        REGISTRY_URL: "${REGISTRY_URL:-https://raw.githubusercontent.com/phlax/bazel-central-registry/b739c7fa56b971d695af9600b88099236dcfef76}"
+        <<: *envoy-config
     command:
     - bash
     - -c
@@ -16,9 +19,8 @@ services:
          //:envoy_filter_http_wasm_updated_example.wasm
       cp -af bazel-bin/*updated*.wasm /output
     environment:
-    - BUILD_UID=${UID:-1000}
-    - ENVOY_COMMIT=${ENVOY_COMMIT:-e1d1bcc84e310bc35d46bb2d78297159fc4f3e9f}
-    - REGISTRY_URL=${REGISTRY_URL:-https://raw.githubusercontent.com/phlax/bazel-central-registry/b739c7fa56b971d695af9600b88099236dcfef76}
+      BUILD_UID: ${UID:-1000}
+      <<: *envoy-config
     entrypoint: /source/shared/build/build-entrypoint.sh
     working_dir: /source/wasm-cc
     volumes:
@@ -30,8 +32,7 @@ services:
     build:
       context: ../shared/build
       args:
-        ENVOY_COMMIT: "${ENVOY_COMMIT:-e1d1bcc84e310bc35d46bb2d78297159fc4f3e9f}"
-        REGISTRY_URL: "${REGISTRY_URL:-https://raw.githubusercontent.com/phlax/bazel-central-registry/b739c7fa56b971d695af9600b88099236dcfef76}"
+        <<: *envoy-config
     command:
     - bash
     - -c
@@ -41,9 +42,8 @@ services:
           //:envoy_filter_http_wasm_example.wasm
       cp -af bazel-bin/*.wasm /output
     environment:
-    - BUILD_UID=${UID:-1000}
-    - ENVOY_COMMIT=${ENVOY_COMMIT:-e1d1bcc84e310bc35d46bb2d78297159fc4f3e9f}
-    - REGISTRY_URL=${REGISTRY_URL:-https://raw.githubusercontent.com/phlax/bazel-central-registry/b739c7fa56b971d695af9600b88099236dcfef76}
+      BUILD_UID: ${UID:-1000}
+      <<: *envoy-config
     entrypoint: /source/shared/build/build-entrypoint.sh
     working_dir: /source/wasm-cc
     volumes:
