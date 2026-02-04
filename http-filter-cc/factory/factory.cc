@@ -31,7 +31,7 @@ public:
     };
   }
 
-  Router::RouteSpecificFilterConfigConstSharedPtr
+  absl::StatusOr<Router::RouteSpecificFilterConfigConstSharedPtr>
   createRouteSpecificFilterConfigTyped(const sample::DecoderPerRoute& proto_config,
                                         Server::Configuration::ServerFactoryContext&,
                                         ProtobufMessage::ValidationVisitor&) override {
