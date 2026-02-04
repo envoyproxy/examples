@@ -2,6 +2,9 @@ services:
   wasm_compile_update:
     build:
       context: ../shared/build
+      args:
+        ENVOY_COMMIT: "${ENVOY_COMMIT:-e1d1bcc84e310bc35d46bb2d78297159fc4f3e9f}"
+        REGISTRY_URL: "${REGISTRY_URL:-https://raw.githubusercontent.com/phlax/bazel-central-registry/b739c7fa56b971d695af9600b88099236dcfef76}"
     command:
     - bash
     - -c
@@ -14,6 +17,8 @@ services:
       cp -af bazel-bin/*updated*.wasm /output
     environment:
     - BUILD_UID=${UID:-1000}
+    - ENVOY_COMMIT=${ENVOY_COMMIT:-e1d1bcc84e310bc35d46bb2d78297159fc4f3e9f}
+    - REGISTRY_URL=${REGISTRY_URL:-https://raw.githubusercontent.com/phlax/bazel-central-registry/b739c7fa56b971d695af9600b88099236dcfef76}
     entrypoint: /source/shared/build/build-entrypoint.sh
     working_dir: /source/wasm-cc
     volumes:
@@ -24,6 +29,9 @@ services:
   wasm_compile:
     build:
       context: ../shared/build
+      args:
+        ENVOY_COMMIT: "${ENVOY_COMMIT:-e1d1bcc84e310bc35d46bb2d78297159fc4f3e9f}"
+        REGISTRY_URL: "${REGISTRY_URL:-https://raw.githubusercontent.com/phlax/bazel-central-registry/b739c7fa56b971d695af9600b88099236dcfef76}"
     command:
     - bash
     - -c
@@ -34,6 +42,8 @@ services:
       cp -af bazel-bin/*.wasm /output
     environment:
     - BUILD_UID=${UID:-1000}
+    - ENVOY_COMMIT=${ENVOY_COMMIT:-e1d1bcc84e310bc35d46bb2d78297159fc4f3e9f}
+    - REGISTRY_URL=${REGISTRY_URL:-https://raw.githubusercontent.com/phlax/bazel-central-registry/b739c7fa56b971d695af9600b88099236dcfef76}
     user: envoybuild
     working_dir: /source
     volumes:

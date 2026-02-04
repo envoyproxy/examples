@@ -3,4 +3,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     apt-get -qq update \
-    && apt-get -qq install --no-install-recommends -y gosu
+    && apt-get -qq install --no-install-recommends -y gosu gettext-base
+
+ARG ENVOY_COMMIT
+ARG REGISTRY_URL

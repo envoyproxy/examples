@@ -10,4 +10,13 @@ fi
 
 chown envoybuild /output
 
+# Generate config files from templates if they exist
+if [ -f MODULE.bazel.tpl ]; then
+    envsubst '${ENVOY_COMMIT}' < MODULE.bazel.tpl > MODULE.bazel
+fi
+
+if [ -f registry.bazelrc.tpl ]; then
+    envsubst '${REGISTRY_URL}' < registry.bazelrc.tpl > registry.bazelrc
+fi
+
 exec gosu envoybuild "$@"

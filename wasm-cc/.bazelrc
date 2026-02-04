@@ -5,3 +5,5 @@ common:ci --noshow_loading_progress
 common:ci --test_output=errors
 
 common --@rules_python//python/config_settings:bootstrap_impl=script
+
+try-import %workspace%/registry.bazelrc
