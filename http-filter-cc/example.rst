@@ -119,7 +119,7 @@ Change to the ``http-filter-cc`` directory and start the containers:
 Step 2: Test the downstream filter
 **********************************
 
-The downstream filter adds a header ``x-downstream-header: downstream-value`` to all requests it receives
+The downstream filter adds a header ``x-custom-header: custom-value`` to all requests it receives
 from downstream. The included header is forwarded to routed upstreams.
 
 The downstream filter is configured in the HTTP connection manager filter chain:
@@ -132,12 +132,12 @@ The downstream filter is configured in the HTTP connection manager filter chain:
    :emphasize-lines: 1-6
    :caption: :download:`envoy.yaml <_include/http-filter-cc/envoy.yaml>`
 
-Make a request to the proxy and verify the custom header is added:
+The backend echo service will show the headers it received, including the custom header added by the filter:
 
 .. code-block:: console
 
-   $ curl -s http://localhost:10000/ | jq '.headers["x-downstream-header"]'
-   "downstream-value"
+   $ curl -s http://localhost:10000/ | grep x-custom-header
+   "x-custom-header": "custom-value"
 
 Step 3: Test per-route configuration
 *************************************
@@ -179,22 +179,24 @@ Test the upstream filter:
    $ curl -s http://localhost:10000/ | jq '.headers["x-upstream-header"]'
    "upstream-value"
 
-The backend will receive both the downstream filter header (``x-downstream-header``) and the upstream filter header (``x-upstream-header``):
+The backend will receive both the downstream filter header (``x-custom-header``) and the upstream filter header (``x-upstream-header``):
 
 .. code-block:: console
 
    $ curl -s http://localhost:10000/ | jq '.headers | with_entries(select(.key | startswith("x-")))'
    {
-     "x-downstream-header": "downstream-value",
+     "x-custom-header": "custom-value",
      "x-upstream-header": "upstream-value"
    }
 
-Step 5: Modify the filter configuration
-****************************************
+Step 5: Modify the example
+***************************
 
-You can modify the filter configuration in ``envoy.yaml`` to change the header name and value.
+You can customize the filter behavior by editing either the configuration or the source code. Both require rebuilding the container since all assets are baked into the image.
 
-For example, edit the configuration to add a different header:
+**Changing the header via configuration**
+
+Edit ``envoy.yaml`` to change the header name and value:
 
 .. code-block:: yaml
 
@@ -204,22 +206,36 @@ For example, edit the configuration to add a different header:
        key: "x-my-header"
        val: "my-value"
 
-Then restart Envoy:
+**Modifying the filter logic**
+
+Edit ``http_filter.cc`` to change how the filter processes requests. For example, add a second header by appending to the value:
 
 .. code-block:: console
 
-   $ docker compose up -d proxy
-   $ curl -s http://localhost:10000/ | jq '.headers["x-my-header"]'
-   "my-value"
+   $ sed -i 's/return config_->val();/return config_->val() + "-modified";/' http_filter.cc
 
-Step 5: Rebuild the filter
-**************************
+**Rebuild and test**
 
-After making changes to the filter source code, you should rebuild it.
+After making changes, rebuild and restart the proxy:
 
 .. code-block:: console
 
    $ docker compose up --build -d proxy
+   $ curl -s http://localhost:10000/ | jq .
+
+If you modified the config to use ``x-my-header``:
+
+.. code-block:: console
+
+   $ curl -s http://localhost:10000/ | grep x-my-header
+   "x-my-header": "my-value"
+
+If you modified the filter source:
+
+.. code-block:: console
+
+   $ curl -s http://localhost:10000/ | grep x-custom-header
+   "x-custom-header": "custom-value-modified"
 
 .. seealso::
 
