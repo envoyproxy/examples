@@ -134,10 +134,7 @@ The filter implementation follows Envoy best practices with a modular structure:
 **factory/factory.cc**
    Registers the filter factory with Envoy using ``DualFactoryBase`` and the ``REGISTER_FACTORY`` macro, allowing the filter to be referenced as ``sample`` in the Envoy configuration.
    
-   The factory is registered for both downstream and upstream use:
-   
-   - ``REGISTER_FACTORY(FilterFactory, Server::Configuration::NamedHttpFilterConfigFactory)`` - for downstream (listener) filter chains
-   - ``REGISTER_FACTORY(FilterFactory, Server::Configuration::UpstreamHttpFilterConfigFactory)`` - for upstream (cluster) filter chains
+   The factory uses ``DualFactoryBase`` which automatically supports both downstream (listener) and upstream (cluster) filter chains with a single registration. Only one ``REGISTER_FACTORY`` call is needed, as the base class handles registration for both contexts.
    
    Implements ``createRouteSpecificFilterConfigTyped()`` to parse per-route configuration and create ``PerRouteFilterConfig`` instances.
 
