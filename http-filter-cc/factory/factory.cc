@@ -31,7 +31,7 @@ public:
     };
   }
 
-  Router::RouteSpecificFilterConfigConstSharedPtr
+  absl::StatusOr<Router::RouteSpecificFilterConfigConstSharedPtr>
   createRouteSpecificFilterConfigTyped(const sample::DecoderPerRoute& proto_config,
                                         Server::Configuration::ServerFactoryContext&,
                                         ProtobufMessage::ValidationVisitor&) override {
@@ -39,7 +39,12 @@ public:
   }
 };
 
+// Type alias is required to avoid redefinition error when registering for both
+// downstream and upstream filter chains
+using UpstreamFilterFactory = FilterFactory;
+
 REGISTER_FACTORY(FilterFactory, Server::Configuration::NamedHttpFilterConfigFactory);
+REGISTER_FACTORY(UpstreamFilterFactory, Server::Configuration::UpstreamHttpFilterConfigFactory);
 
 } // namespace Sample
 } // namespace HttpFilters

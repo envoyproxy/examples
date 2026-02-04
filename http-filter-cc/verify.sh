@@ -16,6 +16,11 @@ responds_with \
     '"x-overridden-header": "overridden-value"' \
     "http://localhost:${PORT_PROXY}/override"
 
+run_log "Test upstream filter header"
+responds_with \
+    '"x-upstream-header": "upstream-value"' \
+    "http://localhost:${PORT_PROXY}/"
+
 run_log "Test that the backend receives the request"
 responds_with \
     '"hostname": "echo"' \
