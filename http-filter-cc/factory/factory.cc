@@ -40,7 +40,6 @@ public:
 };
 
 REGISTER_FACTORY(FilterFactory, Server::Configuration::NamedHttpFilterConfigFactory);
-REGISTER_FACTORY(FilterFactory, Server::Configuration::UpstreamHttpFilterConfigFactory);
 
 } // namespace Sample
 } // namespace HttpFilters
