@@ -1,4 +1,4 @@
-load("@envoy-example-wasmcc//bazel:toolchains.bzl", "load_envoy_example_wasmcc_toolchains")
+load("@envoy-example-wasm-cc//bazel:toolchains.bzl", "load_envoy_example_wasmcc_toolchains")
 load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains")
 load("@rules_python//python:repositories.bzl", "python_register_toolchains")
 load("//bazel:versions.bzl", "VERSIONS")

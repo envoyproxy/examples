@@ -16,7 +16,7 @@ services:
       DOCS_BUILD_RST: "${DOCS_BUILD_RST:-}"
       BAZEL_BUILD_EXTRA_OPTIONS: >-
         ${BAZEL_BUILD_EXTRA_OPTIONS:-
-        --override_repository=envoy_examples=../examples}
+        --override_repository=envoy-examples=../examples}
       USER_UID: "${UID:-1000}"
       GROUP_UID: "${GID:-1000}"
       GITHUB_TOKEN: "${GITHUB_TOKEN:-}"

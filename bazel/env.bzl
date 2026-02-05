@@ -12,5 +12,5 @@ _envoy_examples_env = repository_rule(
 )
 
 def envoy_examples_env():
-    _envoy_examples_env(name = "envoy_examples_env")
+    _envoy_examples_env(name = "envoy-examples-env")
     load_envoy_nested_examples()

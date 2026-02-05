@@ -1,4 +1,4 @@
-workspace(name = "envoy_examples")
+workspace(name = "envoy-examples")
 
 load("//bazel:env.bzl", "envoy_examples_env")
 envoy_examples_env()
