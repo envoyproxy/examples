@@ -1,4 +1,4 @@
-workspace(name = "envoy-example-wasmcc")
+workspace(name = "envoy-example-wasm-cc")
 
 load("//bazel:archives.bzl", "load_envoy_example_wasmcc_archives")
 load_envoy_example_wasmcc_archives()

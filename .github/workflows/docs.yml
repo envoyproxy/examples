@@ -43,19 +43,31 @@ jobs:
       with:
         path: examples
     - run: |
-        export UID
-        export GID=$(id -g)
-
-        cat >> ../envoy/WORKSPACE << 'EOF'
-        load("@envoy_examples//bazel:env.bzl", "envoy_examples_env")
+        cat >> WORKSPACE <<'EOF'
+        load("@envoy-examples//bazel:env.bzl", "envoy_examples_env")
         envoy_examples_env()
         EOF
 
-        cat > ../envoy/repo.bazelrc << 'EOF'
+        cat > repo.bazelrc <<'EOF'
         common --config=ci
         common --config=rbe
         common --config=bes
         EOF
+
+        # temp hacks to make envoy use new names
+        sed -i -f /dev/stdin bazel/repositories.bzl <<'SED'
+        /^[[:space:]]*external_http_archive[[:space:]]*(/,/^[[:space:]]*)[[:space:]]*$/{
+          s/^[[:space:]]*name[[:space:]]*=[[:space:]]*"envoy_examples",[[:space:]]*$/        name = "envoy-examples",\
+                location_name = "envoy_examples",/
+        }
+        SED
+
+        git grep -l '@envoy_example' | xargs sed -i 's/@envoy_example/@envoy-example/g'
+      working-directory: envoy
+
+    - run: |
+        export UID
+        export GID=$(id -g)
 
         docker compose run docs
       working-directory: examples

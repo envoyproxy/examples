@@ -16,13 +16,13 @@ def _example_repo_impl(ctx):
 example_repository = repository_rule(
     implementation = _example_repo_impl,
     attrs = {
-        "examples_root": attr.label(default = "@envoy_examples//:BUILD"),
+        "examples_root": attr.label(default = "@envoy-examples//:BUILD"),
         "path": attr.string(mandatory=True),
     },
 )
 
 def load_envoy_nested_examples():
     example_repository(
-        name = "envoy-example-wasmcc",
+        name = "envoy-example-wasm-cc",
         path = "wasm-cc",
     )
