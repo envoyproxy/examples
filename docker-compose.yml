@@ -29,6 +29,7 @@ services:
       usermod -u "$$USER_UID" envoybuild
       groupmod -g "$$GROUP_UID" envoybuild
 
+      mkdir -p /workspace/envoy/generated/docs
       chown envoybuild:envoybuild /home/envoybuild/.cache
       chown envoybuild:envoybuild /workspace/envoy
       chown envoybuild:envoybuild /workspace/envoy/generated

@@ -1,3 +1,4 @@
 .github
+http-filter-cc
 node_modules
 wasm-cc

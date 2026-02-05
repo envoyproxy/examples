@@ -68,7 +68,10 @@ filegroup(
             "kafka/*.yaml",
             "kafka-mesh/*.yaml",
         ],
-    ) + ["@envoy-example-wasmcc//:configs"],
+    ) + [
+        "@envoy-example-http-filter-cc//:configs",
+        "@envoy-example-wasmcc//:configs",
+    ],
     visibility = ["//visibility:public"],
 )
 
@@ -98,7 +101,10 @@ filegroup(
 
 filegroup(
     name = "docs_rst",
-    srcs = glob(["**/example.rst"]) + ["@envoy-example-wasmcc//:example.rst"],
+    srcs = glob(["**/example.rst"]) + [
+        "@envoy-example-http-filter-cc//:example.rst",
+        "@envoy-example-wasmcc//:example.rst",
+    ],
 )
 
 pkg_files(
@@ -165,6 +171,7 @@ pkg_tar(
     package_dir = "start/sandboxes",
     deps = [
         ":examples_docs",
+        "@envoy-example-http-filter-cc//:includes",
         "@envoy-example-wasmcc//:includes",
     ],
     visibility = ["//visibility:public"],
