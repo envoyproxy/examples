@@ -16,20 +16,22 @@ def envoy_example(name, shared = ":shared_files", common_fun = ":verify-common.s
         name = "%s_dir" % name,
         outs = ["%s_dir.tar" % name],
         cmd = """
-        SHARED_PATHS="$(locations %s)"
-        SHARED=$$(echo $$SHARED_PATHS | cut -d/ -f1)
+        read -ra SHARED_PATHS <<< "$(locations %s)"
+        SHARED_DIR=$$(echo $${SHARED_PATHS[0]} | cut -d/ -f1)
         # This is a bit hacky and may not work in all bazel situations, but works for now
-        if [[ $$SHARED == "external" ]]; then
-            SHARED=$$(echo $$SHARED_PATHS | cut -d/ -f-3)
+        if [[ $$SHARED_DIR == "external" ]]; then
+            SHARED_DIR=$$(echo $${SHARED_PATHS[0]} | cut -d/ -f-3)
         fi
-        EXAMPLE_PATHS="$(locations %s_files)"
-        EXAMPLE=$$(echo $$EXAMPLE_PATHS | cut -d/ -f1)
+        EXAMPLE=%s
+        read -ra EXAMPLE_PATHS <<< "$(locations %s_files)"
+        EXAMPLE_DIR=$$(echo $${EXAMPLE_PATHS[0]} | cut -d/ -f1)
         # This is a bit hacky and may not work in all bazel situations, but works for now
-        if [[ $$EXAMPLE == "external" ]]; then
-            EXAMPLE=$$(echo $$EXAMPLE_PATHS | cut -d/ -f-3)
+        if [[ $$EXAMPLE_DIR == "external" ]]; then
+            EXAMPLE_DIR=$$(echo $$EXAMPLE_PATHS | cut -d/ -f-3)
         fi
-        tar chf $@ -C . $$SHARED $(location %s) $$EXAMPLE
-        """ % (shared, name, common_fun),
+        TARGET_DIR=$$(dirname $$EXAMPLE_DIR)
+        tar chf $@ -C $$TARGET_DIR --exclude="$$(basename "$@")" .
+        """ % (shared, name, name),
         tools = [
             common_fun,
             shared,
