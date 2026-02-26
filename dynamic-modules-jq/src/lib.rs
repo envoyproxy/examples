@@ -85,6 +85,17 @@ fn run_jq(
     }
 }
 
+/// Compile an optional jq program string into a filter, returning `None` if the program is
+/// absent or fails to compile (compilation errors are logged to stderr).
+fn compile_optional_jq(
+    program: Option<&str>,
+) -> Option<Option<jaq_core::Filter<Native<Val>>>> {
+    match program {
+        Some(p) => compile_jq(p).map(Some),
+        None => Some(None),
+    }
+}
+
 impl FilterConfig {
     fn new(config_str: &str) -> Option<Self> {
         let data: FilterConfigData = match serde_json::from_str(config_str) {
@@ -95,21 +106,8 @@ impl FilterConfig {
             }
         };
 
-        let request_filter = match &data.request_program {
-            Some(p) => match compile_jq(p) {
-                Some(f) => Some(f),
-                None => return None,
-            },
-            None => None,
-        };
-
-        let response_filter = match &data.response_program {
-            Some(p) => match compile_jq(p) {
-                Some(f) => Some(f),
-                None => return None,
-            },
-            None => None,
-        };
+        let request_filter = compile_optional_jq(data.request_program.as_deref())?;
+        let response_filter = compile_optional_jq(data.response_program.as_deref())?;
 
         Some(FilterConfig {
             request_filter,
@@ -217,8 +215,8 @@ impl<EHF: EnvoyHttpFilter> HttpFilter<EHF> for Filter {
                 envoy_filter.set_request_header("content-length", new_len.as_bytes());
             }
             Err(e) => {
-                let msg = format!("jq transform error: {}", e);
-                envoy_filter.send_response(500, vec![], Some(msg.as_bytes()), None);
+                eprintln!("[dynamic-modules-jq] request body transform failed: {}", e);
+                envoy_filter.send_response(500, vec![], Some(b"body transform failed"), None);
                 return abi::envoy_dynamic_module_type_on_http_filter_request_body_status::StopIterationNoBuffer;
             }
         }
@@ -278,8 +276,8 @@ impl<EHF: EnvoyHttpFilter> HttpFilter<EHF> for Filter {
                 envoy_filter.set_response_header("content-length", new_len.as_bytes());
             }
             Err(e) => {
-                let msg = format!("jq transform error: {}", e);
-                envoy_filter.send_response(500, vec![], Some(msg.as_bytes()), None);
+                eprintln!("[dynamic-modules-jq] response body transform failed: {}", e);
+                envoy_filter.send_response(500, vec![], Some(b"body transform failed"), None);
                 return abi::envoy_dynamic_module_type_on_http_filter_response_body_status::StopIterationNoBuffer;
             }
         }
