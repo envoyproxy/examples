@@ -35,7 +35,7 @@ static_resources:
                 value: |
                   {
                     "request_program": "del(.password, .secret)",
-                    "response_program": "del(.internal_id, .debug_info)"
+                    "response_program": "del(.hostname)"
                   }
           - name: envoy.filters.http.router
             typed_config:

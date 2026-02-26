@@ -6,9 +6,9 @@ export PORT_PROXY="${DYNAMIC_MODULES_JQ_PORT_PROXY:-10530}"
 # shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
-wait_for 30 bash -c "responds_with 'POST' http://localhost:${PORT_PROXY}"
+wait_for 30 bash -c "responds_with 'method' http://localhost:${PORT_PROXY}"
 
-run_log "Send a request with sensitive fields — the password should be stripped before reaching upstream"
+run_log "Request body: sensitive fields are stripped before reaching upstream"
 responds_with \
     "alice" \
     -X POST \
@@ -16,12 +16,19 @@ responds_with \
     -d '{"user":"alice","password":"s3cr3t"}' \
     "http://localhost:${PORT_PROXY}"
 
-run_log "Verify the password value is absent from what the upstream echoed back"
+run_log "Request body: stripped field is absent from what upstream echoes back"
 responds_without \
     "s3cr3t" \
     -X POST \
     -H "Content-Type: application/json" \
     -d '{"user":"alice","password":"s3cr3t"}' \
+    "http://localhost:${PORT_PROXY}"
+
+run_log "Response body: hostname field is stripped from upstream response"
+responds_without \
+    '"hostname"' \
+    -H "Content-Type: application/json" \
+    -d '{}' \
     "http://localhost:${PORT_PROXY}"
 
 run_log "Non-JSON bodies pass through unchanged"
