@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package sample;
+
+import "validate/validate.proto";
+
+// Filter configuration for the sample HTTP filter.
+message Decoder {
+    string key = 1 [(validate.rules).string.min_bytes = 1];
+    string val = 2 [(validate.rules).string.min_bytes = 1];
+}
+
+// Per-route configuration for the sample HTTP filter.
+// Allows overriding the filter config on specific routes.
+message DecoderPerRoute {
+    string key = 1;
+    string val = 2;
+}

@@ -1,0 +1,20 @@
+services:
+  echo:
+    build:
+      context: ../shared/echo
+
+  envoy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        GITHUB_TOKEN: "${GITHUB_TOKEN:-}"
+        ENVOY_BZLMOD_COMMIT: "${ENVOY_BZLMOD_COMMIT:-e1d1bcc84e310bc35d46bb2d78297159fc4f3e9f}"
+        ENVOY_BZLMOD_REGISTRY: >-
+          ${ENVOY_BZLMOD_REGISTRY:-https://raw.githubusercontent.com/envoyproxy/toolshed/942638ee2c00a3b1d732c4625aa8ce5da81a1f5b/bazel-registry}
+        USER_ID: "${UID:-1000}"
+    depends_on:
+      echo:
+        condition: service_started
+    ports:
+    - "${PORT_PROXY:-10000}:10000"
