@@ -19,3 +19,8 @@ jobs:
     uses: ./.github/workflows/_verify_examples.yml
   wasm:
     uses: ./.github/workflows/_verify_wasm.yml
+  filters:
+    uses: ./.github/workflows/_verify_filters.yml
+    permissions:
+      packages: read
+      contents: read
