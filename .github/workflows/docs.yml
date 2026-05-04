@@ -43,11 +43,6 @@ jobs:
       with:
         path: examples
     - run: |
-        cat >> WORKSPACE <<'EOF'
-        load("@envoy-examples//bazel:env.bzl", "envoy_examples_env")
-        envoy_examples_env()
-        EOF
-
         cat > repo.bazelrc <<'EOF'
         common --config=ci
         common --config=rbe
