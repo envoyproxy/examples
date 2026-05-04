@@ -4055,17 +4055,17 @@ react-is@^16.13.1, react-is@^16.7.0:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
   integrity sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==
 
-react-router-dom@^7.13.0:
-  version "7.13.0"
-  resolved "https://registry.yarnpkg.com/react-router-dom/-/react-router-dom-7.13.0.tgz#8b5f7204fadca680f0e94f207c163f0dcd1cfdf5"
-  integrity sha512-5CO/l5Yahi2SKC6rGZ+HDEjpjkGaG/ncEP7eWFTvFxbHP8yeeI0PxTDjimtpXYlR3b3i9/WIL4VJttPrESIf2g==
+react-router-dom@^7.14.2:
+  version "7.14.2"
+  resolved "https://registry.yarnpkg.com/react-router-dom/-/react-router-dom-7.14.2.tgz#0b043c1534fe58596771b82a318a7e4c2e5f1279"
+  integrity sha512-YZcM5ES8jJSM+KrJ9BdvHHqlnGTg5tH3sC5ChFRj4inosKctdyzBDhOyyHdGk597q2OT6NTrCA1OvB/YDwfekQ==
   dependencies:
-    react-router "7.13.0"
+    react-router "7.14.2"
 
-react-router@7.13.0:
-  version "7.13.0"
-  resolved "https://registry.yarnpkg.com/react-router/-/react-router-7.13.0.tgz#de9484aee764f4f65b93275836ff5944d7f5bd3b"
-  integrity sha512-PZgus8ETambRT17BUm/LL8lX3Of+oiLaPuVTRH3l1eLvSPpKO3AvhAEb5N7ihAFZQrYDqkvvWfFh9p0z9VsjLw==
+react-router@7.14.2:
+  version "7.14.2"
+  resolved "https://registry.yarnpkg.com/react-router/-/react-router-7.14.2.tgz#d86e5b01049365b2c982363ebd2baa4928824603"
+  integrity sha512-yCqNne6I8IB6rVCH7XUvlBK7/QKyqypBFGv+8dj4QBFJiiRX+FG7/nkdAvGElyvVZ/HQP5N19wzteuTARXi5Gw==
   dependencies:
     cookie "^1.0.1"
     set-cookie-parser "^2.6.0"
