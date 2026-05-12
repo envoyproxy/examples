@@ -42,13 +42,30 @@ jobs:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
       with:
         path: examples
-    - run: |
+    - name: RBE auth check
+      id: rbe
+      if: github.event_name == 'pull_request'
+      uses: envoyproxy/toolshed/actions/github/container/auth@f3c0acc8c3799305101f5669042b388edfb070c7
+      with:
+        container: hello-world
+    - name: Configure repo Bazel settings (base)
+      working-directory: envoy
+      run: |
         cat > repo.bazelrc <<'EOF'
-        common --config=ci
+        common --config=remote-ci
+        EOF
+        cat repo.bazelrc
+    - name: Configure repo Bazel settings (RBE/BES)
+      if: >-
+        github.event_name != 'pull_request'
+        || steps.rbe.outputs.authorized == 'true'
+      working-directory: envoy
+      run: |
+        cat >> repo.bazelrc <<'EOF'
         common --config=rbe
         common --config=bes
         EOF
-      working-directory: envoy
+        cat repo.bazelrc
 
     - run: |
         export UID
