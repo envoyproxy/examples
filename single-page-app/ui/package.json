@@ -35,7 +35,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.26",
     "typescript": "*",
-    "vite": "^8.0.7"
+    "vite": "^8.0.12"
   },
   "resolutions": {
     "minimatch": ">=3.1.3",
