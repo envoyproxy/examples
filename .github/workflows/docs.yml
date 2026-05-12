@@ -42,13 +42,28 @@ jobs:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
       with:
         path: examples
-    - run: |
-        cat > repo.bazelrc <<'EOF'
-        common --config=ci
-        common --config=rbe
-        common --config=bes
-        EOF
+    - name: RBE auth check
+      id: rbe
+      if: github.event_name == 'pull_request'
+      uses: envoyproxy/toolshed/actions/github/container/auth@f3c0acc8c3799305101f5669042b388edfb070c7
+      with:
+        container: hello-world
+    - name: Configure repo Bazel settings
       working-directory: envoy
+      env:
+        RBE_AUTHORIZED: ${{ steps.rbe.outputs.authorized }}
+        EVENT_NAME: ${{ github.event_name }}
+      run: |
+        {
+          echo "common --config=ci"
+          if [[ "$EVENT_NAME" != "pull_request" || "$RBE_AUTHORIZED" == "true" ]]; then
+            echo "common --config=rbe"
+            echo "common --config=bes"
+          else
+            echo "# RBE/BES disabled: PR token lacks required credentials"
+          fi
+        } > repo.bazelrc
+        cat repo.bazelrc
 
     - run: |
         export UID
