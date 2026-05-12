@@ -1,5 +1,5 @@
 aiohttp>=3.12.14
-envoy.code.check
+envoy.code.check>=0.6.0
 yarl>=1.17.2
 orjson>=3.11.5
-uvloop==0.21.0
+uvloop==0.22.1
