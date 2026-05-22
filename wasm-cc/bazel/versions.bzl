@@ -55,9 +55,9 @@ VERSIONS = {
     "envoy": {
         "type": "github_archive",
         "repo": "envoyproxy/envoy",
-        "version": "b230d0459019af6fd27d0f0dbbf896d73cb6695b",
-        "sha256": "b5a5758000f89712fb6cd9ad914615305790ab301aa0f8c073306501d67c1e91",
-        "url": "https://github.com/{repo}/archive/{version}.tar.gz",
+        "version": "1.39.0",
+        "sha256": "a6c5b2af8387f7e9eb953d5ea66d61a57ecb1c2bef698ef154631092195b84b7",
+        "url": "https://github.com/{repo}/archive/refs/tags/v{version}.tar.gz",
         "strip_prefix": "envoy-{version}",
     },
 
@@ -91,8 +91,8 @@ VERSIONS = {
     "proxy_wasm_cpp_host": {
         "type": "github_archive",
         "repo": "proxy-wasm/proxy-wasm-cpp-host",
-        "version": "c4d7bb0fda912e24c64daf2aa749ec54cec99412",
-        "sha256": "3ea005e85d2b37685149c794c6876fd6de7f632f0ad49dc2b3cd580e7e7a5525",
+        "version": "f2db56af443571e92a31c0b877106d9ea96e19ef",
+        "sha256": "34dac5bcebf0b156e435bf8dd9bdac5be60b95f967c420c680578d73af28c604",
         "strip_prefix": "proxy-wasm-cpp-host-{version}",
         "url": "https://github.com/proxy-wasm/proxy-wasm-cpp-host/archive/{version}.tar.gz",
         "patch_args": ["-p1"],
@@ -102,8 +102,8 @@ VERSIONS = {
     "proxy_wasm_cpp_sdk": {
         "type": "github_archive",
         "repo": "proxy-wasm/proxy-wasm-cpp-sdk",
-        "version": "dc4f37efacd2ff7bf2e8f36632f22e1e99347f3e",
-        "sha256": "487aef94e38eb2b717eb82aa5e3c7843b7da0c8b4624a5562c969050a1f3fa33",
+        "version": "e5256b0c5463ea9961965ad5de3e379e00486640",
+        "sha256": "b560a1da27a0d3ab374527e9c7dfa4fe6493887299945be2762a0518ce35570e",
         "strip_prefix": "proxy-wasm-cpp-sdk-{version}",
         "url": "https://github.com/proxy-wasm/proxy-wasm-cpp-sdk/archive/{version}.tar.gz",
     },
@@ -133,6 +133,14 @@ VERSIONS = {
         "sha256": "08274422c4383416df5f982943e40d58141f749c09008bb780440eece6b113e4",
         "url": "https://github.com/{repo}/archive/v{version}.tar.gz",
         "strip_prefix": "{name}-{version}",
+    },
+
+    "rules_java": {
+        "type": "github_archive",
+        "repo": "bazelbuild/rules_java",
+        "version": "9.7.0",
+        "sha256": "68794ca344c1caf13dca65f90c06660823013fa080931266e2625103904a664e",
+        "url": "https://github.com/{repo}/releases/download/{version}/rules_java-{version}.tar.gz",
     },
 
     "rules_perl": {
@@ -168,6 +176,8 @@ VERSIONS = {
         "sha256": "e11d2e1efce1589e5bdfa93986712c74fc7467a0f093143d489d2ef5ebb1ed2a",
         "url": "https://github.com/{repo}/releases/download/{version}/{name}-{version}.tar.gz",
         "strip_prefix": "{name}-{version}",
+        "patch_args": ["-p1"],
+        "patches": ["@envoy//bazel:rules_python.patch"],
     },
 
     "rules_shell": {
