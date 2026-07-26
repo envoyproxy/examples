@@ -12,4 +12,5 @@ services:
 
   web_service:
     build:
-      context: ../shared/echo
+      context: .
+      dockerfile: Dockerfile-echo
