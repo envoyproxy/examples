@@ -8,9 +8,10 @@ export UID
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 run_log "Test connection"
-responds_with \
-    "Hello, world" \
-    http://localhost:8000
+wait_for 10 bash -c "\
+         responds_with \
+         'Hello, world' \
+         http://localhost:8000"
 
 run_log "Test content-type header"
 responds_with_header \
