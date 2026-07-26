@@ -1,7 +1,7 @@
 
 VERSIONS = {
     "cmake": "3.23.2",
-    "go": "1.23.1",
+    "go": "1.24.9",
     "llvm": "18.1.8",
     "ninja": "1.12.0",
     "python": "3.12",
@@ -65,9 +65,18 @@ VERSIONS = {
     "io_bazel_rules_go": {
         "type": "github_archive",
         "repo": "bazelbuild/rules_go",
-        "version": "0.53.0",
-        "sha256": "b78f77458e77162f45b4564d6b20b6f92f56431ed59eaaab09e7819d1d850313",
+        "version": "0.61.1",
+        "sha256": "763f4a3f6b03469fdb00a77a333dd0b5546d3ee1fa29db373128c08fee73e0e8",
         "url": "https://github.com/bazelbuild/rules_go/releases/download/v{version}/rules_go-v{version}.zip",
+    },
+
+    "platforms": {
+        "type": "github_archive",
+        "repo": "bazelbuild/platforms",
+        "version": "1.1.0",
+        "sha256": "324f5381753a610e472f79563d44e2026438195042aae4dc660b8c021f7de7f5",
+        "url": "https://github.com/{repo}/archive/{version}.tar.gz",
+        "strip_prefix": "platforms-{version}",
     },
 
     "proxy_wasm_cpp_host": {
