@@ -152,6 +152,15 @@ VERSIONS = {
         "strip_prefix": "{name}-{version}",
     },
 
+    "rules_shell": {
+        "type": "github_archive",
+        "repo": "bazelbuild/rules_shell",
+        "version": "0.8.0",
+        "sha256": "20721f63908879c083f94869e618ea8d4ff5edb91ff9a72a2ebee357fdbc352d",
+        "url": "https://github.com/{repo}/releases/download/v{version}/{name}-v{version}.tar.gz",
+        "strip_prefix": "{name}-{version}",
+    },
+
     "toolchains_llvm": {
         "type": "github_archive",
         "repo": "bazel-contrib/toolchains_llvm",
