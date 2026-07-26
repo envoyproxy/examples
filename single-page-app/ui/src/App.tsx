@@ -1,6 +1,6 @@
 import {ChakraProvider, createSystem, defaultConfig, defineConfig, mergeConfigs} from '@chakra-ui/react'
 import {useReducer} from 'react'
-import {BrowserRouter as Router, Route, Routes} from "react-router-dom"
+import {BrowserRouter as Router, Route, Routes} from "react-router"
 
 import Auth from "./components/Auth"
 import Home from "./components/Home"
