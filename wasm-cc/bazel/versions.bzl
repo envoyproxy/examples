@@ -18,8 +18,8 @@ VERSIONS = {
     "bazel_skylib": {
         "type": "github_archive",
         "repo": "bazelbuild/bazel-skylib",
-        "version": "1.4.2",
-        "sha256": "66ffd9315665bfaafc96b52278f57c7e2dd09f5ede279ea6d39b2be471e7e3aa",
+        "version": "1.9.2",
+        "sha256": "37cdfbc6faefea94f7b37760a305c98c08981116c2bc9e821e3b423221fad8c8",
         "url": "https://github.com/{repo}/releases/download/{version}/bazel-skylib-{version}.tar.gz",
     },
 
