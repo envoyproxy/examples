@@ -55,9 +55,9 @@ VERSIONS = {
     "envoy": {
         "type": "github_archive",
         "repo": "envoyproxy/envoy",
-        "version": "b230d0459019af6fd27d0f0dbbf896d73cb6695b",
-        "sha256": "b5a5758000f89712fb6cd9ad914615305790ab301aa0f8c073306501d67c1e91",
-        "url": "https://github.com/{repo}/archive/{version}.tar.gz",
+        "version": "1.39.0",
+        "sha256": "a6c5b2af8387f7e9eb953d5ea66d61a57ecb1c2bef698ef154631092195b84b7",
+        "url": "https://github.com/{repo}/archive/refs/tags/v{version}.tar.gz",
         "strip_prefix": "envoy-{version}",
     },
 
@@ -133,6 +133,14 @@ VERSIONS = {
         "sha256": "08274422c4383416df5f982943e40d58141f749c09008bb780440eece6b113e4",
         "url": "https://github.com/{repo}/archive/v{version}.tar.gz",
         "strip_prefix": "{name}-{version}",
+    },
+
+    "rules_java": {
+        "type": "github_archive",
+        "repo": "bazelbuild/rules_java",
+        "version": "9.7.0",
+        "sha256": "68794ca344c1caf13dca65f90c06660823013fa080931266e2625103904a664e",
+        "url": "https://github.com/{repo}/releases/download/{version}/rules_java-{version}.tar.gz",
     },
 
     "rules_perl": {
