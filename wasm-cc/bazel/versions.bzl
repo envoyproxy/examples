@@ -182,8 +182,8 @@ VERSIONS = {
     "rules_rust": {
         "type": "github_archive",
         "repo": "bazelbuild/rules_rust",
-        "version": "0.56.0",
-        "sha256": "f1306aac0b258b790df01ad9abc6abb0df0b65416c74b4ef27f4aab298780a64",
+        "version": "0.69.0",
+        "sha256": "bbc764c252d061281b2359277a4d46480e2dcfaf72afc1ce6e00ada58ccbfd4c",
         "url": "https://github.com/bazelbuild/rules_rust/releases/download/{version}/rules_rust-{version}.tar.gz",
     },
 }
