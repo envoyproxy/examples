@@ -192,8 +192,8 @@ VERSIONS = {
     "toolchains_llvm": {
         "type": "github_archive",
         "repo": "bazel-contrib/toolchains_llvm",
-        "version": "1.4.0",
-        "sha256": "fded02569617d24551a0ad09c0750dc53a3097237157b828a245681f0ae739f8",
+        "version": "1.8.0",
+        "sha256": "3b05826f256040f91c24dcaad673eb1c91e4cc93f4043d0205f2512327640205",
         "url": "https://github.com/{repo}/releases/download/v{version}/{name}-v{version}.tar.gz",
         "strip_prefix": "{name}-v{version}",
     },

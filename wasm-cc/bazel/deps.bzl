@@ -8,12 +8,10 @@ load("@rules_fuzzing//fuzzing:repositories.bzl", "rules_fuzzing_dependencies")
 load("@rules_perl//perl:deps.bzl", "perl_rules_dependencies")
 load("@rules_python//python:repositories.bzl", "py_repositories")
 load("@toolchains_llvm//toolchain:deps.bzl", "bazel_toolchain_dependencies")
-load("@toolchains_llvm//toolchain:rules.bzl", "llvm_toolchain")
 load("//bazel:versions.bzl", "VERSIONS")
 
 def resolve_envoy_example_wasmcc_dependencies(
         cmake_version=VERSIONS["cmake"],
-        llvm_version=VERSIONS["llvm"],
         ninja_version=VERSIONS["ninja"],
         setup_autotools_toolchain=True):
     compatibility_proxy_repo()
@@ -33,13 +31,4 @@ def resolve_envoy_example_wasmcc_dependencies(
         honggfuzz = False,
     )
     setup_sysroots()
-    if llvm_version != False:
-        llvm_toolchain(
-            name = "llvm_toolchain",
-            llvm_version = llvm_version,
-            sysroot = {
-                "linux-x86_64": "@sysroot_linux_amd64//:sysroot",
-                "linux-aarch64": "@sysroot_linux_arm64//:sysroot",
-            }
-        )
     go_rules_dependencies()
