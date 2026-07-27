@@ -2,6 +2,7 @@ load("@emsdk//:deps.bzl", emsdk_deps = "deps")
 load("@envoy//bazel:api_binding.bzl", "envoy_api_binding")
 load("@envoy_toolshed//sysroot:sysroot.bzl", "setup_sysroots")
 load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies")
+load("@rules_cc//cc:extensions.bzl", "compatibility_proxy_repo")
 load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
 load("@rules_fuzzing//fuzzing:repositories.bzl", "rules_fuzzing_dependencies")
 load("@rules_perl//perl:deps.bzl", "perl_rules_dependencies")
@@ -15,6 +16,7 @@ def resolve_envoy_example_wasmcc_dependencies(
         llvm_version=VERSIONS["llvm"],
         ninja_version=VERSIONS["ninja"],
         setup_autotools_toolchain=True):
+    compatibility_proxy_repo()
     envoy_api_binding()
     py_repositories()
     bazel_toolchain_dependencies()

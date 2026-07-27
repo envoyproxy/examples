@@ -15,6 +15,15 @@ VERSIONS = {
         "url": "https://github.com/{repo}/archive/v{version}.tar.gz",
     },
 
+    "bazel_features": {
+        "type": "github_archive",
+        "repo": "bazel-contrib/bazel_features",
+        "version": "1.51.0",
+        "sha256": "5450bfb2c8b4bc961c75368838f86156f563cc9adef1be7d504fc5619d54daab",
+        "url": "https://github.com/{repo}/releases/download/v{version}/{name}-v{version}.tar.gz",
+        "strip_prefix": "{name}-{version}",
+    },
+
     "bazel_skylib": {
         "type": "github_archive",
         "repo": "bazelbuild/bazel-skylib",
@@ -102,9 +111,9 @@ VERSIONS = {
     "rules_cc": {
         "type": "github_archive",
         "repo": "bazelbuild/rules_cc",
-        "version": "0.1.1",
-        "sha256": "712d77868b3152dd618c4d64faaddefcc5965f90f5de6e6dd1d5ddcd0be82d42",
-        "url": "https://github.com/{repo}/releases/download/{version}/rules_cc-{version}.tar.gz",
+        "version": "0.2.22",
+        "sha256": "81c10a95a5c22d838276ee90d712635d6042419fdfca5ef88328226b6321e53b",
+        "url": "https://github.com/{repo}/releases/download/{version}/{name}-{version}.tar.gz",
         "strip_prefix": "{name}-{version}",
     },
 
