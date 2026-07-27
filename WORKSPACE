@@ -6,6 +6,9 @@ envoy_examples_env()
 load("//bazel:archives.bzl", "load_envoy_examples_archives")
 load_envoy_examples_archives()
 
+load("@envoy-example-wasm-cc//bazel:deps_pre.bzl", "resolve_envoy_example_wasmcc_pre_dependencies")
+resolve_envoy_example_wasmcc_pre_dependencies()
+
 load("//bazel:deps.bzl", "resolve_envoy_examples_dependencies")
 resolve_envoy_examples_dependencies()
 
