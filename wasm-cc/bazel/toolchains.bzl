@@ -22,6 +22,11 @@ def load_envoy_example_wasmcc_toolchains(go=True, llvm_version=VERSIONS["llvm"])
         llvm_toolchain(
             name = "llvm_toolchain",
             llvm_version = llvm_version,
+            extra_llvm_distributions = {
+                "LLVM-22.1.8-Linux-ARM64.tar.xz": "805efad2bb91cb4967fa569e0881d10c0f69c04461cf671cccbae19f547acc34",
+                "LLVM-22.1.8-Linux-X64.tar.xz": "df0e1ecf16caf3489a272a5eea4eec9b0d82878f6477fa309504f918a0006384",
+                "LLVM-22.1.8-macOS-ARM64.tar.xz": "f260f4f7c0d430828a81ae8a3826a1d63fc0963ec2459489308cc23b1f7eab4f",
+            },
             sysroot = {
                 "linux-x86_64": "@sysroot_linux_amd64//:sysroot",
                 "linux-aarch64": "@sysroot_linux_arm64//:sysroot",
