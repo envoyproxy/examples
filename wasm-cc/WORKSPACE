@@ -17,3 +17,7 @@ load_envoy_example_wasmcc_packages()
 
 load("//bazel:toolchains_extra.bzl", "load_envoy_example_wasmcc_toolchains_extra")
 load_envoy_example_wasmcc_toolchains_extra()
+
+load("@envoy//bazel:repo.bzl", "envoy_repo")
+
+envoy_repo()

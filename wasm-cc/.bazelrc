@@ -1,7 +1,12 @@
 common --enable_bzlmod=0
+common --enable_workspace
 common --color=yes
+common --legacy_external_runfiles
+
+common --@rules_python//python/config_settings:bootstrap_impl=script
+
+build --incompatible_default_to_explicit_init_py
+
 common:ci --noshow_progress
 common:ci --noshow_loading_progress
 common:ci --test_output=errors
-
-common --@rules_python//python/config_settings:bootstrap_impl=script
