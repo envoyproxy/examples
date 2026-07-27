@@ -111,8 +111,8 @@ VERSIONS = {
     "rules_cc": {
         "type": "github_archive",
         "repo": "bazelbuild/rules_cc",
-        "version": "0.2.22",
-        "sha256": "81c10a95a5c22d838276ee90d712635d6042419fdfca5ef88328226b6321e53b",
+        "version": "0.2.17",
+        "sha256": "283fa1cdaaf172337898749cf4b9b1ef5ea269da59540954e51fba0e7b8f277a",
         "url": "https://github.com/{repo}/releases/download/{version}/{name}-{version}.tar.gz",
         "strip_prefix": "{name}-{version}",
     },
@@ -133,6 +133,14 @@ VERSIONS = {
         "sha256": "08274422c4383416df5f982943e40d58141f749c09008bb780440eece6b113e4",
         "url": "https://github.com/{repo}/archive/v{version}.tar.gz",
         "strip_prefix": "{name}-{version}",
+    },
+
+    "rules_java": {
+        "type": "github_archive",
+        "repo": "bazelbuild/rules_java",
+        "version": "9.7.0",
+        "sha256": "68794ca344c1caf13dca65f90c06660823013fa080931266e2625103904a664e",
+        "url": "https://github.com/{repo}/releases/download/{version}/rules_java-{version}.tar.gz",
     },
 
     "rules_perl": {

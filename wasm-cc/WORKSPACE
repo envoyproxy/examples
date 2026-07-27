@@ -6,6 +6,9 @@ load_envoy_example_wasmcc_archives()
 load("//bazel:deps_pre.bzl", "resolve_envoy_example_wasmcc_pre_dependencies")
 resolve_envoy_example_wasmcc_pre_dependencies()
 
+load("@rules_cc//cc:extensions.bzl", "compatibility_proxy_repo")
+compatibility_proxy_repo()
+
 load("//bazel:deps.bzl", "resolve_envoy_example_wasmcc_dependencies")
 resolve_envoy_example_wasmcc_dependencies()
 
