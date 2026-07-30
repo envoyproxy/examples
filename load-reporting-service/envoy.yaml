@@ -1,3 +1,6 @@
+node:
+  id: envoy-1
+  cluster: local_service
 static_resources:
   listeners:
   - address:
