@@ -45,7 +45,7 @@ jobs:
     - name: RBE auth check
       id: rbe
       if: github.event_name == 'pull_request'
-      uses: envoyproxy/toolshed/actions/github/container/auth@4cca74db6587ee660235fbadaac5a4fc2a19cfa9
+      uses: envoyproxy/toolshed/actions/github/container/auth@5d6f02152e972262135e48550df82ac74961f542
       with:
         container: hello-world
     - name: Configure repo Bazel settings (base)
