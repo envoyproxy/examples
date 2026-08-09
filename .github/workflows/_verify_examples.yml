@@ -70,13 +70,14 @@ jobs:
         echo "DEV_CONTAINER_ID=${DEV_CONTAINER_ID}" >> $GITHUB_ENV
     - run: |
         export UID
-        echo "common --config=ci" >> repo.bazelrc
-        if [ "${{ matrix.bazel-mode }}" = "bzlmod" ]; then
+        printf '%s\n' 'common --config=ci' > repo.bazelrc
+        if [ "${BAZEL_MODE}" = "bzlmod" ]; then
           echo "common --enable_bzlmod" >> repo.bazelrc
         fi
         docker compose run --quiet --quiet-pull --quiet-build examples
       working-directory: examples
       env:
+        BAZEL_MODE: ${{ matrix.bazel-mode }}
         DOCKER_BUILDKIT: 1
         COMPOSE_BAKE: true
         BUILDKIT_PROGRESS: quiet
