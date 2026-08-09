@@ -21,32 +21,25 @@ bazel_dep(name = "rules_rust", version = "0.68.1")
 
 bazel_dep(name = "toolchains_llvm", version = "1.4.0", dev_dependency = True)
 
-# Git overrides for bzlmod migration
-git_override(
+# Local overrides to envoy source checked out by CI
+local_path_override(
     module_name = "envoy",
-    commit = "f75d37791e180ac9f5a09a9535ef912f0fb0bcc9",
-    remote = "https://github.com/mmorel-35/envoy",
+    path = "../envoy",
 )
 
-git_override(
+local_path_override(
     module_name = "envoy_api",
-    commit = "f75d37791e180ac9f5a09a9535ef912f0fb0bcc9",
-    remote = "https://github.com/mmorel-35/envoy",
-    strip_prefix = "api",
+    path = "../envoy/api",
 )
 
-git_override(
+local_path_override(
     module_name = "envoy_build_config",
-    commit = "f75d37791e180ac9f5a09a9535ef912f0fb0bcc9",
-    remote = "https://github.com/mmorel-35/envoy",
-    strip_prefix = "mobile/envoy_build_config",
+    path = "../envoy/mobile/envoy_build_config",
 )
 
-git_override(
+local_path_override(
     module_name = "envoy_mobile",
-    commit = "f75d37791e180ac9f5a09a9535ef912f0fb0bcc9",
-    remote = "https://github.com/mmorel-35/envoy",
-    strip_prefix = "mobile",
+    path = "../envoy/mobile",
 )
 
 git_override(
