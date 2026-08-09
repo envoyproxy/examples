@@ -115,11 +115,12 @@ genrule(
     cmd = """
     TEMP=$$(mktemp -d)
     for location in $(locations :docs_rst); do
-        if [[ "$$location" == *"/envoy-example-"* ]]; then
-            example="$$(echo "$$location" | cut -d- -f3- | cut -d/ -f1)"
-        else
-            example=$$(echo $$location | sed -e 's#^external/[^/]*/##' | cut -d/ -f1)
+        # Use parent-dir basename so path derivation is stable across WORKSPACE and bzlmod (+) repos.
+        example="$$(basename "$$(dirname "$$location")")"
+        if [[ "$$example" == envoy-example-wasm-cc* ]]; then
+            example="wasm-cc"
         fi
+        example="$${example%.rst}"
         cp -aL $$location "$${TEMP}/$${example}.rst"
         echo "    $${example}" >> "$${TEMP}/_toctree.rst"
     done
