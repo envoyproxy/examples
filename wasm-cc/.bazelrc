@@ -10,3 +10,7 @@ build --incompatible_default_to_explicit_init_py
 common:ci --noshow_progress
 common:ci --noshow_loading_progress
 common:ci --test_output=errors
+
+
+try-import %workspace%/user.bazelrc
+try-import %workspace%/repo.bazelrc

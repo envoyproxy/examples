@@ -1,5 +1,12 @@
 workspace(name = "envoy-examples")
 
+load("@bazel_tools//tools/build_defs/repo:local.bzl", "local_repository")
+
+local_repository(
+    name = "envoy-example-wasm-cc",
+    path = "wasm-cc",
+)
+
 load("//bazel:env.bzl", "envoy_examples_env")
 envoy_examples_env()
 

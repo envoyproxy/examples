@@ -10,6 +10,10 @@ on:
 jobs:
   examples:
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        bazel-mode: [workspace, bzlmod]
     steps:
     - uses: envoyproxy/toolshed/actions/bind-mounts@598eacce15ab5f208102a2fd5669292868002701  # v0.4.0
       with:
@@ -23,6 +27,14 @@ jobs:
             target: /home/runner/.cache
             chown: "runner:runner"
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      with:
+        path: examples
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      if: matrix.bazel-mode == 'bzlmod'
+      with:
+        repository: envoyproxy/envoy
+        ref: bzlmod-envoy-head
+        path: envoy
     - run: |
         TEMPDIR=/cache/docker
         sudo mkdir -p "${TEMPDIR}"
@@ -32,7 +44,7 @@ jobs:
       id: cache
       with:
         path: /cache/docker
-        key: ${{ runner.os }}-docker-${{ hashFiles('**/Dockerfile*') }}
+        key: ${{ runner.os }}-docker-${{ matrix.bazel-mode }}-${{ hashFiles('examples/**/Dockerfile*') }}
     - run: |
         TEMPDIR=/cache/docker
         sudo mkdir -p /var/lib/docker-examples
@@ -50,7 +62,7 @@ jobs:
     - uses: actions/cache@v6
       with:
         path: /home/runner/.cache
-        key: ${{ runner.os }}-bazel-${{ hashFiles('**/BUILD', '**/*bzl', 'WORKSPACE') }}
+        key: ${{ runner.os }}-bazel-${{ matrix.bazel-mode }}-${{ hashFiles('examples/**/BUILD', 'examples/**/*bzl', 'examples/WORKSPACE') }}
 
     - run: |
         docker pull envoyproxy/envoy:dev
@@ -58,9 +70,15 @@ jobs:
         echo "DEV_CONTAINER_ID=${DEV_CONTAINER_ID}" >> $GITHUB_ENV
     - run: |
         export UID
-        echo "common --config=ci" >> repo.bazelrc
+        printf '%s\n' 'common --config=ci' > repo.bazelrc
+        if [ "${BAZEL_MODE}" = "bzlmod" ]; then
+          echo "common --enable_bzlmod" >> repo.bazelrc
+          echo "common --noenable_workspace" >> repo.bazelrc
+        fi
         docker compose run --quiet --quiet-pull --quiet-build examples
+      working-directory: examples
       env:
+        BAZEL_MODE: ${{ matrix.bazel-mode }}
         DOCKER_BUILDKIT: 1
         COMPOSE_BAKE: true
         BUILDKIT_PROGRESS: quiet
@@ -74,4 +92,4 @@ jobs:
       if: steps.cache.outputs.cache-hit != 'true' && github.event_name != 'pull_request'
       with:
         path: /cache/docker
-        key: ${{ runner.os }}-docker-${{ hashFiles('**/Dockerfile*') }}
+        key: ${{ runner.os }}-docker-${{ matrix.bazel-mode }}-${{ hashFiles('examples/**/Dockerfile*') }}

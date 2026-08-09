@@ -1,6 +1,10 @@
 common --enable_bzlmod=0
 common --enable_workspace
 common --color=yes
+
+common --registry=https://bcr.bazel.build
+common --registry=https://raw.githubusercontent.com/envoyproxy/toolshed/ed25d5ad5460714de8dc27d73a4730e7331e4f9b/bazel-registry
+
 common:ci --noshow_progress
 common:ci --noshow_loading_progress
 common:ci --test_output=errors
