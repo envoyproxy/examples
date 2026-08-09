@@ -115,12 +115,12 @@ genrule(
     cmd = """
     TEMP=$$(mktemp -d)
     for location in $(locations :docs_rst); do
-        if [[ "$$location" == *"/envoy-example-"* ]]; then
-            example="$$(echo "$$location" | cut -d- -f3- | cut -d/ -f1)"
+        if [[ "$$location" == *wasm-cc* ]]; then
+            example="wasm-cc"
         else
-            example=$$(echo $$location | sed -e 's#^external/[^/]*/##' | cut -d/ -f1)
+            example="$$(basename "$$(dirname "$$location")")"
         fi
-        cp -aL $$location "$${TEMP}/$${example}.rst"
+        cp -aL "$$location" "$${TEMP}/$${example}.rst"
         echo "    $${example}" >> "$${TEMP}/_toctree.rst"
     done
     echo ".. toctree::" > "$${TEMP}/toctree.rst"
