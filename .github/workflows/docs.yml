@@ -20,6 +20,12 @@ jobs:
       contents: read
       packages: read
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        bazel-mode:
+        - workspace
+        - bzlmod
     steps:
     - uses: envoyproxy/toolshed/actions/bind-mounts@598eacce15ab5f208102a2fd5669292868002701  # v0.4.0
       with:
@@ -54,6 +60,18 @@ jobs:
         cat > repo.bazelrc <<'EOF'
         common --config=remote-ci
         EOF
+        case "${{ matrix.bazel-mode }}" in
+          workspace)
+            echo "common --noenable_bzlmod" >> repo.bazelrc
+            ;;
+          bzlmod)
+            echo "common --enable_bzlmod" >> repo.bazelrc
+            ;;
+          *)
+            echo "Unknown bazel mode: ${{ matrix.bazel-mode }}"
+            exit 1
+            ;;
+        esac
         cat repo.bazelrc
     - name: Configure repo Bazel settings (RBE/BES)
       if: >-
@@ -81,6 +99,7 @@ jobs:
     - name: Docs upload
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
       with:
-        name: docs
+        name: docs-${{ matrix.bazel-mode }}
         path: envoy/generated/docs
+        if-no-files-found: warn
         retention-days: 30
