@@ -6,6 +6,7 @@ module(
 bazel_dep(name = "bazel_skylib", version = "1.9.0")
 bazel_dep(name = "envoy", version = "1.40.0-dev")
 bazel_dep(name = "envoy_api", version = "1.40.0-dev")
+bazel_dep(name = "envoy-example-wasm-cc", version = "0.1.6-dev")
 bazel_dep(name = "rules_go", version = "0.59.0", repo_name = "io_bazel_rules_go")
 bazel_dep(name = "rules_pkg", version = "1.1.0")
 bazel_dep(name = "rules_python", version = "1.7.0")
@@ -21,5 +22,7 @@ local_path_override(
     path = "../envoy/api",
 )
 
-envoy_examples_ext = use_extension("//bazel:extensions.bzl", "envoy_build_examples")
-use_repo(envoy_examples_ext, "envoy-example-wasm-cc")
+local_path_override(
+    module_name = "envoy-example-wasm-cc",
+    path = "wasm-cc",
+)

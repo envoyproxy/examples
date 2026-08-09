@@ -10,12 +10,85 @@ on:
 jobs:
   wasm:
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        bazel-mode: [workspace, bzlmod]
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      with:
+        path: examples
     - run: |
         docker pull envoyproxy/envoy:dev
         DEV_CONTAINER_ID=$(docker inspect --format='{{.Id}}' envoyproxy/envoy:dev)
         echo "DEV_CONTAINER_ID=${DEV_CONTAINER_ID}" >> $GITHUB_ENV
+        printf '%s\n' 'common --config=ci' > repo.bazelrc
+        if [ "${BAZEL_MODE}" = "bzlmod" ]; then
+          echo "common --enable_bzlmod" >> repo.bazelrc
+          echo "common --noenable_workspace" >> repo.bazelrc
+          # The wasm-cc module pins several `.envoy`-suffixed deps (rules_rust,
+          # emsdk, envoy_toolshed, grpc, toolchains_llvm) that only exist in
+          # envoy's toolshed bazel-registry, not in BCR. Add both registries,
+          # pinning toolshed to the same ref envoy@db758b62 uses in its .bazelrc.
+          echo "common --registry=https://bcr.bazel.build/" >> repo.bazelrc
+          echo "common --registry=${ENVOY_BZL_REGISTRY}" >> repo.bazelrc
+        fi
+      working-directory: examples/wasm-cc
+      env:
+        BAZEL_MODE: ${{ matrix.bazel-mode }}
+        ENVOY_BZL_REGISTRY: >-
+          https://raw.githubusercontent.com/envoyproxy/toolshed/ed25d5ad5460714de8dc27d73a4730e7331e4f9b/bazel-registry
+    - name: Inject bzlmod envoy pin into MODULE.bazel
+      if: matrix.bazel-mode == 'bzlmod'
+      run: |
+        cat >> MODULE.bazel <<'EOF'
+
+        git_override(
+            module_name = "envoy",
+            remote = "https://github.com/envoyproxy/envoy",
+            commit = "db758b62448103c385ecfdc5ef5cd7100a3e4f0b",
+        )
+        git_override(
+            module_name = "envoy_api",
+            remote = "https://github.com/envoyproxy/envoy",
+            commit = "db758b62448103c385ecfdc5ef5cd7100a3e4f0b",
+            strip_prefix = "api",
+        )
+        EOF
+      working-directory: examples/wasm-cc
+    - name: Inject workspace envoy pin into versions.bzl
+      if: matrix.bazel-mode == 'workspace'
+      run: |
+        ENVOY_SHA=$(git ls-remote https://github.com/envoyproxy/envoy refs/heads/main | head -n1 | awk '{print $1}')
+        echo "Resolved envoy main HEAD: ${ENVOY_SHA}"
+        curl -sSL "https://github.com/envoyproxy/envoy/archive/${ENVOY_SHA}.tar.gz" -o /tmp/envoy-main.tar.gz
+        ENVOY_SHA256=$(sha256sum /tmp/envoy-main.tar.gz | awk '{print $1}')
+        echo "Computed sha256: ${ENVOY_SHA256}"
+        {
+          echo 'import os, re'
+          echo 'sha = os.environ["ENVOY_SHA"]'
+          echo 'sha256 = os.environ["ENVOY_SHA256"]'
+          echo 'new_entry = ('
+          echo '    "\"envoy\": {\n"'
+          echo '    "        \"type\": \"github_archive\",\n"'
+          echo '    "        \"repo\": \"envoyproxy/envoy\",\n"'
+          echo '    f"        \"version\": \"{sha}\",\n"'
+          echo '    f"        \"sha256\": \"{sha256}\",\n"'
+          echo '    "        \"url\": \"https://github.com/{repo}/archive/{version}.tar.gz\",\n"'
+          echo '    "        \"strip_prefix\": \"envoy-{version}\",\n"'
+          echo '    "    },"'
+          echo ')'
+          echo 'path = "bazel/versions.bzl"'
+          echo 'content = open(path).read()'
+          echo 'content = re.sub(r"\"envoy\": \{.*?\n    \},", new_entry, content, flags=re.DOTALL)'
+          echo 'open(path, "w").write(content)'
+        } > /tmp/inject_versions.py
+        ENVOY_SHA="${ENVOY_SHA}" ENVOY_SHA256="${ENVOY_SHA256}" python3 /tmp/inject_versions.py
+      working-directory: examples/wasm-cc
     - run: |
         ./verify.sh
-      working-directory: wasm-cc
+      working-directory: examples/wasm-cc
+      env:
+        DOCKER_BUILDKIT: 1
+        COMPOSE_BAKE: true
+        BUILDKIT_PROGRESS: quiet
