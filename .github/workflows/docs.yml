@@ -20,8 +20,17 @@ jobs:
       contents: read
       packages: read
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        bazel-mode:
+        - workspace
+        - bzlmod
     steps:
+
+    # ── workspace leg only ────────────────────────────────────────────────────
     - uses: envoyproxy/toolshed/actions/bind-mounts@598eacce15ab5f208102a2fd5669292868002701  # v0.4.0
+      if: matrix.bazel-mode == 'workspace'
       with:
         mounts: |
           - src: /mnt/docker
@@ -36,29 +45,34 @@ jobs:
             target: /home/runner/.cache
             chown: "runner:runner"
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      if: matrix.bazel-mode == 'workspace'
       with:
         repository: envoyproxy/envoy
         path: envoy
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      if: matrix.bazel-mode == 'workspace'
       with:
         path: examples
     - name: RBE auth check
       id: rbe
-      if: github.event_name == 'pull_request'
+      if: matrix.bazel-mode == 'workspace' && github.event_name == 'pull_request'
       uses: envoyproxy/toolshed/actions/github/container/auth@4cca74db6587ee660235fbadaac5a4fc2a19cfa9
       with:
         container: hello-world
     - name: Configure repo Bazel settings (base)
+      if: matrix.bazel-mode == 'workspace'
       working-directory: envoy
       run: |
         cat > repo.bazelrc <<'EOF'
         common --config=remote-ci
+        common --noenable_bzlmod
         EOF
         cat repo.bazelrc
     - name: Configure repo Bazel settings (RBE/BES)
       if: >-
-        github.event_name != 'pull_request'
-        || steps.rbe.outputs.authorized == 'true'
+        matrix.bazel-mode == 'workspace'
+        && (github.event_name != 'pull_request'
+        || steps.rbe.outputs.authorized == 'true')
       working-directory: envoy
       run: |
         cat >> repo.bazelrc <<'EOF'
@@ -66,8 +80,9 @@ jobs:
         common --config=bes
         EOF
         cat repo.bazelrc
-
-    - run: |
+    - name: Build docs (workspace)
+      if: matrix.bazel-mode == 'workspace'
+      run: |
         export UID
         export GID=$(id -g)
 
@@ -78,9 +93,56 @@ jobs:
         COMPOSE_BAKE: true
         DOCKER_BUILDKIT: 1
         GITHUB_TOKEN: ${{ github.token }}
-    - name: Docs upload
+    - name: Docs upload (workspace)
+      if: matrix.bazel-mode == 'workspace'
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
       with:
-        name: docs
+        name: docs-workspace
         path: envoy/generated/docs
+        retention-days: 30
+
+    # ── bzlmod leg only ───────────────────────────────────────────────────────
+    # This leg does NOT check out envoy and does NOT run docker compose run docs.
+    # Envoy main cannot build docs under bzlmod yet; this leg tests the packaging
+    # fix from PR #1317 (examples_docs genrule + //:docs pkg_tar) directly in
+    # this repo, decoupled from the envoy pipeline.
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      if: matrix.bazel-mode == 'bzlmod'
+    - name: Install Bazelisk
+      if: matrix.bazel-mode == 'bzlmod'
+      uses: bazelbuild/setup-bazelisk@b39c379c82683a5f25d34f0d062761f62693e0b2  # v3.0.0
+    - name: Build docs (bzlmod)
+      if: matrix.bazel-mode == 'bzlmod'
+      run: |
+        echo "bazel-mode: bzlmod — building //:docs with --enable_bzlmod"
+        bazel build //:docs --enable_bzlmod
+    - name: Verify tarball members (bzlmod)
+      if: matrix.bazel-mode == 'bzlmod'
+      run: |
+        tar tzf bazel-bin/docs.tar.gz | sort > members.txt
+        echo "=== tarball members ==="
+        cat members.txt
+        echo "======================="
+        if grep -q '\.rst\.rst$' members.txt; then
+          echo 'ERROR: double .rst extension found in tarball'
+          exit 1
+        fi
+        if grep -qx 'start/sandboxes/example.rst' members.txt; then
+          echo 'ERROR: unrenamed example.rst placeholder present in tarball'
+          exit 1
+        fi
+        if ! grep -qx 'start/sandboxes/wasm-cc.rst' members.txt; then
+          echo 'ERROR: wasm-cc.rst missing from tarball'
+          exit 1
+        fi
+        echo "Tarball member verification passed."
+    - name: Docs upload (bzlmod)
+      if: matrix.bazel-mode == 'bzlmod'
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      with:
+        name: docs-bzlmod
+        path: |
+          bazel-bin/docs.tar.gz
+          members.txt
+        if-no-files-found: warn
         retention-days: 30
