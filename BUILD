@@ -10,6 +10,7 @@ EXAMPLE_TESTS = [
     "cache",
     "cors",
     "csrf",
+    "dash0",
     "double-proxy",
     # "dynamic-config-cp",
     "dynamic-config-fs",
@@ -56,6 +57,7 @@ filegroup(
         exclude = [
             "cache/ci-responses.yaml",
             "cache/responses.yaml",
+            "dash0/otel-collector-config.yaml",
             "dynamic-config-fs/**/*",
             "jaeger-native-tracing/*",
             "opentelemetry/otel-collector-config.yaml",

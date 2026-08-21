@@ -1,0 +1,35 @@
+services:
+  envoy:
+    build:
+      context: .
+      dockerfile: ../shared/envoy/Dockerfile
+    depends_on:
+      dash0-collector:
+        condition: service_healthy
+      service-1:
+        condition: service_healthy
+    ports:
+    - "${PORT_PROXY:-10000}:10000"
+
+  service-1:
+    build:
+      context: ../shared/python
+      target: aiohttp-tracing-service
+    environment:
+    - SERVICE_NAME=1
+
+  dash0-collector:
+    build:
+      context: .
+      dockerfile: Dockerfile-opentelemetry
+    environment:
+    - DASH0_AUTH_TOKEN=${DASH0_AUTH_TOKEN:-}
+    - DASH0_DATASET=${DASH0_DATASET:-default}
+    - DASH0_ENDPOINT=${DASH0_ENDPOINT:-ingress.eu-west-1.aws.dash0.com:4317}
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:13133 || exit 1"]
+      interval: 1s
+      timeout: 120s
+      retries: 120
+      start_period: 5s
