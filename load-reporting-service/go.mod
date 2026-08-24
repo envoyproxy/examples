@@ -3,9 +3,9 @@ module github.com/envoyproxy/envoy/examples/load-reporting-service
 go 1.25.0
 
 require (
-	github.com/envoyproxy/go-control-plane/envoy v1.37.0
+	github.com/envoyproxy/go-control-plane/envoy v1.39.0
 	github.com/golang/protobuf v1.5.4
-	google.golang.org/grpc v1.83.0
+	google.golang.org/grpc v1.83.1
 )
 
 require (
