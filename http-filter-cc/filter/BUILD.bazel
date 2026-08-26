@@ -1,0 +1,17 @@
+load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_library")
+
+licenses(["notice"])  # Apache 2
+
+package(default_visibility = ["//visibility:public"])
+
+envoy_cc_library(
+    name = "filter_lib",
+    srcs = ["filter.cc"],
+    hdrs = ["filter.h"],
+    repository = "@envoy",
+    deps = [
+        "//common:config_lib",
+        "@envoy//source/extensions/filters/http/common:pass_through_filter_lib",
+        "@envoy//source/common/http:utility_lib",
+    ],
+)
