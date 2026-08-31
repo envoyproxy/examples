@@ -16,6 +16,15 @@ ls server/kv/kv.pb.go
 
 bring_up_example
 
+# `--wait` only tells us the containers are running. The client proxy resolves the
+# server proxy when it starts, and until that resolves the bridge answers with an
+# empty 200 - which `set` does not check - so probe with a round-trip first.
+run_log "Wait for the key-value service"
+wait_for 10 bash -c "\
+    ${DOCKER_COMPOSE[*]} exec -T grpc-client /client/grpc-kv-client.py set ping pong \
+    && ${DOCKER_COMPOSE[*]} exec -T grpc-client /client/grpc-kv-client.py get ping \
+       | grep pong"
+
 run_log "Set key value foo=bar"
 "${DOCKER_COMPOSE[@]}" exec -T grpc-client /client/grpc-kv-client.py set foo bar | grep setf
 
