@@ -32,13 +32,18 @@ VERSIONS = {
         "url": "https://github.com/{repo}/releases/download/{version}/bazel-skylib-{version}.tar.gz",
     },
 
-    "com_github_grpc_grpc": {
+    "grpc": {
         "type": "github_archive",
         "repo": "grpc/grpc",
         "version": "1.72.0",
         "sha256": "4a8aa99d5e24f80ea6b7ec95463e16af5bd91aa805e26c661ef6491ae3d2d23c",
         "strip_prefix": "grpc-{version}",
         "url": "https://github.com/{repo}/archive/v{version}.tar.gz",
+        "repo_mapping": {
+            "@com_github_grpc_grpc": "@grpc",
+            "@com_google_absl": "@abseil-cpp",
+            "@com_google_protobuf": "@protobuf",
+        },
     },
 
     "emsdk": {
@@ -55,27 +60,19 @@ VERSIONS = {
     "envoy": {
         "type": "github_archive",
         "repo": "envoyproxy/envoy",
-        "version": "1.39.0",
-        "sha256": "a6c5b2af8387f7e9eb953d5ea66d61a57ecb1c2bef698ef154631092195b84b7",
-        "url": "https://github.com/{repo}/archive/refs/tags/v{version}.tar.gz",
+        "version": "b86858b690cd3aae2190c15c43d9b24a1d6443d8",
+        "sha256": "feeb8c8b80370e56b2bd1c6d88a2f621ab0b2cbea2b7afbdaee93e860e463a80",
+        "url": "https://github.com/{repo}/archive/{version}.tar.gz",
         "strip_prefix": "envoy-{version}",
     },
 
     "envoy_toolshed": {
         "type": "github_archive",
         "repo": "envoyproxy/toolshed",
-        "version": "0.4.0",
-        "sha256": "71b0b8ca1e230e624577ec74989c9b855acbeff9696d7398ab476bfbbadf854c",
+        "version": "0.4.9",
+        "sha256": "fa0f05a38cec5a97324d133ce0f9685d57f849666122ca313d9b36d88ec484c6",
         "url": "https://github.com/{repo}/archive/bazel-v{version}.tar.gz",
         "strip_prefix": "toolshed-bazel-v{version}/bazel",
-    },
-
-    "io_bazel_rules_go": {
-        "type": "github_archive",
-        "repo": "bazelbuild/rules_go",
-        "version": "0.61.1",
-        "sha256": "763f4a3f6b03469fdb00a77a333dd0b5546d3ee1fa29db373128c08fee73e0e8",
-        "url": "https://github.com/bazelbuild/rules_go/releases/download/v{version}/rules_go-v{version}.zip",
     },
 
     "platforms": {
@@ -87,7 +84,25 @@ VERSIONS = {
         "strip_prefix": "platforms-{version}",
     },
 
-    "proxy_wasm_cpp_host": {
+    "protobuf": {
+        "type": "github_archive",
+        "repo": "protocolbuffers/protobuf",
+        "version": "35.1",
+        "sha256": "f0b6838e7522a8da96126d487068c959bc624926368f3024ac8fd03abd0a1ac4",
+        "url": "https://github.com/protocolbuffers/protobuf/releases/download/v{version}/protobuf-{version}.tar.gz",
+        "strip_prefix": "protobuf-{version}",
+        "patches": [
+            "@envoy//bazel:protobuf.patch",
+            "@envoy//bazel:protobuf_prebuilt_tool_integrity.patch",
+        ],
+        "patch_args": ["-p1"],
+        "repo_mapping": {
+            "@com_google_absl": "@abseil-cpp",
+            "@com_google_protobuf": "@protobuf",
+        },
+    },
+
+    "proxy-wasm-cpp-host": {
         "type": "github_archive",
         "repo": "proxy-wasm/proxy-wasm-cpp-host",
         "version": "f2db56af443571e92a31c0b877106d9ea96e19ef",
@@ -96,15 +111,29 @@ VERSIONS = {
         "url": "https://github.com/proxy-wasm/proxy-wasm-cpp-host/archive/{version}.tar.gz",
         "patch_args": ["-p1"],
         "patches": ["@envoy//bazel:proxy_wasm_cpp_host.patch"],
+        "repo_mapping": {
+            "@proxy_wasm_cpp_host": "@proxy-wasm-cpp-host",
+            "@proxy_wasm_cpp_sdk": "@proxy-wasm-cpp-sdk",
+        },
     },
 
-    "proxy_wasm_cpp_sdk": {
+    "proxy-wasm-cpp-sdk": {
         "type": "github_archive",
         "repo": "proxy-wasm/proxy-wasm-cpp-sdk",
         "version": "e5256b0c5463ea9961965ad5de3e379e00486640",
         "sha256": "b560a1da27a0d3ab374527e9c7dfa4fe6493887299945be2762a0518ce35570e",
         "strip_prefix": "proxy-wasm-cpp-sdk-{version}",
         "url": "https://github.com/proxy-wasm/proxy-wasm-cpp-sdk/archive/{version}.tar.gz",
+        "patch_args": ["-p1"],
+        "patches": [
+            "@envoy//bazel:proxy_wasm_cpp_sdk.patch",
+            "@envoy//bazel:proxy_wasm_cpp_sdk-protobuf-v35.patch",
+        ],
+        "repo_mapping": {
+            "@com_google_absl": "@abseil-cpp",
+            "@com_google_protobuf": "@protobuf",
+            "@proxy_wasm_cpp_sdk": "@proxy-wasm-cpp-sdk",
+        },
     },
 
     "rules_cc": {
@@ -132,6 +161,14 @@ VERSIONS = {
         "sha256": "08274422c4383416df5f982943e40d58141f749c09008bb780440eece6b113e4",
         "url": "https://github.com/{repo}/archive/v{version}.tar.gz",
         "strip_prefix": "{name}-{version}",
+    },
+
+    "io_bazel_rules_go": {
+        "type": "github_archive",
+        "repo": "bazelbuild/rules_go",
+        "version": "0.61.1",
+        "sha256": "763f4a3f6b03469fdb00a77a333dd0b5546d3ee1fa29db373128c08fee73e0e8",
+        "url": "https://github.com/bazelbuild/rules_go/releases/download/v{version}/rules_go-v{version}.zip",
     },
 
     "rules_java": {
@@ -166,6 +203,11 @@ VERSIONS = {
         "sha256": "2a0860a336ae836b54671cbbe0710eec17c64ef70c4c5a88ccfd47ea6e3739bd",
         "url": "https://github.com/{repo}/releases/download/{version}/rules_proto_grpc-{version}.tar.gz",
         "strip_prefix": "{name}-{version}",
+        "repo_mapping": {
+            "@com_github_grpc_grpc": "@grpc",
+            "@com_google_absl": "@abseil-cpp",
+            "@com_google_protobuf": "@protobuf",
+        },
     },
 
     "rules_python": {
@@ -177,6 +219,14 @@ VERSIONS = {
         "strip_prefix": "{name}-{version}",
         "patch_args": ["-p1"],
         "patches": ["@envoy//bazel:rules_python.patch"],
+    },
+
+    "rules_rust": {
+        "type": "github_archive",
+        "repo": "bazelbuild/rules_rust",
+        "version": "0.69.0",
+        "sha256": "bbc764c252d061281b2359277a4d46480e2dcfaf72afc1ce6e00ada58ccbfd4c",
+        "url": "https://github.com/bazelbuild/rules_rust/releases/download/{version}/rules_rust-{version}.tar.gz",
     },
 
     "rules_shell": {
@@ -195,13 +245,5 @@ VERSIONS = {
         "sha256": "3b05826f256040f91c24dcaad673eb1c91e4cc93f4043d0205f2512327640205",
         "url": "https://github.com/{repo}/releases/download/v{version}/{name}-v{version}.tar.gz",
         "strip_prefix": "{name}-v{version}",
-    },
-
-    "rules_rust": {
-        "type": "github_archive",
-        "repo": "bazelbuild/rules_rust",
-        "version": "0.69.0",
-        "sha256": "bbc764c252d061281b2359277a4d46480e2dcfaf72afc1ce6e00ada58ccbfd4c",
-        "url": "https://github.com/bazelbuild/rules_rust/releases/download/{version}/rules_rust-{version}.tar.gz",
     },
 }

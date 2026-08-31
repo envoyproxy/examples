@@ -1,6 +1,6 @@
 load("@com_google_protobuf//bazel/private:proto_bazel_features.bzl", "proto_bazel_features")
 load("@emsdk//:emscripten_deps.bzl", "emscripten_deps")
-load("@envoy//bazel:repositories.bzl", "default_envoy_build_config")
+load("@envoy//bazel:envoy_build_config.bzl", "default_envoy_build_config")
 load("@rules_python//python:pip.bzl", "pip_parse")
 load("//bazel:versions.bzl", "VERSIONS")
 

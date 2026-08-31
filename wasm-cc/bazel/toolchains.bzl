@@ -30,5 +30,10 @@ def load_envoy_example_wasmcc_toolchains(go=True, llvm_version=VERSIONS["llvm"])
             sysroot = {
                 "linux-x86_64": "@sysroot_linux_amd64//:sysroot",
                 "linux-aarch64": "@sysroot_linux_arm64//:sysroot",
-            }
+            },
+            toolchain_roots = {
+                "linux-x86_64": "@llvm_minimal_linux_x64//",
+                "linux-aarch64": "@llvm_minimal_linux_arm64//",
+                "darwin-aarch64": "@llvm_minimal_macos_arm64//",
+            },
         )
