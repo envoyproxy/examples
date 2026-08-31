@@ -1,6 +1,7 @@
 load("@emsdk//:deps.bzl", emsdk_deps = "deps")
 load("@envoy//bazel:api_binding.bzl", "envoy_api_binding")
 load("@envoy_toolshed//sysroot:sysroot.bzl", "setup_sysroots")
+load("@envoy_toolshed//compile:llvm_minimal.bzl", "llvm_toolchain_alias", "setup_llvm_minimal")
 load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies")
 load("@rules_cc//cc:extensions.bzl", "compatibility_proxy_repo")
 load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
@@ -32,3 +33,10 @@ def resolve_envoy_example_wasmcc_dependencies(
     )
     setup_sysroots()
     go_rules_dependencies()
+    setup_llvm_minimal()
+    llvm_toolchain_alias(
+        name = "llvm_toolchain_llvm",
+        minimal_linux_x64 = "@llvm_minimal_linux_x64//:BUILD.bazel",
+        minimal_linux_arm64 = "@llvm_minimal_linux_arm64//:BUILD.bazel",
+        minimal_macos_arm64 = "@llvm_minimal_macos_arm64//:BUILD.bazel",
+    )
