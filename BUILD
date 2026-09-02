@@ -68,7 +68,10 @@ filegroup(
             "kafka/*.yaml",
             "kafka-mesh/*.yaml",
         ],
-    ) + ["@envoy-example-wasm-cc//:configs"],
+    ) + [
+        "@envoy-example-filter-cc//:configs",
+        "@envoy-example-wasm-cc//:configs",
+    ],
     visibility = ["//visibility:public"],
 )
 
@@ -98,7 +101,10 @@ filegroup(
 
 filegroup(
     name = "docs_rst",
-    srcs = glob(["**/example.rst"]) + ["@envoy-example-wasm-cc//:example.rst"],
+    srcs = glob(["**/example.rst"]) + [
+        "@envoy-example-filter-cc//:example.rst",
+        "@envoy-example-wasm-cc//:example.rst",
+    ],
 )
 
 pkg_files(
@@ -115,7 +121,9 @@ genrule(
     cmd = """
     TEMP=$$(mktemp -d)
     for location in $(locations :docs_rst); do
-        if [[ "$$location" == *wasm-cc* ]]; then
+        if [[ "$$location" == *filter-cc* ]]; then
+            example="filter-cc"
+        elif [[ "$$location" == *wasm-cc* ]]; then
             example="wasm-cc"
         else
             example="$$(basename "$$(dirname "$$location")")"
@@ -165,6 +173,7 @@ pkg_tar(
     package_dir = "start/sandboxes",
     deps = [
         ":examples_docs",
+        "@envoy-example-filter-cc//:includes",
         "@envoy-example-wasm-cc//:includes",
     ],
     visibility = ["//visibility:public"],

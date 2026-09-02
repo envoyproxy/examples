@@ -1,0 +1,47 @@
+common --enable_bzlmod
+common --noenable_workspace
+common --color=yes
+common --noincompatible_disallow_empty_glob
+common --noincompatible_disallow_ctx_resolve_tools
+common --legacy_external_runfiles
+
+common --registry=https://bcr.bazel.build/
+common --registry=https://raw.githubusercontent.com/envoyproxy/bazel-registry/4520e1df0c26dbd5e441517d09dfb941064cf79a
+
+build --incompatible_strict_action_env
+build --java_runtime_version=remotejdk_11
+build --tool_java_runtime_version=remotejdk_11
+build --java_language_version=11
+build --tool_java_language_version=11
+build --extra_toolchains=@envoy//bazel:envoy_java_toolchain_definition
+# silence absl logspam.
+build --copt=-DABSL_MIN_LOG_LEVEL=4
+build --cxxopt=-std=c++20 --host_cxxopt=-std=c++20
+build --copt=-Wno-deprecated-declarations
+build --define envoy_mobile_listener=enabled
+build --experimental_repository_downloader_retries=2
+build --experimental_cc_static_library
+build --enable_platform_specific_config
+build --incompatible_merge_fixed_and_default_shell_env
+
+common --repo_env=ANDROID_HOME=
+
+build --incompatible_config_setting_private_default_visibility
+build --incompatible_enforce_config_setting_visibility
+
+common --incompatible_allow_tags_propagation
+
+# Protobuf
+common --@protobuf//bazel/flags:prefer_prebuilt_protoc=true
+common --incompatible_enable_proto_toolchain_resolution
+
+# We already have absl in the build, define absl=1 to tell googletest to use absl for backtrace.
+build --define absl=1
+
+common:ci --noshow_progress
+common:ci --noshow_loading_progress
+common:ci --test_output=errors
+
+
+try-import %workspace%/user.bazelrc
+try-import %workspace%/repo.bazelrc

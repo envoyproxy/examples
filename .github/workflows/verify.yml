@@ -17,5 +17,7 @@ concurrency:
 jobs:
   examples:
     uses: ./.github/workflows/_verify_examples.yml
+  filter:
+    uses: ./.github/workflows/_verify_filter.yml
   wasm:
     uses: ./.github/workflows/_verify_wasm.yml

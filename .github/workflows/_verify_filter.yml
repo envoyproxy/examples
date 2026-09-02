@@ -1,0 +1,67 @@
+name: Verify/Filter
+
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+
+
+jobs:
+  filter:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: envoyproxy/toolshed/actions/bind-mounts@598eacce15ab5f208102a2fd5669292868002701  # v0.4.0
+      with:
+        mounts: |
+          - src: /mnt/docker
+            target: /var/lib/docker
+            rm: true
+            command-pre: sudo systemctl stop docker
+            command-post: sudo systemctl start docker
+          - src: /mnt/runner-cache
+            target: /home/runner/.cache
+            chown: "runner:runner"
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      with:
+        path: examples
+    - run: |
+        printf '%s\n' 'common --config=ci' > repo.bazelrc
+      working-directory: examples/filter-cc
+    - name: Inject bzlmod envoy pin into MODULE.bazel
+      run: |
+        # The envoy module is not (yet) published to a registry, so resolve
+        # the current envoy main HEAD and override the module to use it.
+        ENVOY_SHA=$(git ls-remote https://github.com/envoyproxy/envoy refs/heads/main | head -n1 | awk '{print $1}')
+        echo "Resolved envoy main HEAD: ${ENVOY_SHA}"
+        cat >> MODULE.bazel <<EOF
+
+        git_override(
+            module_name = "envoy",
+            remote = "https://github.com/envoyproxy/envoy",
+            commit = "${ENVOY_SHA}",
+        )
+        git_override(
+            module_name = "envoy_api",
+            remote = "https://github.com/envoyproxy/envoy",
+            commit = "${ENVOY_SHA}",
+            strip_prefix = "api",
+        )
+        EOF
+      working-directory: examples/filter-cc
+    - name: Verify the filter builds against envoy head
+      run: |
+        # Building the fully statically linked binary (`//:envoy`), as
+        # `verify.sh` does, is too heavy for hosted runners - build the
+        # filter's extension wiring instead, which proves the example builds
+        # against envoy at a fraction of the cost.
+        export UID
+        docker compose -f docker-compose-build.yaml run --quiet-pull --remove-orphans filter_build \
+            bash -c "bazel build --experimental_repository_downloader_retries=2 --disk_cache=/tmp/disk_cache \
+                --repository_cache=/tmp/repository_cache --experimental_repository_cache_hardlinks \
+                //:http_filter_config"
+      working-directory: examples/filter-cc
+      env:
+        DOCKER_BUILDKIT: 1
+        COMPOSE_BAKE: true
+        BUILDKIT_PROGRESS: quiet
