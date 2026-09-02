@@ -2,8 +2,6 @@
 
 #include "http_filter.h"
 
-#include "envoy/server/filter_config.h"
-
 namespace Envoy {
 namespace Http {
 
@@ -13,10 +11,6 @@ HttpSampleDecoderFilterConfig::HttpSampleDecoderFilterConfig(
 
 HttpSampleDecoderFilter::HttpSampleDecoderFilter(HttpSampleDecoderFilterConfigSharedPtr config)
     : config_(config) {}
-
-HttpSampleDecoderFilter::~HttpSampleDecoderFilter() {}
-
-void HttpSampleDecoderFilter::onDestroy() {}
 
 const LowerCaseString HttpSampleDecoderFilter::headerKey() const {
   return LowerCaseString(config_->key());
@@ -31,14 +25,6 @@ FilterHeadersStatus HttpSampleDecoderFilter::decodeHeaders(RequestHeaderMap& hea
   headers.addCopy(headerKey(), headerValue());
 
   return FilterHeadersStatus::Continue;
-}
-
-FilterDataStatus HttpSampleDecoderFilter::decodeData(Buffer::Instance&, bool) {
-  return FilterDataStatus::Continue;
-}
-
-void HttpSampleDecoderFilter::setDecoderFilterCallbacks(StreamDecoderFilterCallbacks& callbacks) {
-  decoder_callbacks_ = &callbacks;
 }
 
 } // namespace Http
