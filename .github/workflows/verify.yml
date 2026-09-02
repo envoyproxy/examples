@@ -25,3 +25,12 @@ jobs:
       contents: read
       packages: read
     uses: ./.github/workflows/_verify_build.yml
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        example:
+        - wasm-cc
+        - filter-cc
+    with:
+      example: ${{ matrix.example }}
