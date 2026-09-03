@@ -7,7 +7,7 @@ services:
     - ${UI_PATH:-./ui}:/workspace
     - ${XDS_PATH:-./xds}:/var/lib/envoy
     environment:
-      LOCAL_UID: "${UID}"
+      LOCAL_UID: "${UID:-${USER_UID}}"
     working_dir: /workspace
 
   envoy:

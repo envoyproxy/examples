@@ -2,8 +2,8 @@
 
 EXAMPLE_NAME="${1}"
 EXAMPLE_DIR="${2}"
-TMPOUT=$(mktemp)
-RUNDIR=$(mktemp -d)
+TMPOUT=$(mktemp -p "${HOME}")
+RUNDIR=$(mktemp -d -p "${HOME}")
 
 export COMPOSE_INTERACTIVE_NO_CLI=1
 export COMPOSE_PROGRESS=quiet
@@ -30,7 +30,7 @@ verify () {
     # This is set to simulate an environment where users have shared home drives protected
     # by a strong umask (ie only group readable by default).
     umask 027
-    chmod -R o-rwx "$RUNDIR"
+    chmod -R u+w,o-rwx "$RUNDIR"
     cd "$RUNDIR"
     dirlist=$(ls .)
     if [[ "$dirlist" == "external" ]]; then
@@ -38,7 +38,7 @@ verify () {
     else
         cd "${EXAMPLE_NAME}"
     fi
-    script -q -c "./verify.sh" "$TMPOUT" >/dev/null
+    script -q -c "./verify.sh" "$TMPOUT" >/dev/null </dev/null
 }
 
 trap complete EXIT

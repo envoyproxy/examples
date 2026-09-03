@@ -157,7 +157,7 @@ _curl () {
 
 move_if_exists () {
     if [ -e "$1" ]; then
-        mv "$1" "$2"
+        mv -f "$1" "$2"
     else
         echo "Warning: $1 does not exist. Skipping move operation."
     fi

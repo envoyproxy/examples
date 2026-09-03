@@ -16,6 +16,12 @@ concurrency:
 
 jobs:
   examples:
+    permissions:
+      contents: read
+      packages: read
     uses: ./.github/workflows/_verify_examples.yml
-  wasm:
-    uses: ./.github/workflows/_verify_wasm.yml
+  build:
+    permissions:
+      contents: read
+      packages: read
+    uses: ./.github/workflows/_verify_build.yml

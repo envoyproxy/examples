@@ -61,6 +61,8 @@ services:
     environment:
       BAZEL_BUILD_EXTRA_OPTIONS: "${BAZEL_BUILD_EXTRA_OPTIONS:-}"
       BUILD_UID: "${UID:-1000}"
+      USER_UID: "${UID:-1000}"
+      GROUP_UID: "${UID:-1000}"
       GITHUB_TOKEN: "${GITHUB_TOKEN:-}"
       DEV_CONTAINER_ID: "${DEV_CONTAINER_ID:-}"
       DOCKER_BUILDKIT: "${DOCKER_BUILDKIT:-1}"

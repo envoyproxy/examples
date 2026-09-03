@@ -13,7 +13,8 @@ services:
          //:envoy_filter_http_wasm_updated_example.wasm
       cp -af bazel-bin/*updated*.wasm /output
     environment:
-    - BUILD_UID=${UID:-1000}
+      BUILD_UID: ${UID:-1000}
+      GITHUB_TOKEN: "${GITHUB_TOKEN:-}"
     entrypoint: /source/shared/build/build-entrypoint.sh
     working_dir: /source/wasm-cc
     volumes:
@@ -33,7 +34,8 @@ services:
           //:envoy_filter_http_wasm_example.wasm
       cp -af bazel-bin/*.wasm /output
     environment:
-    - BUILD_UID=${UID:-1000}
+      BUILD_UID: ${UID:-1000}
+      GITHUB_TOKEN: "${GITHUB_TOKEN:-}"
     user: envoybuild
     working_dir: /source
     volumes:

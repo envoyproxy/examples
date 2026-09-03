@@ -20,45 +20,15 @@ jobs:
       contents: read
       packages: read
     runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-      matrix:
-        bazel-mode:
-        - workspace
-        - bzlmod
     steps:
-
-    # ── shared: bind-mounts (workspace leg only, needs extra disk) ───────────
-    - uses: envoyproxy/toolshed/actions/bind-mounts@598eacce15ab5f208102a2fd5669292868002701  # v0.4.0
-      if: matrix.bazel-mode == 'workspace'
-      with:
-        mounts: |
-          - src: /mnt/docker
-            target: /var/lib/docker
-            rm: true
-            command-pre: sudo systemctl stop docker
-            command-post: sudo systemctl start docker
-          - src: /mnt/workspace
-            target: GITHUB_WORKSPACE
-            chown: "runner:runner"
-          - src: /mnt/runner-cache
-            target: /home/runner/.cache
-            chown: "runner:runner"
-
-    # ── shared: checkout envoy (both legs) ───────────────────────────────────
-    # workspace leg: envoy default branch; bzlmod leg: bzlmod-envoy-head branch
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       with:
         repository: envoyproxy/envoy
-        ref: ${{ matrix.bazel-mode == 'bzlmod' && 'bzlmod-envoy-head' || '' }}
         path: envoy
 
-    # ── shared: checkout examples (both legs) ────────────────────────────────
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       with:
         path: examples
-
-    # ── workspace leg only ────────────────────────────────────────────────────
     - name: RBE auth check
       id: rbe
       if: github.event_name == 'pull_request'
@@ -81,12 +51,8 @@ jobs:
         cat >> repo.bazelrc <<'EOF'
         common --config=rbe
         common --config=bes
-        ${{ matrix.bazel-mode == 'bzlmod' && 'common --enable_bzlmod' || '' }}
-        ${{ matrix.bazel-mode == 'bzlmod' && 'common --noenable_workspace' || '' }}
         EOF
         cat repo.bazelrc
-
-    # ── shared: build docs (both legs via docker compose run docs) ───────────
     - name: Build docs
       run: |
         export UID
@@ -100,9 +66,9 @@ jobs:
         DOCKER_BUILDKIT: 1
         GITHUB_TOKEN: ${{ github.token }}
 
-    - name: Docs upload (${{ matrix.bazel-mode }})
+    - name: Docs upload
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
       with:
-        name: docs-${{ matrix.bazel-mode }}
+        name: docs
         path: envoy/generated/docs
         retention-days: 30
