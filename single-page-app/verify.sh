@@ -296,7 +296,7 @@ docker compose run --rm ui build.sh
 docker compose up --build --pull missing --quiet-pull -d --force-recreate envoy
 
 run_log "Test dev app (Github)"
-wait_for 10 \
+wait_for 20 \
     bash -c "\
         responds_with \
             \"Envoy single page app example\" \

@@ -1,0 +1,67 @@
+name: Verify/Wasm
+
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+
+
+jobs:
+  build:
+    permissions:
+      contents: read
+      packages: read
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      with:
+        path: examples
+    - run: |
+        docker pull envoyproxy/envoy:dev
+        DEV_CONTAINER_ID=$(docker inspect --format='{{.Id}}' envoyproxy/envoy:dev)
+        echo "DEV_CONTAINER_ID=${DEV_CONTAINER_ID}" >> $GITHUB_ENV
+        printf '%s\n' 'common --config=ci' > repo.bazelrc
+      working-directory: examples/wasm-cc
+    - name: Inject bzlmod envoy pin into MODULE.bazel
+      run: |
+        cat >> MODULE.bazel <<'EOF'
+
+        git_override(
+            module_name = "envoy",
+            remote = "https://github.com/envoyproxy/envoy",
+            commit = "6609c01e330fb84049d54a9dbffae8609b1ec9f7",
+        )
+        git_override(
+            module_name = "envoy_api",
+            remote = "https://github.com/envoyproxy/envoy",
+            commit = "6609c01e330fb84049d54a9dbffae8609b1ec9f7",
+            strip_prefix = "api",
+        )
+        EOF
+      working-directory: examples/wasm-cc
+    - name: RBE auth check
+      id: rbe
+      if: github.event_name == 'pull_request'
+      uses: envoyproxy/toolshed/actions/github/container/auth@00661cc7647f9d375041292d0218c75633f0bb03
+      with:
+        container: hello-world
+    - name: Configure repo Bazel settings (RBE/BES)
+      if: >-
+        github.event_name != 'pull_request'
+        || steps.rbe.outputs.authorized == 'true'
+      working-directory: examples/wasm-cc
+      run: |
+        cat >> repo.bazelrc <<'EOF'
+        common --config=rbe
+        common --config=bes
+        EOF
+        cat repo.bazelrc
+    - run: |
+        ./verify.sh
+      working-directory: examples/wasm-cc
+      env:
+        DOCKER_BUILDKIT: 1
+        COMPOSE_BAKE: true
+        BUILDKIT_PROGRESS: quiet
+        GITHUB_TOKEN: ${{ github.token }}

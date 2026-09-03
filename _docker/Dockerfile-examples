@@ -1,1 +1,1 @@
-FROM envoyproxy/envoy-build:docker-a3be5281b88359ab536d052218a30a951c97d751@sha256:ca020f5e40f928fc2ad1c03be1888b314a3b085d60bea59ef2941219c4669c5a
+FROM envoyproxy/envoy-build:docker-v0.2.3@sha256:b5fd90b42869e24c22110f4bd925ad30c30e8410d6cad2d5203ced628dd3dfdf

@@ -9,11 +9,10 @@ on:
 
 jobs:
   examples:
+    permissions:
+      contents: read
+      packages: read
     runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-      matrix:
-        bazel-mode: [workspace, bzlmod]
     steps:
     - uses: envoyproxy/toolshed/actions/bind-mounts@598eacce15ab5f208102a2fd5669292868002701  # v0.4.0
       with:
@@ -30,10 +29,8 @@ jobs:
       with:
         path: examples
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-      if: matrix.bazel-mode == 'bzlmod'
       with:
         repository: envoyproxy/envoy
-        ref: bzlmod-envoy-head
         path: envoy
     - run: |
         TEMPDIR=/cache/docker
@@ -44,7 +41,7 @@ jobs:
       id: cache
       with:
         path: /cache/docker
-        key: ${{ runner.os }}-docker-${{ matrix.bazel-mode }}-${{ hashFiles('examples/**/Dockerfile*') }}
+        key: ${{ runner.os }}-docker-${{ hashFiles('examples/**/Dockerfile*') }}
     - run: |
         TEMPDIR=/cache/docker
         sudo mkdir -p /var/lib/docker-examples
@@ -62,26 +59,39 @@ jobs:
     - uses: actions/cache@v6
       with:
         path: /home/runner/.cache
-        key: ${{ runner.os }}-bazel-${{ matrix.bazel-mode }}-${{ hashFiles('examples/**/BUILD', 'examples/**/*bzl', 'examples/WORKSPACE') }}
+        key: ${{ runner.os }}-bazel-${{ hashFiles('examples/**/BUILD', 'examples/**/*bzl', 'examples/WORKSPACE') }}
 
+    - name: RBE auth check
+      id: rbe
+      if: github.event_name == 'pull_request'
+      uses: envoyproxy/toolshed/actions/github/container/auth@00661cc7647f9d375041292d0218c75633f0bb03
+      with:
+        container: hello-world
+    - name: Configure repo Bazel settings (RBE/BES)
+      if: >-
+        github.event_name != 'pull_request'
+        || steps.rbe.outputs.authorized == 'true'
+      working-directory: examples
+      run: |
+        cat >> repo.bazelrc <<'EOF'
+        common --config=rbe
+        common --config=bes
+        EOF
+        cat repo.bazelrc
     - run: |
         docker pull envoyproxy/envoy:dev
         DEV_CONTAINER_ID=$(docker inspect --format='{{.Id}}' envoyproxy/envoy:dev)
         echo "DEV_CONTAINER_ID=${DEV_CONTAINER_ID}" >> $GITHUB_ENV
     - run: |
         export UID
-        printf '%s\n' 'common --config=ci' > repo.bazelrc
-        if [ "${BAZEL_MODE}" = "bzlmod" ]; then
-          echo "common --enable_bzlmod" >> repo.bazelrc
-          echo "common --noenable_workspace" >> repo.bazelrc
-        fi
+        printf '%s\n' 'common --config=ci' >> repo.bazelrc
         docker compose run --quiet --quiet-pull --quiet-build examples
       working-directory: examples
       env:
-        BAZEL_MODE: ${{ matrix.bazel-mode }}
         DOCKER_BUILDKIT: 1
         COMPOSE_BAKE: true
         BUILDKIT_PROGRESS: quiet
+        GITHUB_TOKEN: ${{ github.token }}
 
     - run: |
         TEMPDIR=/cache/docker
@@ -92,4 +102,4 @@ jobs:
       if: steps.cache.outputs.cache-hit != 'true' && github.event_name != 'pull_request'
       with:
         path: /cache/docker
-        key: ${{ runner.os }}-docker-${{ matrix.bazel-mode }}-${{ hashFiles('examples/**/Dockerfile*') }}
+        key: ${{ runner.os }}-docker-${{ hashFiles('examples/**/Dockerfile*') }}

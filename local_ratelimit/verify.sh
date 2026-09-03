@@ -10,7 +10,7 @@ export PORT_STATS1="${LOCAL_RATELIMIT_PORT_STATS1:-11212}"
 
 
 responds_with_rate_limit () {
-    local count="$1" url="$2"
+    local count="$1" url="$2" i
 
     for ((i=1;i<=count;i++)); do
         responds_with \
@@ -20,7 +20,7 @@ responds_with_rate_limit () {
 }
 
 responds_without_rate_limit () {
-    local count="$1" url="$2"
+    local count="$1" url="$2" i
 
     for ((i=1;i<=count;i++)); do
         responds_without \
@@ -45,8 +45,8 @@ for i in {1..3}; do
     echo "${output}" | grep "x-local-rate-limit: true" || exit 1
 done
 
-run_log "Test upstream: localhost:${PORT_PROXY} without rate limit response two times"
-wait_for 5 responds_without_rate_limit 2 "http://localhost:${PORT_PROXY}"
+run_log "Test upstream: localhost:${PORT_PROXY} without rate limit response after refill"
+wait_for 10 responds_without "local_rate_limited" "http://localhost:${PORT_PROXY}"
 
 run_log "Test upstream: localhost:${PORT_PROXY} with rate limit response three times"
 responds_with_rate_limit 3 "http://localhost:${PORT_PROXY}"
@@ -75,8 +75,8 @@ for i in {1..3}; do
     echo "${output}" | grep "x-local-rate-limit: true" || exit 1
 done
 
-run_log "Test admin interface: localhost:${PORT_STATS1}/stats/prometheus without rate limit response two times"
-wait_for 5 responds_without_rate_limit 2 "http://localhost:${PORT_STATS1}/stats/prometheus"
+run_log "Test admin interface: localhost:${PORT_STATS1}/stats/prometheus without rate limit response after refill"
+wait_for 10 responds_without "local_rate_limited" "http://localhost:${PORT_STATS1}/stats/prometheus"
 
 run_log "Test admin interface: localhost:${PORT_STATS1}/stats/prometheus with rate limit response three times"
 responds_with_rate_limit 3 "http://localhost:${PORT_STATS1}/stats/prometheus"

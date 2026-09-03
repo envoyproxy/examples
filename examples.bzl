@@ -78,6 +78,7 @@ def envoy_examples(examples):
                 "verify_%s" % example,
                 "%s_dir" % example,
             ],
+            tags = ["no-remote-exec", "no-sandbox"],
         )
         RESULTS.append("%s_result" % example)
         RESULT_FILES.append("$(location %s)" % ("%s_result" % example))

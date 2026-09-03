@@ -1,1 +1,1 @@
-FROM envoyproxy/envoy-build:devtools-86873047235e9b8232df989a5999b9bebf9db69c@sha256:6e7a82d4f1ba040f4ebef0c1aae00cdbd205ff7a1284c20cc20984fdfa4a91d8
+FROM envoyproxy/envoy-build:devtools-v0.2.3@sha256:7cbfd3c61439d510f5e21fcca6b08fcd6616b1d13ebd85d7550ecf4bfd8e3d23
