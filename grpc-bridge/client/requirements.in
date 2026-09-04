@@ -1,4 +1,4 @@
 requests>=2.34.2
 grpcio
 grpcio-tools
-protobuf>=7.36.0
+protobuf>=7.36.1
