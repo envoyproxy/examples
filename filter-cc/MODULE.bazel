@@ -25,7 +25,7 @@ use_repo(envoy_toolchains_ext, "clang_platform")
 
 # Compiler toolchain as dev_dependency - only required when building this
 # module directly, downstream modules provide their own toolchain.
-bazel_dep(name = "toolchains_llvm", version = "1.8.0.envoy", dev_dependency = True)
+bazel_dep(name = "toolchains_llvm", version = "1.9.0.envoy", dev_dependency = True)
 
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
