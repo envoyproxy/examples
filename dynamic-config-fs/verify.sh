@@ -12,9 +12,10 @@ chmod go+rx configs
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 run_log "Check for response comes from service1 upstream"
-curl -s "http://localhost:${PORT_PROXY}" \
-    | jq -r '.hostname' \
-    | grep service1
+wait_for 10 sh -c "\
+         curl -s \"http://localhost:${PORT_PROXY}\" \
+         | jq -r '.hostname' \
+         | grep service1"
 
 run_log "Check config for active clusters pointing to service1"
 curl -s "http://localhost:${PORT_ADMIN}/config_dump" \
