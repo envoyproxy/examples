@@ -24,11 +24,12 @@ configuration, and adds them as a header to proxied requests.
 
    In this case, it excludes Wasm from the build:
 
-  .. literalinclude:: _include/filter-cc/extensions_build_config.bzl
-     :language: starlark
-     :lines: 10-15
-     :linenos:
-     :caption: :download:`extensions_build_config <_include/filter-cc/extensions_build_config.bzl>`.
+   .. literalinclude:: _include/filter-cc/extensions_build_config.bzl
+      :language: starlark
+      :lines: 10-15
+      :lineno-start: 10
+      :linenos:
+      :caption: :download:`extensions_build_config.bzl <_include/filter-cc/extensions_build_config.bzl>`
 
 Step 1: Build the Envoy binary with the filter
 **********************************************
