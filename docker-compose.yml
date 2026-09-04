@@ -15,8 +15,10 @@ services:
     environment:
       DOCS_BUILD_RST: "${DOCS_BUILD_RST:-}"
       BAZEL_BUILD_EXTRA_OPTIONS: >-
-        ${BAZEL_BUILD_EXTRA_OPTIONS:-
-        --override_repository=envoy-examples=../../examples}
+        --override_module=envoy-example-filter-cc=../../examples/filter-cc
+        --override_module=envoy-example-wasm-cc=../../examples/wasm-cc
+        --override_module=envoy-examples=../../examples
+      BUILD_UID: "${UID:-1000}"
       USER_UID: "${UID:-1000}"
       GROUP_UID: "${GID:-1000}"
       GITHUB_TOKEN: "${GITHUB_TOKEN:-}"

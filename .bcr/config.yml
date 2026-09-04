@@ -1,3 +1,4 @@
 moduleRoots:
 - "."
+- filter-cc
 - wasm-cc

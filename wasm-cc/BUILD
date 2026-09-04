@@ -50,6 +50,7 @@ filegroup(
             "**/*~",
             "**/.*",
             ".*/**/*",
+            "bazel-*/**/*",
             "example.rst",
             "BUILD",
             "README.md",

@@ -1,0 +1,43 @@
+services:
+  filter_build:
+    build:
+      context: ../shared/build
+    command:
+    - bash
+    - -c
+    - |
+      set -eo pipefail
+      bazel build --experimental_repository_downloader_retries=2 --disk_cache=/tmp/disk_cache \
+         --repository_cache=/tmp/repository_cache --experimental_repository_cache_hardlinks \
+         //:envoy
+      cp -Lf bazel-bin/envoy /output/envoy
+    environment:
+      BUILD_UID: ${UID:-1000}
+      GITHUB_TOKEN: "${GITHUB_TOKEN:-}"
+    entrypoint: /source/shared/build/build-entrypoint.sh
+    working_dir: /source/filter-cc
+    volumes:
+    - ${ENVOY_EXAMPLES_CACHE_DIR:-${HOME}/.cache/envoy/examples}:/home/envoybuild/.cache
+    - ..:/source
+    - ./bin:/output
+
+  filter_test:
+    build:
+      context: ../shared/build
+    command:
+    - bash
+    - -c
+    - |
+      set -eo pipefail
+      bazel test --experimental_repository_downloader_retries=2 --disk_cache=/tmp/disk_cache \
+         --repository_cache=/tmp/repository_cache --experimental_repository_cache_hardlinks \
+         //:http_filter_integration_test
+    environment:
+      BUILD_UID: ${UID:-1000}
+      GITHUB_TOKEN: "${GITHUB_TOKEN:-}"
+    entrypoint: /source/shared/build/build-entrypoint.sh
+    working_dir: /source/filter-cc
+    volumes:
+    - ${ENVOY_EXAMPLES_CACHE_DIR:-${HOME}/.cache/envoy/examples}:/home/envoybuild/.cache
+    - ..:/source
+    - ./bin:/output

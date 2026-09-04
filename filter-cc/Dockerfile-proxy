@@ -1,0 +1,5 @@
+FROM envoyproxy/envoy:dev
+COPY ./envoy.yaml /etc/envoy.yaml
+COPY ./bin/envoy /usr/local/bin/envoy
+RUN chmod go+r /etc/envoy.yaml && chmod go+rx /usr/local/bin/envoy
+CMD ["/usr/local/bin/envoy", "-c", "/etc/envoy.yaml", "--service-cluster", "proxy"]

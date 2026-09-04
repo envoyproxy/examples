@@ -1,0 +1,2 @@
+# Built Envoy binaries are placed here by `docker-compose-build.yaml`.
+envoy
