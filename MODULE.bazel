@@ -15,23 +15,3 @@ bazel_dep(name = "toolchains_llvm", version = "1.9.0.envoy", dev_dependency = Tr
 
 envoy_toolchains_ext = use_extension("@envoy//bazel:extensions.bzl", "envoy_toolchains_extension")
 use_repo(envoy_toolchains_ext, "clang_platform")
-
-# local_path_override(
-#     module_name = "envoy",
-#     path = "../envoy",
-# )
-#
-# local_path_override(
-#     module_name = "envoy_api",
-#     path = "../envoy/api",
-# )
-
-local_path_override(
-    module_name = "envoy-example-filter-cc",
-    path = "filter-cc",
-)
-
-local_path_override(
-    module_name = "envoy-example-wasm-cc",
-    path = "wasm-cc",
-)
