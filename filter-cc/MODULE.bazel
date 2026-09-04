@@ -1,10 +1,10 @@
 module(
     name = "envoy-example-filter-cc",
-    version = "0.2.6",
+    version = "0.2.7",
 )
 
-bazel_dep(name = "envoy", version = "1.40.0-dev.20260903.6609c01.envoy")
-bazel_dep(name = "envoy_api", version = "1.40.0-dev.20260903.16b0d47.envoy")
+bazel_dep(name = "envoy", version = "1.40.0-dev.20260904.13144fb.envoy")
+bazel_dep(name = "envoy_api", version = "1.40.0-dev.20260904.13144fb.envoy")
 bazel_dep(name = "googleapis", version = "0.0.0-20251003-2193a2bf")
 bazel_dep(name = "googleurl", version = "0.0.0-221103-dd4080f.envoy")
 bazel_dep(name = "platforms", version = "1.0.0")
@@ -25,7 +25,7 @@ use_repo(envoy_toolchains_ext, "clang_platform")
 
 # Compiler toolchain as dev_dependency - only required when building this
 # module directly, downstream modules provide their own toolchain.
-bazel_dep(name = "toolchains_llvm", version = "1.8.0.envoy", dev_dependency = True)
+bazel_dep(name = "toolchains_llvm", version = "1.9.0.envoy", dev_dependency = True)
 
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
