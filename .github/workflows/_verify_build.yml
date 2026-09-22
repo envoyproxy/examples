@@ -34,12 +34,12 @@ jobs:
         git_override(
             module_name = "envoy",
             remote = "https://github.com/envoyproxy/envoy",
-            commit = "6609c01e330fb84049d54a9dbffae8609b1ec9f7",
+            commit = "726d7acb73934085cbbccc83ea47fdd78b583d7e",
         )
         git_override(
             module_name = "envoy_api",
             remote = "https://github.com/envoyproxy/envoy",
-            commit = "6609c01e330fb84049d54a9dbffae8609b1ec9f7",
+            commit = "726d7acb73934085cbbccc83ea47fdd78b583d7e",
             strip_prefix = "api",
         )
         EOF
