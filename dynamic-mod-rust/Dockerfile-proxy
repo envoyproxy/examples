@@ -1,0 +1,23 @@
+FROM rust:1.98 AS builder
+# bindgen, used by the Rust SDK to generate bindings for the dynamic modules ABI,
+# requires libclang.
+RUN --mount=type=tmpfs,target=/var/cache/apt \
+    --mount=type=tmpfs,target=/var/lib/apt/lists \
+    apt-get -qq update \
+    && apt-get -qq install -y clang
+WORKDIR /build
+# Fetch the dependencies first to leverage the Docker cache.
+COPY ./Cargo.toml ./Cargo.lock ./
+RUN mkdir src \
+    && touch src/lib.rs \
+    && cargo fetch \
+    && rm -rf src
+COPY ./src src
+RUN cargo build --release
+
+FROM envoyproxy/envoy:dev
+ENV ENVOY_DYNAMIC_MODULES_SEARCH_PATH=/usr/local/lib
+COPY --from=builder /build/target/release/libdynamic_mod_rust.so /usr/local/lib/libdynamic_mod_rust.so
+COPY ./envoy.yaml /etc/envoy.yaml
+RUN chmod go+r /etc/envoy.yaml /usr/local/lib/libdynamic_mod_rust.so
+CMD ["/usr/local/bin/envoy", "-c", "/etc/envoy.yaml", "--service-cluster", "proxy"]

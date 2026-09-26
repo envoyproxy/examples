@@ -59,6 +59,26 @@ updates:
     interval: "daily"
     time: "06:00"
 
+- package-ecosystem: "cargo"
+  directory: "/dynamic-mod-rust"
+  groups:
+    examples-dynamic-mod-rust:
+      patterns:
+      - "*"
+  schedule:
+    interval: daily
+    time: "06:00"
+
+- package-ecosystem: "docker"
+  directory: "/dynamic-mod-rust"
+  groups:
+    examples-dynamic-mod-rust:
+      patterns:
+      - "*"
+  schedule:
+    interval: daily
+    time: "06:00"
+
 - package-ecosystem: "docker"
   directory: "/ext_authz"
   groups:
