@@ -1,4 +1,6 @@
 common --color=yes
+
+# Required by Envoy and its deps when consumed via bzlmod.
 common --noincompatible_disallow_empty_glob
 common --noincompatible_disallow_ctx_resolve_tools
 common --legacy_external_runfiles
@@ -6,38 +8,35 @@ common --legacy_external_runfiles
 common --registry=https://bcr.bazel.build/
 common --registry=https://raw.githubusercontent.com/envoyproxy/bazel-registry/263a259ec7498fe90ad0308edd3592992243560e
 
-common --config=clang
-
+# Needed for STABLE_CERT_EPOCH_YEAR used by @envoy_toolshed//certs test cert generation.
 build --workspace_status_command="bash bazel/get_workspace_status"
 build --incompatible_strict_action_env
+
+# Protobuf currently requires Java 11 toolchains (see protocolbuffers/protobuf#20760).
 build --java_runtime_version=remotejdk_11
 build --tool_java_runtime_version=remotejdk_11
 build --java_language_version=11
 build --tool_java_language_version=11
 build --extra_toolchains=@envoy//bazel:envoy_java_toolchain_definition
-# silence absl logspam.
+
+# Silence absl log spam.
 build --copt=-DABSL_MIN_LOG_LEVEL=4
 build --cxxopt=-std=c++20 --host_cxxopt=-std=c++20
 build --copt=-Wno-deprecated-declarations
-build --define envoy_mobile_listener=enabled
-build --experimental_repository_downloader_retries=2
 build --experimental_cc_static_library
-build --enable_platform_specific_config
-build --incompatible_merge_fixed_and_default_shell_env
+build --experimental_repository_downloader_retries=2
 
-build --@googleurl//build_config:system_icu=0
-
+# Prevent rules_jvm_external from trying to set up an Android toolchain.
 common --repo_env=ANDROID_HOME=
 
-build --incompatible_config_setting_private_default_visibility
-build --incompatible_enforce_config_setting_visibility
+# Googletest uses absl for backtrace support in this dependency graph.
+build --define absl=1
 
-common --incompatible_allow_tags_propagation
-
-# Protobuf
-common --@protobuf//bazel/flags:prefer_prebuilt_protoc=true
+# Prefer prebuilt protoc while using toolchain resolution.
+common --@protobuf//bazel/toolchains:prefer_prebuilt_protoc
 common --incompatible_enable_proto_toolchain_resolution
 
+# Wasm is excluded by this example's extensions_build_config.
 common --@proxy-wasm-cpp-host//bazel:engine=disabled
 
 common --@rules_python//python/config_settings:bootstrap_impl=script
@@ -47,6 +46,7 @@ build --@rules_rust//rust/settings:extra_exec_rustc_flags=-Clink-self-contained=
 
 # Common flags for Clang (shared between all clang variants)
 common:clang-common --linkopt=-fuse-ld=lld
+common:clang-common --cxxopt=-Wno-nullability-completeness
 common:clang-common --@toolchains_llvm//toolchain/config:compiler-rt=false
 common:clang-common --@toolchains_llvm//toolchain/config:libunwind=false
 
@@ -67,12 +67,7 @@ common:clang --repo_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
 
 common --config=clang
 
-build --per_file_copt=external/cel-cpp.*,.*/filters/common/expr/.*,.*/matching/.*cel.*@-Wno-nullability-completeness
-build --copt=-Wno-nullability-completeness
-
-# We already have absl in the build, define absl=1 to tell googletest to use absl for backtrace.
-build --define absl=1
-
+# CI (used via repo.bazelrc in .github/workflows/_verify_build.yml)
 common:ci --noshow_progress
 common:ci --noshow_loading_progress
 common:ci --test_output=errors
@@ -110,27 +105,6 @@ common:remote-cache --remote_timeout=3600s
 common:remote-exec --remote_executor=grpcs://mordenite.cluster.engflow.com
 common:remote-exec --jobs=200
 common:remote-exec --define=engflow_rbe=true
-
-# libc++ - default for clang
-common:libc++ --action_env=CXXFLAGS=-stdlib=libc++
-common:libc++ --action_env=LDFLAGS="-stdlib=libc++ -fuse-ld=lld"
-common:libc++ --action_env=BAZEL_CXXOPTS=-stdlib=libc++
-common:libc++ --action_env=BAZEL_LINKLIBS=-l%:libc++.a:-l%:libc++abi.a
-common:libc++ --action_env=BAZEL_LINKOPTS=-lm:-pthread
-common:libc++ --define force_libcpp=enabled
-common:libc++ --@envoy//bazel:libc++=true
-
-# Common flags for Clang (shared between all clang variants)
-common:clang-common --linkopt=-fuse-ld=lld
-common:clang-common --cxxopt=-Wno-nullability-completeness
-common:clang-common --@toolchains_llvm//toolchain/config:compiler-rt=false
-common:clang-common --@toolchains_llvm//toolchain/config:libunwind=false
-
-# Clang with libc++ (default)
-common:clang --config=clang-common
-common:clang --config=libc++
-common:clang --host_platform=@clang_platform
-common:clang --repo_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
 
 try-import %workspace%/user.bazelrc
 try-import %workspace%/repo.bazelrc
