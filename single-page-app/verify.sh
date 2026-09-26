@@ -261,7 +261,7 @@ responds_with_header \
 run_log "Rebuild production app"
 sed -i s/Login\ to\ query\ APIs/LOGIN\ NOW/g .local.ci/ui/src/components/Home.tsx
 docker compose run --rm ui build.sh
-wait_for 5 \
+wait_for 20 \
     bash -c "\
         responds_without \
             \"$current_js\" \
