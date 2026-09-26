@@ -7,7 +7,7 @@ services:
     - -c
     - |
       set -eo pipefail
-      bazel build --experimental_repository_downloader_retries=2 --disk_cache=/tmp/disk_cache \
+      bazel build --disk_cache=/tmp/disk_cache \
          --repository_cache=/tmp/repository_cache --experimental_repository_cache_hardlinks \
          //:envoy
       cp -Lf bazel-bin/envoy /output/envoy
@@ -29,7 +29,7 @@ services:
     - -c
     - |
       set -eo pipefail
-      bazel test --experimental_repository_downloader_retries=2 --disk_cache=/tmp/disk_cache \
+      bazel test --disk_cache=/tmp/disk_cache \
          --repository_cache=/tmp/repository_cache --experimental_repository_cache_hardlinks \
          //:http_filter_integration_test
     environment:
