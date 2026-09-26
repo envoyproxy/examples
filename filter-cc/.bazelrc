@@ -1,16 +1,14 @@
-common --enable_bzlmod
-common --noenable_workspace
-common --@envoy//bazel:enable_bzlmod=True
 common --color=yes
 common --noincompatible_disallow_empty_glob
 common --noincompatible_disallow_ctx_resolve_tools
 common --legacy_external_runfiles
 
 common --registry=https://bcr.bazel.build/
-common --registry=https://raw.githubusercontent.com/envoyproxy/bazel-registry/e71edce2634e3a733553eff8da3ea9ae3831913a
+common --registry=https://raw.githubusercontent.com/envoyproxy/bazel-registry/263a259ec7498fe90ad0308edd3592992243560e
 
 common --config=clang
 
+build --workspace_status_command="bash bazel/get_workspace_status"
 build --incompatible_strict_action_env
 build --java_runtime_version=remotejdk_11
 build --tool_java_runtime_version=remotejdk_11
@@ -41,17 +39,6 @@ common --@protobuf//bazel/flags:prefer_prebuilt_protoc=true
 common --incompatible_enable_proto_toolchain_resolution
 
 common --@proxy-wasm-cpp-host//bazel:engine=disabled
-# common --@proxy-wasm-cpp-host//bazel:crypto_lib=@envoy//bazel:crypto
-
-build --@quiche//:quic_base_impl_lib=@envoy//source/common/quic/platform:quic_base_impl_lib
-build --@quiche//:quiche_export_impl_lib=@envoy//source/common/quic/platform:quiche_export_impl_lib
-build --@quiche//:quiche_flags_impl_lib=@envoy//source/common/quic/platform:quiche_flags_impl_lib
-build --@quiche//:quiche_logging_impl_lib=@envoy//source/common/quic/platform:quiche_logging_impl_lib
-build --@quiche//:quiche_lower_case_string_impl_lib=@envoy//source/common/quic/platform:quiche_lower_case_string_impl_lib
-build --@quiche//:quiche_mem_slice_impl_lib=@envoy//source/common/quic/platform:quiche_mem_slice_impl_lib
-build --@quiche//:quiche_platform_iovec_impl_lib=@envoy//source/common/quic/platform:quiche_platform_iovec_impl_lib
-build --@quiche//:quiche_stack_trace_impl_lib=@envoy//source/common/quic/platform:quiche_stack_trace_impl_lib
-build --@quiche//:quiche_time_utils_impl_lib=@envoy//source/common/quic/platform:quiche_time_utils_impl_lib
 
 common --@rules_python//python/config_settings:bootstrap_impl=script
 build --incompatible_default_to_explicit_init_py
