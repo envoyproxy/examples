@@ -8,6 +8,7 @@ def envoy_example(name, shared = ":shared_files", common_fun = ":verify-common.s
             exclude = [
                 "%s/**/node_modules/**" % name,
                 "%s/**/dist/**" % name,
+                "%s/**/target/**" % name,
             ],
         ),
     )

@@ -13,6 +13,7 @@ EXAMPLE_TESTS = [
     "double-proxy",
     # "dynamic-config-cp",
     "dynamic-config-fs",
+    "dynamic-mod-rust",
     "ext_authz",
     # "fault-injection",
     "front-proxy",
@@ -57,6 +58,9 @@ filegroup(
             "cache/ci-responses.yaml",
             "cache/responses.yaml",
             "dynamic-config-fs/**/*",
+            # The dynamic module is only built when the sandbox is run, so the
+            # config cannot be validated with a stock Envoy binary.
+            "dynamic-mod-rust/*.yaml",
             "jaeger-native-tracing/*",
             "opentelemetry/otel-collector-config.yaml",
             "**/*docker-compose*.yaml",
@@ -160,6 +164,7 @@ filegroup(
             "WORKSPACE",
             "bazel-*/**/*",
             "**/node_modules/**",
+            "**/target/**",
             "**/*.rst",
             "win32*",
         ],
