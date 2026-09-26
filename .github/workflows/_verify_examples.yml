@@ -67,6 +67,12 @@ jobs:
       uses: envoyproxy/toolshed/actions/github/container/auth@00661cc7647f9d375041292d0218c75633f0bb03
       with:
         container: hello-world
+    - name: Configure repo Bazel settings (CI)
+      working-directory: examples
+      run: |
+        cp .github/workflows/repo.bazelrc repo.bazelrc
+        mkdir -p bazel/
+        cp .github/workflows/engflow-bazel-credential-helper.sh bazel/
     - name: Configure repo Bazel settings (RBE/BES)
       if: >-
         github.event_name != 'pull_request'

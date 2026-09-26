@@ -21,11 +21,17 @@ jobs:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       with:
         path: examples
+    - name: Configure repo Bazel settings (CI)
+      working-directory: examples/${{ inputs.example }}
+      run: |
+        cp ../.github/workflows/repo.bazelrc repo.bazelrc
+        printf '%s\n' 'common --config=ci' >> repo.bazelrc
+        mkdir -p bazel
+        cp ../.github/workflows/engflow-bazel-credential-helper.sh bazel/
     - run: |
         docker pull envoyproxy/envoy:dev
         DEV_CONTAINER_ID=$(docker inspect --format='{{.Id}}' envoyproxy/envoy:dev)
         echo "DEV_CONTAINER_ID=${DEV_CONTAINER_ID}" >> $GITHUB_ENV
-        printf '%s\n' 'common --config=ci' > repo.bazelrc
       working-directory: examples/${{ inputs.example }}
     - name: Inject bzlmod envoy pin into MODULE.bazel
       run: |
