@@ -47,6 +47,7 @@ TAGS
 clang-tidy-fixes.yaml
 clang.bazelrc
 repo.bazelrc
+/*/bazel/engflow-bazel-credential-helper.sh
 user.bazelrc
 CMakeLists.txt
 cmake-build-debug
