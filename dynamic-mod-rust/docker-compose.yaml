@@ -1,0 +1,15 @@
+services:
+
+  proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile-proxy
+    depends_on:
+    - web_service
+    ports:
+    - "${PORT_PROXY:-10000}:10000"
+
+  web_service:
+    build:
+      context: .
+      dockerfile: Dockerfile-echo

@@ -1,0 +1,22 @@
+[package]
+name = "dynamic-mod-rust"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+publish = false
+
+[dependencies]
+# The SDK is consumed as a git dependency as it is not published to crates.io.
+#
+# The pinned revision should be kept in sync with the Envoy image used in
+# `Dockerfile-proxy` - ie the SDK version must match the ABI version of the
+# Envoy binary that loads the module.
+envoy-proxy-dynamic-modules-rust-sdk = { git = "https://github.com/envoyproxy/envoy", rev = "726d7acb73934085cbbccc83ea47fdd78b583d7e" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[lib]
+crate-type = ["cdylib"]
+
+[profile.release]
+strip = "debuginfo"
