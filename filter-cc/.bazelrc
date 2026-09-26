@@ -1,12 +1,12 @@
 common --color=yes
 
+common --registry=https://bcr.bazel.build/
+common --registry=https://raw.githubusercontent.com/envoyproxy/bazel-registry/263a259ec7498fe90ad0308edd3592992243560e
+
 # Required by Envoy and its deps when consumed via bzlmod.
 common --noincompatible_disallow_empty_glob
 common --noincompatible_disallow_ctx_resolve_tools
 common --legacy_external_runfiles
-
-common --registry=https://bcr.bazel.build/
-common --registry=https://raw.githubusercontent.com/envoyproxy/bazel-registry/263a259ec7498fe90ad0308edd3592992243560e
 
 # Needed for STABLE_CERT_EPOCH_YEAR used by @envoy_toolshed//certs test cert generation.
 build --workspace_status_command="bash bazel/get_workspace_status"
@@ -47,8 +47,6 @@ build --@rules_rust//rust/settings:extra_exec_rustc_flags=-Clink-self-contained=
 # Common flags for Clang (shared between all clang variants)
 common:clang-common --linkopt=-fuse-ld=lld
 common:clang-common --cxxopt=-Wno-nullability-completeness
-common:clang-common --@toolchains_llvm//toolchain/config:compiler-rt=false
-common:clang-common --@toolchains_llvm//toolchain/config:libunwind=false
 
 # libc++ - default for clang
 common:libc++ --action_env=CXXFLAGS=-stdlib=libc++
@@ -66,45 +64,6 @@ common:clang --host_platform=@clang_platform
 common:clang --repo_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
 
 common --config=clang
-
-# CI (used via repo.bazelrc in .github/workflows/_verify_build.yml)
-common:ci --noshow_progress
-common:ci --noshow_loading_progress
-common:ci --test_output=errors
-
-## RBE (Engflow Envoy)
-
-# this is not included in the `--config=rbe` target - set it to publish to engflow ui
-common:bes --bes_backend=grpcs://mordenite.cluster.engflow.com/
-common:bes --bes_results_url=https://mordenite.cluster.engflow.com/invocation/
-common:bes --bes_timeout=3600s
-common:bes --bes_upload_mode=fully_async
-common:bes --nolegacy_important_outputs
-
-common:engflow-common --google_default_credentials=false
-common:engflow-common --credential_helper=*.engflow.com=%workspace%/bazel/engflow-bazel-credential-helper.sh
-common:engflow-common --grpc_keepalive_time=60s
-common:engflow-common --grpc_keepalive_timeout=30s
-common:engflow-common --remote_cache_compression
-# Recover from transient gRPC failures (e.g. UNAVAILABLE: io exception) talking to engflow.
-common:engflow-common --remote_retries=10
-common:engflow-common --remote_retry_max_delay=60s
-# Recover when blobs are evicted from the CAS mid-build (common during patch releases).
-common:engflow-common --experimental_remote_cache_eviction_retries=5
-
-# this provides access to RBE+cache
-common:rbe --config=remote-cache
-common:rbe --config=remote-exec
-
-# this provides access to just cache
-common:remote-cache --config=engflow-common
-common:remote-cache --remote_cache=grpcs://mordenite.cluster.engflow.com
-common:remote-cache --experimental_remote_downloader=grpcs://mordenite.cluster.engflow.com
-common:remote-cache --remote_timeout=3600s
-
-common:remote-exec --remote_executor=grpcs://mordenite.cluster.engflow.com
-common:remote-exec --jobs=200
-common:remote-exec --define=engflow_rbe=true
 
 try-import %workspace%/user.bazelrc
 try-import %workspace%/repo.bazelrc
