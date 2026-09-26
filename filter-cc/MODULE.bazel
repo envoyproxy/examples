@@ -21,17 +21,6 @@ bazel_dep(name = "googletest", version = "1.18.0.bcr.1", dev_dependency = True)
 envoy_toolchains_ext = use_extension("@envoy//bazel:extensions.bzl", "envoy_toolchains_extension")
 use_repo(envoy_toolchains_ext, "clang_platform")
 
-python = use_extension("@rules_python//python/extensions:python.bzl", "python")
-python.toolchain(
-    is_default = True,
-    python_version = "3.12",
-)
-use_repo(
-    python,
-    "python_3_12",
-    python = "python_versions",
-)
-
 build_config = use_repo_rule("@bazel_tools//tools/build_defs/repo:local.bzl", "local_repository")
 build_config(
     name = "filter_cc_envoy_build_config",
