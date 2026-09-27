@@ -1,7 +1,7 @@
 common --color=yes
 
 common --registry=https://bcr.bazel.build
-common --registry=https://raw.githubusercontent.com/envoyproxy/bazel-registry/263a259ec7498fe90ad0308edd3592992243560e
+common --registry=https://raw.githubusercontent.com/envoyproxy/bazel-registry/07050c5e9f805a6d60bdad5e5bc30ca478fa844e
 
 common --config=clang
 

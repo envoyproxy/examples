@@ -4,11 +4,11 @@ module(
 )
 
 bazel_dep(name = "bazel_skylib", version = "1.9.2")
-bazel_dep(name = "envoy", version = "1.40.0-dev.20260926.726d7ac.envoy")
+bazel_dep(name = "envoy", version = "1.40.0-dev.20260927.5f95744.envoy")
 bazel_dep(name = "envoy-example-filter-cc", version = "0.2.6")
 bazel_dep(name = "envoy-example-wasm-cc", version = "0.2.6")
-bazel_dep(name = "rules_pkg", version = "1.1.0")
-bazel_dep(name = "rules_python", version = "2.2.0")
+bazel_dep(name = "rules_pkg", version = "1.3.0")
+bazel_dep(name = "rules_python", version = "2.3.3")
 bazel_dep(name = "rules_shell", version = "0.8.0")
 
 bazel_dep(name = "toolchains_llvm", version = "1.9.1.envoy", dev_dependency = True)
