@@ -7,9 +7,6 @@ common --registry=https://raw.githubusercontent.com/envoyproxy/bazel-registry/07
 common --noincompatible_disallow_empty_glob
 common --noincompatible_disallow_ctx_resolve_tools
 common --legacy_external_runfiles
-
-# Needed for STABLE_CERT_EPOCH_YEAR used by @envoy_toolshed//certs test cert generation.
-build --workspace_status_command="bash bazel/get_workspace_status"
 build --incompatible_strict_action_env
 
 # Protobuf currently requires Java 11 toolchains (see protocolbuffers/protobuf#20760).
