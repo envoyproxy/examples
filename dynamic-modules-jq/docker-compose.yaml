@@ -1,0 +1,14 @@
+services:
+
+  envoy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+    - "${PORT_PROXY:-10000}:10000"
+    depends_on:
+    - upstream_service
+
+  upstream_service:
+    build:
+      context: ../shared/echo
