@@ -6,6 +6,7 @@ licenses(["notice"])  # Apache 2
 
 # Excluding build tests - eg wasm - these should be run directly
 EXAMPLE_TESTS = [
+    "ai-transcoder",
     "brotli",
     "cache",
     "cors",

@@ -1,0 +1,16 @@
+services:
+
+  proxy:
+    build:
+      context: .
+      dockerfile: ../shared/envoy/Dockerfile
+      target: envoy-admin
+      args:
+        ENVOY_ADMIN_PORT: 9901
+    environment:
+    - OPENAI_API_KEY
+    - ANTHROPIC_API_KEY
+    - VERTEX_API_KEY
+    ports:
+    - "${PORT_PROXY:-10000}:10000"
+    - "${PORT_ADMIN:-9901}:9901"
