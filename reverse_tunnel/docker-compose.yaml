@@ -1,0 +1,46 @@
+services:
+
+  initiator-envoy:
+    build:
+      context: .
+      dockerfile: ../shared/envoy/Dockerfile
+      args:
+        ENVOY_CONFIG: initiator-envoy.yaml
+    command: ["envoy", "-c", "/etc/envoy.yaml", "--concurrency", "1", "-l", "trace", "--drain-time-s", "3"]
+    ports:
+    # Admin interface
+    - "${PORT_ADMIN_DOWNSTREAM:-8888}:8888"
+    # Reverse connection API listener
+    - "${PORT_REVERSE_API_DOWNSTREAM:-9000}:9000"
+    extra_hosts:
+    - "host.docker.internal:host-gateway"
+    networks:
+    - envoy-network
+    depends_on:
+    - downstream-service
+
+  downstream-service:
+    image: nginxdemos/hello:plain-text
+    networks:
+    - envoy-network
+
+  responder-envoy:
+    build:
+      context: .
+      dockerfile: ../shared/envoy/Dockerfile
+      args:
+        ENVOY_CONFIG: responder-envoy.yaml
+    command: ["envoy", "-c", "/etc/envoy.yaml", "--concurrency", "1", "-l", "trace", "--drain-time-s", "3"]
+    ports:
+    # Admin interface
+    - "${PORT_ADMIN_UPSTREAM:-8889}:8888"
+    # Reverse connection API listener
+    - "${PORT_REVERSE_API_UPSTREAM:-9001}:9000"
+    # Egress listener
+    - "${PORT_PROXY:-8085}:8085"
+    networks:
+    - envoy-network
+
+networks:
+  envoy-network:
+    driver: bridge
