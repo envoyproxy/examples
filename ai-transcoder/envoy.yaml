@@ -89,10 +89,11 @@ static_resources:
                   cluster: dynamic_forward_proxy_cluster
                   timeout: 120s
                   # The transcoder has set the Gemini API path, /v1beta/models/{model}:generateContent
-                  # or :streamGenerateContent?alt=sse; this maps it onto Vertex AI's.
+                  # or :streamGenerateContent?alt=sse; this maps it onto Vertex AI's. The proxy fills
+                  # in VERTEX_PROJECT and VERTEX_LOCATION from its environment when it starts.
                   regex_rewrite:
                     pattern: {regex: '^/v1beta/models/(.*)$'}
-                    substitution: '/v1/publishers/google/models/\1'
+                    substitution: '/v1/projects/VERTEX_PROJECT/locations/VERTEX_LOCATION/publishers/google/models/\1'
                 request_headers_to_remove: [authorization]
                 request_headers_to_add:
                 - header: {key: x-goog-api-key, value: "%ENVIRONMENT(VERTEX_API_KEY)%"}

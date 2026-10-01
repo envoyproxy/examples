@@ -54,6 +54,14 @@ Change to the ``ai-transcoder`` directory, and export the API key of each provid
    $ export ANTHROPIC_API_KEY=sk-ant-...
    $ export VERTEX_API_KEY=...
 
+For Vertex AI, also export the Google Cloud project the key belongs to, and the location to call, ``global`` by
+default:
+
+.. code-block:: console
+
+   $ export VERTEX_PROJECT=my-project
+   $ export VERTEX_LOCATION=global
+
 The keys are passed to the Envoy container as environment variables, and Envoy adds them to the requests it sends to
 each provider: clients do not need them. A provider whose key is not set answers with its own authentication error.
 
@@ -161,8 +169,8 @@ Envoy's access log shows each request's model, and the provider host and path it
    proxy-1  | claude-haiku-4-5 -> api.anthropic.com/v1/messages 200 via_upstream
    proxy-1  | gpt-4o-mini -> api.openai.com/v1/chat/completions 200 via_upstream
    proxy-1  | claude-haiku-4-5 -> api.anthropic.com/v1/messages 200 via_upstream
-   proxy-1  | gemini-2.5-flash -> aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash:generateContent 200 via_upstream
-   proxy-1  | gemini-2.5-flash -> aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash:streamGenerateContent?alt=sse 200 via_upstream
+   proxy-1  | gemini-2.5-flash -> aiplatform.googleapis.com/v1/projects/my-project/locations/global/publishers/google/models/gemini-2.5-flash:generateContent 200 via_upstream
+   proxy-1  | gemini-2.5-flash -> aiplatform.googleapis.com/v1/projects/my-project/locations/global/publishers/google/models/gemini-2.5-flash:streamGenerateContent?alt=sse 200 via_upstream
 
 The log reads the model from the ``envoy.ai.model.request`` filter state object, with
 ``%FILTER_STATE(envoy.ai.model.request:PLAIN)%``.
@@ -244,8 +252,8 @@ AI Protocol Manager, ``read_model``, which therefore parses the body:
 
 .. literalinclude:: _include/ai-transcoder/envoy.yaml
    :language: yaml
-   :lines: 108-125
-   :lineno-start: 108
+   :lines: 109-126
+   :lineno-start: 109
    :linenos:
    :emphasize-lines: 15-18
 
@@ -256,8 +264,8 @@ known:
 
 .. literalinclude:: _include/ai-transcoder/envoy.yaml
    :language: yaml
-   :lines: 126-142
-   :lineno-start: 126
+   :lines: 127-143
+   :lineno-start: 127
    :linenos:
 
 Each provider has a route that matches its models. Here is Anthropic's, in the
@@ -305,7 +313,8 @@ The routes only differ in these settings:
    * - ``gemini-*``
      - Gemini GenerateContent
      - ``aiplatform.googleapis.com``
-     - ``/v1/publishers/google/models/{model}:generateContent``, or ``:streamGenerateContent?alt=sse``
+     - ``/v1/projects/$VERTEX_PROJECT/locations/$VERTEX_LOCATION/publishers/google/models/{model}:generateContent``,
+       or ``:streamGenerateContent?alt=sse``
      - ``x-goog-api-key: $VERTEX_API_KEY``
 
 A request whose model no route serves stays on ``unknown_model``, and gets its ``404``.
@@ -320,8 +329,8 @@ runs its AI filters over it:
 
 .. literalinclude:: _include/ai-transcoder/envoy.yaml
    :language: yaml
-   :lines: 143-159
-   :lineno-start: 143
+   :lines: 144-160
+   :lineno-start: 144
    :linenos:
 
 Every API is translated through one canonical form, OpenAI Chat Completions. The first transcoder converts the
@@ -337,15 +346,23 @@ Vertex AI route then maps onto Vertex AI's:
 
 .. literalinclude:: _include/ai-transcoder/envoy.yaml
    :language: yaml
-   :lines: 88-95
+   :lines: 88-96
    :lineno-start: 88
+   :linenos:
+
+A route's path rewrite cannot read the environment, so the proxy fills in ``VERTEX_PROJECT`` and ``VERTEX_LOCATION``
+as it starts, from the :download:`docker-compose.yaml <_include/ai-transcoder/docker-compose.yaml>` composition:
+
+.. literalinclude:: _include/ai-transcoder/docker-compose.yaml
+   :language: yaml
+   :lines: 10-18
+   :lineno-start: 10
    :linenos:
 
 .. note::
 
-   Like the `Google Gen AI SDK <https://github.com/googleapis/python-genai>`_ with an API key, Envoy calls the model
-   on Vertex AI's global endpoint, with no project in the path. To call a project's regional endpoint instead, change
-   the substitution to ``/v1/projects/<PROJECT_ID>/locations/<LOCATION>/publishers/google/models/\1``.
+   A Vertex AI express mode API key belongs to no project. To use one, change the substitution to
+   ``/v1/publishers/google/models/\1``.
 
 The AI Protocol Manager cannot read a compressed response, so the routes remove the client's ``accept-encoding``
 header.
@@ -358,8 +375,8 @@ to the same :ref:`dynamic forward proxy <arch_overview_http_dynamic_forward_prox
 
 .. literalinclude:: _include/ai-transcoder/envoy.yaml
    :language: yaml
-   :lines: 170-188
-   :lineno-start: 170
+   :lines: 171-189
+   :lineno-start: 171
    :linenos:
 
 The cluster uses TLS, with the host as the SNI and as the name the provider's certificate is validated against. Adding

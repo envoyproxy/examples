@@ -14,13 +14,15 @@ chat () {
           -d "{\"model\": \"${model}\", \"stream\": ${stream}, \"messages\": [{\"role\": \"user\", \"content\": \"In one short sentence, what is Envoy proxy?\"}]}"
 }
 
-# A provider is only sent requests when its API key is set.
+# A provider is only sent requests when the variables it needs, such as its API key, are set.
 test_provider () {
-    local key="$1" model="$2" unary_upstream="$3" stream_upstream="$4" stream
-    if [[ -z "${!key}" ]]; then
-        run_log "Skip ${model}: set ${key} to send it to its provider"
-        return
-    fi
+    local required="$1" model="$2" unary_upstream="$3" stream_upstream="$4" stream var
+    for var in $required; do
+        if [[ -z "${!var}" ]]; then
+            run_log "Skip ${model}: set ${var} to send it to its provider"
+            return
+        fi
+    done
 
     run_log "Chat with ${model}: the reply is an OpenAI chat.completion"
     chat "$model" | jq -e '.object == "chat.completion" and (.choices[0].message.content | length > 0)'
@@ -46,9 +48,10 @@ test_provider OPENAI_API_KEY gpt-4o-mini \
 test_provider ANTHROPIC_API_KEY claude-haiku-4-5 \
     api.anthropic.com/v1/messages \
     api.anthropic.com/v1/messages
-test_provider VERTEX_API_KEY gemini-2.5-flash \
-    aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash:generateContent \
-    'aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash:streamGenerateContent?alt=sse'
+VERTEX_MODEL_PATH="aiplatform.googleapis.com/v1/projects/${VERTEX_PROJECT}/locations/${VERTEX_LOCATION:-global}/publishers/google/models/gemini-2.5-flash"
+test_provider "VERTEX_API_KEY VERTEX_PROJECT" gemini-2.5-flash \
+    "${VERTEX_MODEL_PATH}:generateContent" \
+    "${VERTEX_MODEL_PATH}:streamGenerateContent?alt=sse"
 
 run_log "Check that no request or response failed to transcode"
 responds_with \
