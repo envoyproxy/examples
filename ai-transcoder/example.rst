@@ -26,12 +26,13 @@ and Envoy sends each request to OpenAI, Anthropic or Gemini on Vertex AI in that
 
 For each request, Envoy:
 
-- reads the ``model`` from the JSON body with the :ref:`JSON to metadata filter <config_http_filters_json_to_metadata>`,
-  and picks a route on it: ``gpt-*`` models go to OpenAI, ``claude-*`` models to Anthropic, and ``gemini-*`` models
-  to Vertex AI. Any other model is answered by Envoy with a ``404``.
+- reads the request's ``model`` with the :ref:`AI Protocol Manager <config_http_filters_ai_protocol_manager>`,
+  whose request info AI filter stores it as the ``envoy.ai.model.request``
+  :ref:`filter state object <well_known_filter_state>`, and picks a route on it: ``gpt-*`` models go to OpenAI,
+  ``claude-*`` models to Anthropic, and ``gemini-*`` models to Vertex AI. Any other model is answered by Envoy with
+  a ``404``.
 - converts the request into the provider's API, and the provider's response (a JSON body or a stream of
-  server-sent events) back into OpenAI's, with the transcoder AI filter of the
-  :ref:`AI Protocol Manager <config_http_filters_ai_protocol_manager>`.
+  server-sent events) back into OpenAI's, with the AI Protocol Manager's transcoder AI filter.
 - sends it through a single :ref:`dynamic forward proxy <arch_overview_http_dynamic_forward_proxy>` cluster to the
   provider's host, which the route names, adding the provider's API key on the way.
 
@@ -163,6 +164,9 @@ Envoy's access log shows each request's model, and the provider host and path it
    proxy-1  | gemini-2.5-flash -> aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash:generateContent 200 via_upstream
    proxy-1  | gemini-2.5-flash -> aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash:streamGenerateContent?alt=sse 200 via_upstream
 
+The log reads the model from the ``envoy.ai.model.request`` filter state object, with
+``%FILTER_STATE(envoy.ai.model.request:PLAIN)%``.
+
 Every client sent its request to ``/v1/chat/completions``. The Gemini requests show the model moved from the request
 body into the Vertex AI path, and the streaming one calling ``streamGenerateContent``.
 
@@ -188,16 +192,20 @@ OpenAI clients can read it:
 Step 7: Check the transcoder's statistics
 *****************************************
 
-The AI Protocol Manager counts the request bodies it parsed and the payloads it transcoded (each request, JSON
-response and streamed event), and the ones it could not:
+The AI Protocol Manager counts the request bodies it parsed, the models it read, and the payloads it transcoded
+(each request, JSON response and streamed event), and the ones it could not:
 
 .. code-block:: console
 
-   $ curl -s "http://localhost:9901/stats?filter=ai_protocol_manager.(request_parsed|transcoder)"
-   ai_protocol_manager.request_parsed: 5
+   $ curl -s "http://localhost:9901/stats?filter=ai_protocol_manager.(request_parsed|request_info.published|transcoder)"
+   ai_protocol_manager.request_info.published: 6
+   ai_protocol_manager.request_parsed: 11
    ai_protocol_manager.transcoder.failed: 0
-   ai_protocol_manager.transcoder.transcoded: 24
+   ai_protocol_manager.transcoder.transcoded: 22
    ai_protocol_manager.transcoder.unresolved: 0
+
+The sandbox runs two AI Protocol Managers, which count together: one read the model of all six requests, and the
+other parsed the five that a provider served, to transcode them.
 
 Step 8: Use an OpenAI SDK
 *************************
@@ -230,33 +238,46 @@ How the configuration works
 Routing on the model
 ~~~~~~~~~~~~~~~~~~~~
 
-The model is in the request body, but Envoy picks a route from the request headers. The first HTTP filter,
-``json_to_metadata``, waits for the body, copies its ``model`` into dynamic metadata, and clears the route cache, so
-that the filters after it see a route chosen on the model:
+The model is in the request body, but Envoy picks a route as soon as the request headers arrive, before the body is
+read. So every chat request starts on the last route, ``unknown_model``. It declares the request's API for the first
+AI Protocol Manager, ``read_model``, which therefore parses the body:
 
 .. literalinclude:: _include/ai-transcoder/envoy.yaml
    :language: yaml
-   :lines: 122-134
-   :lineno-start: 122
+   :lines: 108-125
+   :lineno-start: 108
+   :linenos:
+   :emphasize-lines: 15-18
+
+``read_model`` runs the request info AI filter, which stores the model as the ``envoy.ai.model.request`` filter state
+object. As that filter only reads the request, ``read_model`` forwards the body as it was received. The
+``set_filter_state`` filter then clears the route cache, so that the route is picked again, now that the model is
+known:
+
+.. literalinclude:: _include/ai-transcoder/envoy.yaml
+   :language: yaml
+   :lines: 126-142
+   :lineno-start: 126
    :linenos:
 
-Each provider has a route. Here is Anthropic's, in the
+Each provider has a route that matches its models. Here is Anthropic's, in the
 :download:`envoy.yaml <_include/ai-transcoder/envoy.yaml>` configuration:
 
 .. literalinclude:: _include/ai-transcoder/envoy.yaml
    :language: yaml
-   :lines: 57-83
-   :lineno-start: 57
+   :lines: 56-81
+   :lineno-start: 56
    :linenos:
-   :emphasize-lines: 4-7, 21-27
+   :emphasize-lines: 4-6, 19-23
 
 The route:
 
-- matches a model starting with ``claude-``, with a :ref:`dynamic metadata <envoy_v3_api_field_config.route.v3.RouteMatch.dynamic_metadata>`
-  matcher.
+- matches a model starting with ``claude-``, with a :ref:`filter state <envoy_v3_api_field_config.route.v3.RouteMatch.filter_state>`
+  matcher on ``envoy.ai.model.request``.
 - declares the APIs to transcode between, with the AI Protocol Manager's
-  :ref:`per-route configuration <envoy_v3_api_msg_extensions.filters.http.ai_protocol_manager.v3.AiProtocolManagerPerRoute>`:
-  the client's request API is OpenAI Chat Completions, and the provider's API is Anthropic Messages.
+  :ref:`per-route configuration <envoy_v3_api_msg_extensions.filters.http.ai_protocol_manager.v3.AiProtocolManagerPerRoute>`
+  for the second AI Protocol Manager, ``transcode``: the client's request API is OpenAI Chat Completions, and the
+  provider's API is Anthropic Messages.
 - names the provider's host for the dynamic forward proxy, with ``host_rewrite_literal``.
 - rewrites the path to Anthropic's, removes the client's ``authorization`` header, and adds Anthropic's key header,
   whose value Envoy reads from the ``ANTHROPIC_API_KEY`` environment variable.
@@ -287,17 +308,20 @@ The routes only differ in these settings:
      - ``/v1/publishers/google/models/{model}:generateContent``, or ``:streamGenerateContent?alt=sse``
      - ``x-goog-api-key: $VERTEX_API_KEY``
 
-The last route matches any other request, and answers it with Envoy's ``404``.
+A request whose model no route serves stays on ``unknown_model``, and gets its ``404``.
 
 Transcoding
 ~~~~~~~~~~~
 
-The AI Protocol Manager holds the request until its body is parsed, then runs its AI filters over it:
+An AI Protocol Manager reads the APIs a route declares when the request headers reach it. ``read_model`` sees them
+before the route is picked on the model, so the transcoding is done by a second AI Protocol Manager, ``transcode``,
+placed after ``set_filter_state``: it sees the model's route. It holds the request until its body is parsed, then
+runs its AI filters over it:
 
 .. literalinclude:: _include/ai-transcoder/envoy.yaml
    :language: yaml
-   :lines: 135-151
-   :lineno-start: 135
+   :lines: 143-159
+   :lineno-start: 143
    :linenos:
 
 Every API is translated through one canonical form, OpenAI Chat Completions. The first transcoder converts the
@@ -313,8 +337,8 @@ Vertex AI route then maps onto Vertex AI's:
 
 .. literalinclude:: _include/ai-transcoder/envoy.yaml
    :language: yaml
-   :lines: 91-98
-   :lineno-start: 91
+   :lines: 88-95
+   :lineno-start: 88
    :linenos:
 
 .. note::
@@ -334,8 +358,8 @@ to the same :ref:`dynamic forward proxy <arch_overview_http_dynamic_forward_prox
 
 .. literalinclude:: _include/ai-transcoder/envoy.yaml
    :language: yaml
-   :lines: 162-180
-   :lineno-start: 162
+   :lines: 170-188
+   :lineno-start: 170
    :linenos:
 
 The cluster uses TLS, with the host as the SNI and as the name the provider's certificate is validated against. Adding
@@ -347,8 +371,7 @@ Limitations
 - An error response, such as the ``401`` of a provider whose key is not set, is forwarded in the provider's own
   format: the transcoder only converts successful responses.
 - Not every field has a mapping yet: tool calls are not transcoded for Anthropic and Gemini.
-- The ``json_to_metadata`` filter buffers the request body to read the model, so the body must fit Envoy's
-  per-connection buffer limit, 1MiB by default.
+- Each request is parsed twice, once by each AI Protocol Manager.
 
 .. seealso::
 
@@ -358,8 +381,11 @@ Limitations
    :ref:`Transcoder API <envoy_v3_api_msg_extensions.http.ai_filters.transcoder.v3.Transcoder>`
       The transcoder AI filter's configuration.
 
-   :ref:`JSON to metadata <config_http_filters_json_to_metadata>`
-      Learn more about the JSON to metadata filter.
+   :ref:`Well known filter state <well_known_filter_state>`
+      Learn more about the ``envoy.ai.model.request`` filter state object.
+
+   :ref:`Set filter state <config_http_filters_set_filter_state>`
+      Learn more about the set filter state filter.
 
    :ref:`Dynamic forward proxy <arch_overview_http_dynamic_forward_proxy>`
       Learn more about Envoy's dynamic forward proxy.

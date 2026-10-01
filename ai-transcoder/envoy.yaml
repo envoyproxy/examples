@@ -23,7 +23,7 @@ static_resources:
               "@type": type.googleapis.com/envoy.extensions.access_loggers.stream.v3.StdoutAccessLog
               log_format:
                 text_format_source:
-                  inline_string: "%DYNAMIC_METADATA(envoy.filters.http.json_to_metadata:model)% -> \
+                  inline_string: "%FILTER_STATE(envoy.ai.model.request:PLAIN)% -> \
                     %REQ(:AUTHORITY)%%REQ(:PATH)% %RESPONSE_CODE% %RESPONSE_CODE_DETAILS%\n"
           route_config:
             name: model_routes
@@ -36,10 +36,9 @@ static_resources:
               - name: openai
                 match:
                   path: /v1/chat/completions
-                  dynamic_metadata:
-                  - filter: envoy.filters.http.json_to_metadata
-                    path: [{key: model}]
-                    value: {string_match: {prefix: gpt-}}
+                  filter_state:
+                  - key: envoy.ai.model.request
+                    string_match: {prefix: gpt-}
                 route:
                   cluster: dynamic_forward_proxy_cluster
                   timeout: 120s
@@ -47,7 +46,7 @@ static_resources:
                 - header: {key: authorization, value: "Bearer %ENVIRONMENT(OPENAI_API_KEY)%"}
                   append_action: OVERWRITE_IF_EXISTS_OR_ADD
                 typed_per_filter_config:
-                  envoy.filters.http.ai_protocol_manager:
+                  transcode:
                     "@type": type.googleapis.com/envoy.extensions.filters.http.ai_protocol_manager.v3.AiProtocolManagerPerRoute
                     request: {llm_protocol: OPENAI_CHAT_COMPLETIONS}
                     response: {llm_protocol: OPENAI_CHAT_COMPLETIONS}
@@ -57,10 +56,9 @@ static_resources:
               - name: anthropic
                 match:
                   path: /v1/chat/completions
-                  dynamic_metadata:
-                  - filter: envoy.filters.http.json_to_metadata
-                    path: [{key: model}]
-                    value: {string_match: {prefix: claude-}}
+                  filter_state:
+                  - key: envoy.ai.model.request
+                    string_match: {prefix: claude-}
                 route:
                   cluster: dynamic_forward_proxy_cluster
                   timeout: 120s
@@ -74,7 +72,7 @@ static_resources:
                 - header: {key: anthropic-version, value: "2023-06-01"}
                   append_action: OVERWRITE_IF_EXISTS_OR_ADD
                 typed_per_filter_config:
-                  envoy.filters.http.ai_protocol_manager:
+                  transcode:
                     "@type": type.googleapis.com/envoy.extensions.filters.http.ai_protocol_manager.v3.AiProtocolManagerPerRoute
                     request: {llm_protocol: OPENAI_CHAT_COMPLETIONS}
                     response: {llm_protocol: ANTHROPIC_MESSAGES}
@@ -84,10 +82,9 @@ static_resources:
               - name: vertex
                 match:
                   path: /v1/chat/completions
-                  dynamic_metadata:
-                  - filter: envoy.filters.http.json_to_metadata
-                    path: [{key: model}]
-                    value: {string_match: {prefix: gemini-}}
+                  filter_state:
+                  - key: envoy.ai.model.request
+                    string_match: {prefix: gemini-}
                 route:
                   cluster: dynamic_forward_proxy_cluster
                   timeout: 120s
@@ -101,15 +98,18 @@ static_resources:
                 - header: {key: x-goog-api-key, value: "%ENVIRONMENT(VERTEX_API_KEY)%"}
                   append_action: OVERWRITE_IF_EXISTS_OR_ADD
                 typed_per_filter_config:
-                  envoy.filters.http.ai_protocol_manager:
+                  transcode:
                     "@type": type.googleapis.com/envoy.extensions.filters.http.ai_protocol_manager.v3.AiProtocolManagerPerRoute
                     request: {llm_protocol: OPENAI_CHAT_COMPLETIONS}
                     response: {llm_protocol: GEMINI_GENERATE_CONTENT}
                   envoy.filters.http.dynamic_forward_proxy:
                     "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.PerRouteConfig
                     host_rewrite_literal: aiplatform.googleapis.com
+              # Every chat request starts on this route, as its model is only known once its body is
+              # read. It stays here, and is answered locally, when no route above serves the model.
               - name: unknown_model
-                match: {prefix: /}
+                match:
+                  path: /v1/chat/completions
                 direct_response:
                   status: 404
                   body:
@@ -119,22 +119,30 @@ static_resources:
                 response_headers_to_add:
                 - header: {key: content-type, value: application/json}
                   append_action: OVERWRITE_IF_EXISTS_OR_ADD
+                typed_per_filter_config:
+                  read_model:
+                    "@type": type.googleapis.com/envoy.extensions.filters.http.ai_protocol_manager.v3.AiProtocolManagerPerRoute
+                    request: {llm_protocol: OPENAI_CHAT_COMPLETIONS}
           http_filters:
-          # Copies the request's "model" into dynamic metadata and clears the route cache, so the
-          # routes above can match on it.
-          - name: envoy.filters.http.json_to_metadata
+          # Stores the request's model as the envoy.ai.model.request filter state object, and forwards
+          # the body as received.
+          - name: read_model
             typed_config:
-              "@type": type.googleapis.com/envoy.extensions.filters.http.json_to_metadata.v3.JsonToMetadata
-              request_rules:
-                rules:
-                - selectors:
-                  - key: model
-                  on_present:
-                    key: model
-                    type: STRING
+              "@type": type.googleapis.com/envoy.extensions.filters.http.ai_protocol_manager.v3.AiProtocolManager
+              request_handling:
+                reserialize_body: DISABLE
+              filters:
+              - name: envoy.http.ai_filters.request_info
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.http.ai_filters.request_info.v3.RequestInfo
+          # Picks the route again, on the model.
+          - name: envoy.filters.http.set_filter_state
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.set_filter_state.v3.Config
+              clear_route_cache: true
           # Transcodes via the canonical form, OpenAI Chat Completions: the first transcoder converts
           # the route's request API, the second its response API.
-          - name: envoy.filters.http.ai_protocol_manager
+          - name: transcode
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.ai_protocol_manager.v3.AiProtocolManager
               request_handling: {}
