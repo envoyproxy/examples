@@ -1,7 +1,7 @@
 .. _install_sandboxes_ai_transcoder:
 
-AI protocol transcoding
-=======================
+Model selection and transcoding
+===============================
 
 .. sidebar:: Requirements
 
