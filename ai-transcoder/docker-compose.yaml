@@ -1,0 +1,25 @@
+services:
+
+  proxy:
+    build:
+      context: .
+      dockerfile: ../shared/envoy/Dockerfile
+      target: envoy-admin
+      args:
+        ENVOY_ADMIN_PORT: 9901
+    # A route's path rewrite cannot read the environment, so the Google Cloud project and location of
+    # the Vertex AI path are filled in as the proxy starts.
+    command:
+    - /bin/sh
+    - -c
+    - >-
+      sed "s|/projects/VERTEX_PROJECT/locations/VERTEX_LOCATION/|/projects/${VERTEX_PROJECT:-}/locations/${VERTEX_LOCATION:-global}/|"
+      /etc/envoy.yaml > /tmp/envoy.yaml
+      && exec /usr/local/bin/envoy -c /tmp/envoy.yaml
+    environment:
+    - OPENAI_API_KEY
+    - ANTHROPIC_API_KEY
+    - VERTEX_API_KEY
+    ports:
+    - "${PORT_PROXY:-10000}:10000"
+    - "${PORT_ADMIN:-9901}:9901"

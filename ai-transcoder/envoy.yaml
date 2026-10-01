@@ -1,0 +1,189 @@
+admin:
+  address:
+    socket_address:
+      address: 0.0.0.0
+      port_value: 9901
+
+static_resources:
+  listeners:
+  - name: ai_gateway
+    address:
+      socket_address:
+        address: 0.0.0.0
+        port_value: 10000
+    filter_chains:
+    - filters:
+      - name: envoy.filters.network.http_connection_manager
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+          stat_prefix: ai_gateway
+          access_log:
+          - name: envoy.access_loggers.stdout
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.access_loggers.stream.v3.StdoutAccessLog
+              log_format:
+                text_format_source:
+                  inline_string: "%FILTER_STATE(envoy.ai.model.request:PLAIN)% -> \
+                    %REQ(:AUTHORITY)%%REQ(:PATH)% %RESPONSE_CODE% %RESPONSE_CODE_DETAILS%\n"
+          route_config:
+            name: model_routes
+            virtual_hosts:
+            - name: ai_gateway
+              domains: ["*"]
+              # The AI Protocol Manager cannot read a compressed response.
+              request_headers_to_remove: [accept-encoding]
+              routes:
+              - name: openai
+                match:
+                  path: /v1/chat/completions
+                  filter_state:
+                  - key: envoy.ai.model.request
+                    string_match: {prefix: gpt-}
+                route:
+                  cluster: dynamic_forward_proxy_cluster
+                  timeout: 120s
+                request_headers_to_add:
+                - header: {key: authorization, value: "Bearer %ENVIRONMENT(OPENAI_API_KEY)%"}
+                  append_action: OVERWRITE_IF_EXISTS_OR_ADD
+                typed_per_filter_config:
+                  transcode:
+                    "@type": type.googleapis.com/envoy.extensions.filters.http.ai_protocol_manager.v3.AiProtocolManagerPerRoute
+                    request: {llm_protocol: OPENAI_CHAT_COMPLETIONS}
+                    response: {llm_protocol: OPENAI_CHAT_COMPLETIONS}
+                  envoy.filters.http.dynamic_forward_proxy:
+                    "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.PerRouteConfig
+                    host_rewrite_literal: api.openai.com
+              - name: anthropic
+                match:
+                  path: /v1/chat/completions
+                  filter_state:
+                  - key: envoy.ai.model.request
+                    string_match: {prefix: claude-}
+                route:
+                  cluster: dynamic_forward_proxy_cluster
+                  timeout: 120s
+                  regex_rewrite:
+                    pattern: {regex: '^/v1/chat/completions$'}
+                    substitution: /v1/messages
+                request_headers_to_remove: [authorization]
+                request_headers_to_add:
+                - header: {key: x-api-key, value: "%ENVIRONMENT(ANTHROPIC_API_KEY)%"}
+                  append_action: OVERWRITE_IF_EXISTS_OR_ADD
+                - header: {key: anthropic-version, value: "2023-06-01"}
+                  append_action: OVERWRITE_IF_EXISTS_OR_ADD
+                typed_per_filter_config:
+                  transcode:
+                    "@type": type.googleapis.com/envoy.extensions.filters.http.ai_protocol_manager.v3.AiProtocolManagerPerRoute
+                    request: {llm_protocol: OPENAI_CHAT_COMPLETIONS}
+                    response: {llm_protocol: ANTHROPIC_MESSAGES}
+                  envoy.filters.http.dynamic_forward_proxy:
+                    "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.PerRouteConfig
+                    host_rewrite_literal: api.anthropic.com
+              - name: vertex
+                match:
+                  path: /v1/chat/completions
+                  filter_state:
+                  - key: envoy.ai.model.request
+                    string_match: {prefix: gemini-}
+                route:
+                  cluster: dynamic_forward_proxy_cluster
+                  timeout: 120s
+                  # The transcoder has set the Gemini API path, /v1beta/models/{model}:generateContent
+                  # or :streamGenerateContent?alt=sse; this maps it onto Vertex AI's. The proxy fills
+                  # in VERTEX_PROJECT and VERTEX_LOCATION from its environment when it starts.
+                  regex_rewrite:
+                    pattern: {regex: '^/v1beta/models/(.*)$'}
+                    substitution: '/v1/projects/VERTEX_PROJECT/locations/VERTEX_LOCATION/publishers/google/models/\1'
+                request_headers_to_remove: [authorization]
+                request_headers_to_add:
+                - header: {key: x-goog-api-key, value: "%ENVIRONMENT(VERTEX_API_KEY)%"}
+                  append_action: OVERWRITE_IF_EXISTS_OR_ADD
+                typed_per_filter_config:
+                  transcode:
+                    "@type": type.googleapis.com/envoy.extensions.filters.http.ai_protocol_manager.v3.AiProtocolManagerPerRoute
+                    request: {llm_protocol: OPENAI_CHAT_COMPLETIONS}
+                    response: {llm_protocol: GEMINI_GENERATE_CONTENT}
+                  envoy.filters.http.dynamic_forward_proxy:
+                    "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.PerRouteConfig
+                    host_rewrite_literal: aiplatform.googleapis.com
+              # Every chat request starts on this route, as its model is only known once its body is
+              # read. It stays here, and is answered locally, when no route above serves the model.
+              - name: unknown_model
+                match:
+                  path: /v1/chat/completions
+                direct_response:
+                  status: 404
+                  body:
+                    inline_string: >-
+                      {"error": {"message": "No backend serves this model.", "type": "invalid_request_error",
+                      "param": "model", "code": "model_not_found"}}
+                response_headers_to_add:
+                - header: {key: content-type, value: application/json}
+                  append_action: OVERWRITE_IF_EXISTS_OR_ADD
+                typed_per_filter_config:
+                  read_model:
+                    "@type": type.googleapis.com/envoy.extensions.filters.http.ai_protocol_manager.v3.AiProtocolManagerPerRoute
+                    request: {llm_protocol: OPENAI_CHAT_COMPLETIONS}
+          http_filters:
+          # Stores the request's model as the envoy.ai.model.request filter state object, and forwards
+          # the body as received.
+          - name: read_model
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.ai_protocol_manager.v3.AiProtocolManager
+              request_handling:
+                reserialize_body: DISABLE
+              filters:
+              - name: envoy.http.ai_filters.request_info
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.http.ai_filters.request_info.v3.RequestInfo
+          # Picks the route again, on the model.
+          - name: envoy.filters.http.set_filter_state
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.set_filter_state.v3.Config
+              clear_route_cache: true
+          # Transcodes via the canonical form, OpenAI Chat Completions: the first transcoder converts
+          # the route's request API, the second its response API.
+          - name: transcode
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.ai_protocol_manager.v3.AiProtocolManager
+              request_handling: {}
+              filters:
+              - name: envoy.http.ai_filters.transcoder
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.http.ai_filters.transcoder.v3.Transcoder
+                  request_handling: TO_IR
+                  response_handling: FROM_IR
+              - name: envoy.http.ai_filters.transcoder
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.http.ai_filters.transcoder.v3.Transcoder
+                  request_handling: FROM_IR
+                  response_handling: TO_IR
+          - name: envoy.filters.http.dynamic_forward_proxy
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig
+              dns_cache_config:
+                name: dynamic_forward_proxy_cache_config
+                dns_lookup_family: V4_ONLY
+          - name: envoy.filters.http.router
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
+  clusters:
+  # One cluster for every provider. It connects to the host the route's dynamic forward proxy
+  # config names, with that host as the TLS SNI and the name to validate the certificate against.
+  - name: dynamic_forward_proxy_cluster
+    lb_policy: CLUSTER_PROVIDED
+    cluster_type:
+      name: envoy.clusters.dynamic_forward_proxy
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
+        dns_cache_config:
+          name: dynamic_forward_proxy_cache_config
+          dns_lookup_family: V4_ONLY
+    transport_socket:
+      name: envoy.transport_sockets.tls
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+        common_tls_context:
+          validation_context:
+            trusted_ca: {filename: /etc/ssl/certs/ca-certificates.crt}
