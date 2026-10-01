@@ -255,15 +255,15 @@ Routing on the model
 ~~~~~~~~~~~~~~~~~~~~
 
 The model is in the request body, but Envoy picks a route as soon as the request headers arrive, before the body is
-read. So every chat request starts on the last route, ``unknown_model``. It declares the request's API for the first
-AI Protocol Manager, ``read_model``, which therefore parses the body:
+read. So every request starts on the last route, ``chat_completions``, the only one that names the endpoint's path.
+It declares the request's API for the first AI Protocol Manager, ``read_model``, which therefore parses the body:
 
 .. literalinclude:: _include/ai-transcoder/envoy.yaml
    :language: yaml
-   :lines: 109-126
-   :lineno-start: 109
+   :lines: 111-128
+   :lineno-start: 111
    :linenos:
-   :emphasize-lines: 15-18
+   :emphasize-lines: 5, 15-18
 
 ``read_model`` runs the request info AI filter, which stores the model as the ``envoy.ai.model.request`` filter state
 object. As that filter only reads the request, ``read_model`` forwards the body as it was received. The
@@ -272,8 +272,8 @@ known:
 
 .. literalinclude:: _include/ai-transcoder/envoy.yaml
    :language: yaml
-   :lines: 127-143
-   :lineno-start: 127
+   :lines: 129-145
+   :lineno-start: 129
    :linenos:
 
 Each provider has a route that matches its models. Here is Anthropic's, in the
@@ -281,22 +281,23 @@ Each provider has a route that matches its models. Here is Anthropic's, in the
 
 .. literalinclude:: _include/ai-transcoder/envoy.yaml
    :language: yaml
-   :lines: 56-81
-   :lineno-start: 56
+   :lines: 58-83
+   :lineno-start: 58
    :linenos:
-   :emphasize-lines: 4-6, 19-23
+   :emphasize-lines: 3-6, 19-23
 
 The route:
 
 - matches a model starting with ``claude-``, with a :ref:`filter state <envoy_v3_api_field_config.route.v3.RouteMatch.filter_state>`
-  matcher on ``envoy.ai.model.request``.
+  matcher on ``envoy.ai.model.request``. It needs no path of its own: only a request that ``read_model`` parsed has
+  a model, and ``read_model`` parses only the requests of ``chat_completions``.
 - declares the APIs to transcode between, with the AI Protocol Manager's
   :ref:`per-route configuration <envoy_v3_api_msg_extensions.filters.http.ai_protocol_manager.v3.AiProtocolManagerPerRoute>`
   for the second AI Protocol Manager, ``transcode``: the client's request API is OpenAI Chat Completions, and the
   provider's API is Anthropic Messages.
 - names the provider's host for the dynamic forward proxy, with ``host_rewrite_literal``.
-- rewrites the path to Anthropic's, removes the client's ``authorization`` header, and adds Anthropic's key header,
-  whose value Envoy reads from the ``ANTHROPIC_API_KEY`` environment variable.
+- replaces the path with Anthropic's, removes the client's ``authorization`` header, and adds Anthropic's key
+  header, whose value Envoy reads from the ``ANTHROPIC_API_KEY`` environment variable.
 
 The routes only differ in these settings:
 
@@ -325,7 +326,7 @@ The routes only differ in these settings:
        or ``:streamGenerateContent?alt=sse``
      - ``x-goog-api-key: $VERTEX_API_KEY``
 
-A request whose model no route serves stays on ``unknown_model``, and gets its ``404``.
+A request whose model no route serves stays on ``chat_completions``, and gets its ``404``.
 
 Transcoding
 ~~~~~~~~~~~
@@ -337,8 +338,8 @@ runs its AI filters over it:
 
 .. literalinclude:: _include/ai-transcoder/envoy.yaml
    :language: yaml
-   :lines: 144-160
-   :lineno-start: 144
+   :lines: 146-162
+   :lineno-start: 146
    :linenos:
 
 Every API is translated through one canonical form, OpenAI Chat Completions. The first transcoder converts the
@@ -354,8 +355,8 @@ Vertex AI route then maps onto Vertex AI's:
 
 .. literalinclude:: _include/ai-transcoder/envoy.yaml
    :language: yaml
-   :lines: 88-96
-   :lineno-start: 88
+   :lines: 90-98
+   :lineno-start: 90
    :linenos:
 
 A route's path rewrite cannot read the environment, so the proxy fills in ``VERTEX_PROJECT`` and ``VERTEX_LOCATION``
@@ -383,8 +384,8 @@ to the same :ref:`dynamic forward proxy <arch_overview_http_dynamic_forward_prox
 
 .. literalinclude:: _include/ai-transcoder/envoy.yaml
    :language: yaml
-   :lines: 171-189
-   :lineno-start: 171
+   :lines: 173-191
+   :lineno-start: 173
    :linenos:
 
 The cluster uses TLS, with the host as the SNI and as the name the provider's certificate is validated against. Adding

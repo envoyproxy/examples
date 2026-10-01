@@ -33,9 +33,11 @@ static_resources:
               # The AI Protocol Manager cannot read a compressed response.
               request_headers_to_remove: [accept-encoding]
               routes:
+              # Only a request read_model has parsed has a model, and it parses only the requests of
+              # the chat_completions route below, so these routes need no path of their own.
               - name: openai
                 match:
-                  path: /v1/chat/completions
+                  prefix: /
                   filter_state:
                   - key: envoy.ai.model.request
                     string_match: {prefix: gpt-}
@@ -55,7 +57,7 @@ static_resources:
                     host_rewrite_literal: api.openai.com
               - name: anthropic
                 match:
-                  path: /v1/chat/completions
+                  prefix: /
                   filter_state:
                   - key: envoy.ai.model.request
                     string_match: {prefix: claude-}
@@ -63,7 +65,7 @@ static_resources:
                   cluster: dynamic_forward_proxy_cluster
                   timeout: 120s
                   regex_rewrite:
-                    pattern: {regex: '^/v1/chat/completions$'}
+                    pattern: {regex: '^.*$'}
                     substitution: /v1/messages
                 request_headers_to_remove: [authorization]
                 request_headers_to_add:
@@ -81,7 +83,7 @@ static_resources:
                     host_rewrite_literal: api.anthropic.com
               - name: vertex
                 match:
-                  path: /v1/chat/completions
+                  prefix: /
                   filter_state:
                   - key: envoy.ai.model.request
                     string_match: {prefix: gemini-}
@@ -106,9 +108,9 @@ static_resources:
                   envoy.filters.http.dynamic_forward_proxy:
                     "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.PerRouteConfig
                     host_rewrite_literal: aiplatform.googleapis.com
-              # Every chat request starts on this route, as its model is only known once its body is
-              # read. It stays here, and is answered locally, when no route above serves the model.
-              - name: unknown_model
+              # Every request starts on this route, as its model is only known once its body is read.
+              # It stays here, and is answered locally, when no route above serves the model.
+              - name: chat_completions
                 match:
                   path: /v1/chat/completions
                 direct_response:
