@@ -81,6 +81,14 @@ Build and start the proxy.
 
 Envoy listens for AI requests on port ``10000``, and serves its admin interface on port ``9901``.
 
+Alternatively, :download:`run-sandbox.sh <_include/ai-transcoder/run-sandbox.sh>` does steps 1 and 2: it asks for each
+key, without echoing it, and for the Vertex AI project, then builds and starts the sandbox and follows Envoy's log,
+which shows where each request went:
+
+.. code-block:: console
+
+   $ ./run-sandbox.sh
+
 .. tip::
 
    If either port is taken on your machine, set ``PORT_PROXY`` or ``PORT_ADMIN`` before starting the sandbox, and use
