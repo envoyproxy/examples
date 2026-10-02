@@ -33,8 +33,9 @@ For each request, Envoy:
   a ``404``.
 - converts the request into the provider's API, and the provider's response (a JSON body or a stream of
   server-sent events) back into OpenAI's, with the AI Protocol Manager's transcoder AI filter.
-- sends it through a single :ref:`dynamic forward proxy <arch_overview_http_dynamic_forward_proxy>` cluster to the
-  provider's host, which the route names, adding the provider's API key on the way.
+- adds the provider's API key, with a :ref:`credential injector <config_http_filters_credential_injector>`, and
+  sends it through a single :ref:`dynamic forward proxy <arch_overview_http_dynamic_forward_proxy>` cluster to the
+  provider's host, which the route names.
 
 .. warning::
 
@@ -62,8 +63,9 @@ default:
    $ export VERTEX_PROJECT=my-project
    $ export VERTEX_LOCATION=global
 
-The keys are passed to the Envoy container as environment variables, and Envoy adds them to the requests it sends to
-each provider: clients do not need them. A provider whose key is not set answers with its own authentication error.
+The keys are passed to the Envoy container as environment variables, which Envoy loads as secrets and adds to the
+requests it sends to each provider: clients do not need them. Envoy answers a request for a provider whose key is not
+set with a ``401`` itself, without sending it.
 
 Step 2: Start the sandbox
 *************************
@@ -255,15 +257,15 @@ Routing on the model
 ~~~~~~~~~~~~~~~~~~~~
 
 The model is in the request body, but Envoy picks a route as soon as the request headers arrive, before the body is
-read. So every chat request starts on the last route, ``unknown_model``. It declares the request's API for the first
-AI Protocol Manager, ``read_model``, which therefore parses the body:
+read. So every request starts on the last route, ``chat_completions``, the only one that names the endpoint's path.
+It declares the request's API for the first AI Protocol Manager, ``read_model``, which therefore parses the body:
 
 .. literalinclude:: _include/ai-transcoder/envoy.yaml
    :language: yaml
-   :lines: 109-126
-   :lineno-start: 109
+   :lines: 97-114
+   :lineno-start: 97
    :linenos:
-   :emphasize-lines: 15-18
+   :emphasize-lines: 5, 15-18
 
 ``read_model`` runs the request info AI filter, which stores the model as the ``envoy.ai.model.request`` filter state
 object. As that filter only reads the request, ``read_model`` forwards the body as it was received. The
@@ -272,8 +274,8 @@ known:
 
 .. literalinclude:: _include/ai-transcoder/envoy.yaml
    :language: yaml
-   :lines: 127-143
-   :lineno-start: 127
+   :lines: 115-131
+   :lineno-start: 115
    :linenos:
 
 Each provider has a route that matches its models. Here is Anthropic's, in the
@@ -281,22 +283,24 @@ Each provider has a route that matches its models. Here is Anthropic's, in the
 
 .. literalinclude:: _include/ai-transcoder/envoy.yaml
    :language: yaml
-   :lines: 56-81
-   :lineno-start: 56
+   :lines: 55-74
+   :lineno-start: 55
    :linenos:
-   :emphasize-lines: 4-6, 19-23
+   :emphasize-lines: 3-6, 9-10, 15-20
 
 The route:
 
 - matches a model starting with ``claude-``, with a :ref:`filter state <envoy_v3_api_field_config.route.v3.RouteMatch.filter_state>`
-  matcher on ``envoy.ai.model.request``.
+  matcher on ``envoy.ai.model.request``. It needs no path of its own: only a request that ``read_model`` parsed has
+  a model, and ``read_model`` parses only the requests of ``chat_completions``.
 - declares the APIs to transcode between, with the AI Protocol Manager's
   :ref:`per-route configuration <envoy_v3_api_msg_extensions.filters.http.ai_protocol_manager.v3.AiProtocolManagerPerRoute>`
   for the second AI Protocol Manager, ``transcode``: the client's request API is OpenAI Chat Completions, and the
   provider's API is Anthropic Messages.
-- names the provider's host for the dynamic forward proxy, with ``host_rewrite_literal``.
-- rewrites the path to Anthropic's, removes the client's ``authorization`` header, and adds Anthropic's key header,
-  whose value Envoy reads from the ``ANTHROPIC_API_KEY`` environment variable.
+- names the provider's host, with ``host_rewrite_literal``, and replaces the path with Anthropic's, with
+  :ref:`path_rewrite <envoy_v3_api_field_config.route.v3.RouteAction.path_rewrite>`.
+- enables ``anthropic_key``, the credential injector that adds Anthropic's key, and adds the ``anthropic-version``
+  header that Anthropic requires.
 
 The routes only differ in these settings:
 
@@ -325,7 +329,7 @@ The routes only differ in these settings:
        or ``:streamGenerateContent?alt=sse``
      - ``x-goog-api-key: $VERTEX_API_KEY``
 
-A request whose model no route serves stays on ``unknown_model``, and gets its ``404``.
+A request whose model no route serves stays on ``chat_completions``, and gets its ``404``.
 
 Transcoding
 ~~~~~~~~~~~
@@ -337,8 +341,8 @@ runs its AI filters over it:
 
 .. literalinclude:: _include/ai-transcoder/envoy.yaml
    :language: yaml
-   :lines: 144-160
-   :lineno-start: 144
+   :lines: 132-148
+   :lineno-start: 132
    :linenos:
 
 Every API is translated through one canonical form, OpenAI Chat Completions. The first transcoder converts the
@@ -354,12 +358,13 @@ Vertex AI route then maps onto Vertex AI's:
 
 .. literalinclude:: _include/ai-transcoder/envoy.yaml
    :language: yaml
-   :lines: 88-96
-   :lineno-start: 88
+   :lines: 81-90
+   :lineno-start: 81
    :linenos:
 
-A route's path rewrite cannot read the environment, so the proxy fills in ``VERTEX_PROJECT`` and ``VERTEX_LOCATION``
-as it starts, from the :download:`docker-compose.yaml <_include/ai-transcoder/docker-compose.yaml>` composition:
+The regex rewrite keeps the model and the method from the path, but cannot read the environment, so the proxy fills in
+``VERTEX_PROJECT`` and ``VERTEX_LOCATION`` as it starts, from the
+:download:`docker-compose.yaml <_include/ai-transcoder/docker-compose.yaml>` composition:
 
 .. literalinclude:: _include/ai-transcoder/docker-compose.yaml
    :language: yaml
@@ -370,31 +375,73 @@ as it starts, from the :download:`docker-compose.yaml <_include/ai-transcoder/do
 .. note::
 
    A Vertex AI express mode API key belongs to no project. To use one, change the substitution to
-   ``/v1/publishers/google/models/\1``.
+   ``/v1/publishers/google/``.
 
-The AI Protocol Manager cannot read a compressed response, so the routes remove the client's ``accept-encoding``
-header.
+The AI Protocol Manager cannot read a compressed response, so the virtual host removes the client's
+``accept-encoding`` header.
+
+API keys
+~~~~~~~~
+
+The keys are :ref:`static secrets <envoy_v3_api_field_config.bootstrap.v3.Bootstrap.StaticResources.secrets>`, read
+from the environment as Envoy starts:
+
+.. literalinclude:: _include/ai-transcoder/envoy.yaml
+   :language: yaml
+   :lines: 189-195
+   :lineno-start: 189
+   :linenos:
+
+A :ref:`credential injector <config_http_filters_credential_injector>` sets one header from one secret, so the router
+runs one for each provider, as
+:ref:`upstream HTTP filters <envoy_v3_api_field_extensions.filters.http.router.v3.Router.upstream_http_filters>`.
+Here is OpenAI's:
+
+.. literalinclude:: _include/ai-transcoder/envoy.yaml
+   :language: yaml
+   :lines: 149-164
+   :lineno-start: 149
+   :linenos:
+
+Anthropic's and Vertex AI's set ``x-api-key`` and ``x-goog-api-key`` instead, with no prefix. Every injector is
+:ref:`disabled <envoy_v3_api_field_extensions.filters.network.http_connection_manager.v3.HttpFilter.disabled>`
+unless a route enables it, as Anthropic's route enables ``anthropic_key``, so each provider is only sent its own key.
+
+The injectors are upstream filters because a route can only enable a filter when the filter is created. The router
+creates its upstream filters as it sends the request, once the model's route is picked, whereas the HTTP filters are
+created as the request arrives, on the ``chat_completions`` route.
+
+No provider is sent a credential the client sent: the virtual host removes ``authorization``, ``x-api-key`` and
+``x-goog-api-key``. A request for a provider whose key is empty is not sent at all, but answered by its injector with
+a ``401``:
+
+.. code-block:: console
+
+   $ docker compose logs proxy | grep failed_to_inject_credential
+   proxy-1  | gpt-4o-mini -> api.openai.com/v1/chat/completions 401 failed_to_inject_credential
 
 One cluster for every provider
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The ``dynamic_forward_proxy`` HTTP filter looks up the host that the route names, and the requests of every route go
-to the same :ref:`dynamic forward proxy <arch_overview_http_dynamic_forward_proxy>` cluster, which connects to it:
+The requests of every route go to the same :ref:`dynamic forward proxy <arch_overview_http_dynamic_forward_proxy>`
+cluster, which looks up the host the route set with ``host_rewrite_literal``, and connects to it:
 
 .. literalinclude:: _include/ai-transcoder/envoy.yaml
    :language: yaml
-   :lines: 171-189
-   :lineno-start: 171
+   :lines: 197-215
+   :lineno-start: 197
    :linenos:
 
-The cluster uses TLS, with the host as the SNI and as the name the provider's certificate is validated against. Adding
-a provider takes a route, not a cluster.
+The cluster looks each host up itself, the first time a request needs it, so it needs no dynamic forward proxy HTTP
+filter. It uses TLS, with the host as the SNI and as the name the provider's certificate is validated against. Adding
+a provider takes a route, a secret and a credential injector, not a cluster.
 
 Limitations
 ~~~~~~~~~~~
 
-- An error response, such as the ``401`` of a provider whose key is not set, is forwarded in the provider's own
-  format: the transcoder only converts successful responses.
+- An error response, such as a provider's ``401`` for a key it rejects, is forwarded in the provider's own format:
+  the transcoder only converts successful responses. Envoy's own ``401``, for a provider whose key is not set, is plain
+  text.
 - Not every field has a mapping yet: tool calls are not transcoded for Anthropic and Gemini.
 - Each request is parsed twice, once by each AI Protocol Manager.
 
@@ -411,6 +458,9 @@ Limitations
 
    :ref:`Set filter state <config_http_filters_set_filter_state>`
       Learn more about the set filter state filter.
+
+   :ref:`Credential injector <config_http_filters_credential_injector>`
+      Learn more about the credential injector filter.
 
    :ref:`Dynamic forward proxy <arch_overview_http_dynamic_forward_proxy>`
       Learn more about Envoy's dynamic forward proxy.

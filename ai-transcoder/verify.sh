@@ -14,9 +14,16 @@ chat () {
           -d "{\"model\": \"${model}\", \"stream\": ${stream}, \"messages\": [{\"role\": \"user\", \"content\": \"In one short sentence, what is Envoy proxy?\"}]}"
 }
 
-# A provider is only sent requests when the variables it needs, such as its API key, are set.
+# A provider is only sent requests when the variables it needs, its API key first, are set.
 test_provider () {
-    local required="$1" model="$2" unary_upstream="$3" stream_upstream="$4" stream var
+    local required="$1" model="$2" unary_upstream="$3" stream_upstream="$4" key stream var
+    key="${required%% *}"
+    if [[ -z "${!key}" ]]; then
+        run_log "Answer ${model} with a local 401, as ${key} is not set"
+        chat "$model" | grep -Fx 'Failed to inject credential.'
+        wait_for 10 bash -c "${DOCKER_COMPOSE[*]} logs proxy | grep -F '${model} -> ${unary_upstream} 401 failed_to_inject_credential'"
+        return
+    fi
     for var in $required; do
         if [[ -z "${!var}" ]]; then
             run_log "Skip ${model}: set ${var} to send it to its provider"
