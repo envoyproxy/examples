@@ -36,3 +36,4 @@ common:remote-cache --remote_timeout=3600s
 common:remote-exec --remote_executor=grpcs://mordenite.cluster.engflow.com
 common:remote-exec --jobs=200
 common:remote-exec --define=engflow_rbe=true
+common:remote-exec --host_platform=@clang_platform
