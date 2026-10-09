@@ -30,45 +30,40 @@ static_resources:
             virtual_hosts:
             - name: ai_gateway
               domains: ["*"]
-              # The AI Protocol Manager cannot read a compressed response.
-              request_headers_to_remove: [accept-encoding]
+              # The AI Protocol Manager cannot read a compressed response, and no provider is sent a
+              # credential the client sent.
+              request_headers_to_remove: [accept-encoding, authorization, x-api-key, x-goog-api-key]
               routes:
+              # Only a request read_model has parsed has a model, and it parses only the requests of
+              # the chat_completions route below, so these routes need no path of their own.
               - name: openai
                 match:
-                  path: /v1/chat/completions
+                  prefix: /
                   filter_state:
                   - key: envoy.ai.model.request
                     string_match: {prefix: gpt-}
                 route:
                   cluster: dynamic_forward_proxy_cluster
+                  host_rewrite_literal: api.openai.com
                   timeout: 120s
-                request_headers_to_add:
-                - header: {key: authorization, value: "Bearer %ENVIRONMENT(OPENAI_API_KEY)%"}
-                  append_action: OVERWRITE_IF_EXISTS_OR_ADD
                 typed_per_filter_config:
                   transcode:
                     "@type": type.googleapis.com/envoy.extensions.filters.http.ai_protocol_manager.v3.AiProtocolManagerPerRoute
                     request: {llm_protocol: OPENAI_CHAT_COMPLETIONS}
                     response: {llm_protocol: OPENAI_CHAT_COMPLETIONS}
-                  envoy.filters.http.dynamic_forward_proxy:
-                    "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.PerRouteConfig
-                    host_rewrite_literal: api.openai.com
+                  openai_key: {"@type": type.googleapis.com/envoy.config.route.v3.FilterConfig, config: {}}
               - name: anthropic
                 match:
-                  path: /v1/chat/completions
+                  prefix: /
                   filter_state:
                   - key: envoy.ai.model.request
                     string_match: {prefix: claude-}
                 route:
                   cluster: dynamic_forward_proxy_cluster
+                  host_rewrite_literal: api.anthropic.com
+                  path_rewrite: /v1/messages
                   timeout: 120s
-                  regex_rewrite:
-                    pattern: {regex: '^/v1/chat/completions$'}
-                    substitution: /v1/messages
-                request_headers_to_remove: [authorization]
                 request_headers_to_add:
-                - header: {key: x-api-key, value: "%ENVIRONMENT(ANTHROPIC_API_KEY)%"}
-                  append_action: OVERWRITE_IF_EXISTS_OR_ADD
                 - header: {key: anthropic-version, value: "2023-06-01"}
                   append_action: OVERWRITE_IF_EXISTS_OR_ADD
                 typed_per_filter_config:
@@ -76,39 +71,32 @@ static_resources:
                     "@type": type.googleapis.com/envoy.extensions.filters.http.ai_protocol_manager.v3.AiProtocolManagerPerRoute
                     request: {llm_protocol: OPENAI_CHAT_COMPLETIONS}
                     response: {llm_protocol: ANTHROPIC_MESSAGES}
-                  envoy.filters.http.dynamic_forward_proxy:
-                    "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.PerRouteConfig
-                    host_rewrite_literal: api.anthropic.com
+                  anthropic_key: {"@type": type.googleapis.com/envoy.config.route.v3.FilterConfig, config: {}}
               - name: vertex
                 match:
-                  path: /v1/chat/completions
+                  prefix: /
                   filter_state:
                   - key: envoy.ai.model.request
                     string_match: {prefix: gemini-}
                 route:
                   cluster: dynamic_forward_proxy_cluster
+                  host_rewrite_literal: aiplatform.googleapis.com
                   timeout: 120s
                   # The transcoder has set the Gemini API path, /v1beta/models/{model}:generateContent
-                  # or :streamGenerateContent?alt=sse; this maps it onto Vertex AI's. The proxy fills
-                  # in VERTEX_PROJECT and VERTEX_LOCATION from its environment when it starts.
+                  # or :streamGenerateContent?alt=sse; this nests the model under Vertex AI's project and
+                  # location, which the proxy fills in from its environment when it starts.
                   regex_rewrite:
-                    pattern: {regex: '^/v1beta/models/(.*)$'}
-                    substitution: '/v1/projects/VERTEX_PROJECT/locations/VERTEX_LOCATION/publishers/google/models/\1'
-                request_headers_to_remove: [authorization]
-                request_headers_to_add:
-                - header: {key: x-goog-api-key, value: "%ENVIRONMENT(VERTEX_API_KEY)%"}
-                  append_action: OVERWRITE_IF_EXISTS_OR_ADD
+                    pattern: {regex: ^/v1beta/}
+                    substitution: /v1/projects/VERTEX_PROJECT/locations/VERTEX_LOCATION/publishers/google/
                 typed_per_filter_config:
                   transcode:
                     "@type": type.googleapis.com/envoy.extensions.filters.http.ai_protocol_manager.v3.AiProtocolManagerPerRoute
                     request: {llm_protocol: OPENAI_CHAT_COMPLETIONS}
                     response: {llm_protocol: GEMINI_GENERATE_CONTENT}
-                  envoy.filters.http.dynamic_forward_proxy:
-                    "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.PerRouteConfig
-                    host_rewrite_literal: aiplatform.googleapis.com
-              # Every chat request starts on this route, as its model is only known once its body is
-              # read. It stays here, and is answered locally, when no route above serves the model.
-              - name: unknown_model
+                  vertex_key: {"@type": type.googleapis.com/envoy.config.route.v3.FilterConfig, config: {}}
+              # Every request starts on this route, as its model is only known once its body is read.
+              # It stays here, and is answered locally, when no route above serves the model.
+              - name: chat_completions
                 match:
                   path: /v1/chat/completions
                 direct_response:
@@ -158,19 +146,57 @@ static_resources:
                   "@type": type.googleapis.com/envoy.extensions.http.ai_filters.transcoder.v3.Transcoder
                   request_handling: FROM_IR
                   response_handling: TO_IR
-          - name: envoy.filters.http.dynamic_forward_proxy
-            typed_config:
-              "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig
-              dns_cache_config:
-                name: dynamic_forward_proxy_cache_config
-                dns_lookup_family: V4_ONLY
           - name: envoy.filters.http.router
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+              # Each sets one provider's key, from the secrets below, on the requests of the routes that
+              # enable it: as upstream filters, they are created once the model's route is picked.
+              upstream_http_filters:
+              - name: openai_key
+                disabled: true
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.credential_injector.v3.CredentialInjector
+                  credential:
+                    name: envoy.http.injected_credentials.generic
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.http.injected_credentials.generic.v3.Generic
+                      credential: {name: openai_api_key}
+                      header_value_prefix: "Bearer "
+              - name: anthropic_key
+                disabled: true
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.credential_injector.v3.CredentialInjector
+                  credential:
+                    name: envoy.http.injected_credentials.generic
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.http.injected_credentials.generic.v3.Generic
+                      credential: {name: anthropic_api_key}
+                      header: x-api-key
+              - name: vertex_key
+                disabled: true
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.credential_injector.v3.CredentialInjector
+                  credential:
+                    name: envoy.http.injected_credentials.generic
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.http.injected_credentials.generic.v3.Generic
+                      credential: {name: vertex_api_key}
+                      header: x-goog-api-key
+              - name: envoy.filters.http.upstream_codec
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.upstream_codec.v3.UpstreamCodec
+
+  secrets:
+  - name: openai_api_key
+    generic_secret: {secret: {environment_variable: OPENAI_API_KEY}}
+  - name: anthropic_api_key
+    generic_secret: {secret: {environment_variable: ANTHROPIC_API_KEY}}
+  - name: vertex_api_key
+    generic_secret: {secret: {environment_variable: VERTEX_API_KEY}}
 
   clusters:
-  # One cluster for every provider. It connects to the host the route's dynamic forward proxy
-  # config names, with that host as the TLS SNI and the name to validate the certificate against.
+  # One cluster for every provider. It resolves and connects to the host the route rewrites the
+  # request to, with that host as the TLS SNI and the name to validate the certificate against.
   - name: dynamic_forward_proxy_cluster
     lb_policy: CLUSTER_PROVIDED
     cluster_type:

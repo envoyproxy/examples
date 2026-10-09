@@ -60,7 +60,7 @@ for name in OPENAI_API_KEY ANTHROPIC_API_KEY VERTEX_API_KEY; do
     if [[ -n "${!name}" ]]; then
         log "  ${name}: $(masked "${!name}")"
     else
-        log "  ${name}: not set, so that provider answers with its own authentication error"
+        log "  ${name}: not set, so Envoy answers that provider's requests with a 401"
     fi
 done
 if [[ -n "$VERTEX_PROJECT" ]]; then
@@ -80,7 +80,7 @@ log "Starting the proxy on localhost:${PORT_PROXY}, with its admin interface on 
 docker compose up -d --wait
 log "Envoy $(docker compose exec -T proxy envoy --version | grep -o 'version: .*')"
 log "Vertex AI requests go to aiplatform.googleapis.com$(docker compose exec -T proxy \
-    grep -o '/v1/projects/[^/]*/locations/[^/]*/publishers/google/models/' /tmp/envoy.yaml)..."
+    grep -o '/v1/projects/[^/]*/locations/[^/]*/publishers/google/' /tmp/envoy.yaml)models/..."
 
 log "Try it from another terminal, for example:"
 for model in gpt-4o-mini claude-haiku-4-5 gemini-2.5-flash; do
