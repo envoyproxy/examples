@@ -61,7 +61,10 @@ services:
     - "${DOCKER_EXAMPLES_LOG:-/var/log/docker-examples}:/var/log/docker"
     working_dir: /workspace/examples
     environment:
-      BAZEL_BUILD_EXTRA_OPTIONS: "${BAZEL_BUILD_EXTRA_OPTIONS:-}"
+      BAZEL_BUILD_EXTRA_OPTIONS: >-
+        ${BAZEL_BUILD_EXTRA_OPTIONS:-
+        --override_module=envoy-example-filter-cc=filter-cc
+        --override_module=envoy-example-wasm-cc=wasm-cc}
       BUILD_UID: "${UID:-1000}"
       USER_UID: "${UID:-1000}"
       GROUP_UID: "${UID:-1000}"
