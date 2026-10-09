@@ -1,13 +1,22 @@
 common --color=yes
 
 common --registry=https://bcr.bazel.build/
-common --registry=https://raw.githubusercontent.com/envoyproxy/bazel-registry/07050c5e9f805a6d60bdad5e5bc30ca478fa844e
+common --registry=https://raw.githubusercontent.com/envoyproxy/bazel-registry/5db29c09de17218d24f58c665be38208284754d8
+
+build --@rules_rust//rust/settings:extra_exec_rustc_flags=-Clink-self-contained=no
+
+# Common flags for Clang (shared between all clang variants)
+common --linkopt=-fuse-ld=lld
+common --cxxopt=-Wno-nullability-completeness
 
 # Required by Envoy and its deps when consumed via bzlmod.
 common --noincompatible_disallow_empty_glob
 common --noincompatible_disallow_ctx_resolve_tools
 common --legacy_external_runfiles
 build --incompatible_strict_action_env
+build --experimental_cc_static_library
+
+build --experimental_repository_downloader_retries=2
 
 # Protobuf currently requires Java 11 toolchains (see protocolbuffers/protobuf#20760).
 build --java_runtime_version=remotejdk_11
@@ -16,12 +25,10 @@ build --java_language_version=11
 build --tool_java_language_version=11
 build --extra_toolchains=@envoy//bazel:envoy_java_toolchain_definition
 
-# Silence absl log spam.
+# Silence log spam.
 build --copt=-DABSL_MIN_LOG_LEVEL=4
-build --cxxopt=-std=c++20 --host_cxxopt=-std=c++20
 build --copt=-Wno-deprecated-declarations
-build --experimental_cc_static_library
-build --experimental_repository_downloader_retries=2
+build --per_file_copt=external/c-ares.*@-Wno-unused-function
 
 # Prevent rules_jvm_external from trying to set up an Android toolchain.
 common --repo_env=ANDROID_HOME=
@@ -38,29 +45,6 @@ common --@proxy-wasm-cpp-host//bazel:engine=disabled
 
 common --@rules_python//python/config_settings:bootstrap_impl=script
 build --incompatible_default_to_explicit_init_py
-
-build --@rules_rust//rust/settings:extra_exec_rustc_flags=-Clink-self-contained=no
-
-# Common flags for Clang (shared between all clang variants)
-common:clang-common --linkopt=-fuse-ld=lld
-common:clang-common --cxxopt=-Wno-nullability-completeness
-
-# libc++ - default for clang
-common:libc++ --action_env=CXXFLAGS=-stdlib=libc++
-common:libc++ --action_env=LDFLAGS="-stdlib=libc++ -fuse-ld=lld"
-common:libc++ --action_env=BAZEL_CXXOPTS=-stdlib=libc++
-common:libc++ --action_env=BAZEL_LINKLIBS=-l%:libc++.a:-l%:libc++abi.a
-common:libc++ --action_env=BAZEL_LINKOPTS=-lm:-pthread
-common:libc++ --define force_libcpp=enabled
-common:libc++ --@envoy//bazel:libc++=true
-
-# Clang with libc++ (default)
-common:clang --config=clang-common
-common:clang --config=libc++
-common:clang --host_platform=@clang_platform
-common:clang --repo_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
-
-common --config=clang
 
 try-import %workspace%/user.bazelrc
 try-import %workspace%/repo.bazelrc

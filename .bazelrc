@@ -1,9 +1,7 @@
 common --color=yes
 
 common --registry=https://bcr.bazel.build
-common --registry=https://raw.githubusercontent.com/envoyproxy/bazel-registry/07050c5e9f805a6d60bdad5e5bc30ca478fa844e
-
-common --config=clang
+common --registry=https://raw.githubusercontent.com/envoyproxy/bazel-registry/5db29c09de17218d24f58c665be38208284754d8
 
 common:examples --action_env=DEV_CONTAINER_ID
 common:examples --host_action_env=DEV_CONTAINER_ID
@@ -17,30 +15,14 @@ common:examples --action_env=BUILDKIT_PROGRESS
 common:examples --host_action_env=BUILDKIT_PROGRESS
 common:examples --action_env=USER_UID
 common:examples --host_action_env=USER_UID
+common:examples --action_env="BUILDX_BAKE_ENTITLEMENTS_FS=0"
+common:examples --host_action_env="BUILDX_BAKE_ENTITLEMENTS_FS=0"
+
 common:examples --sandbox_writable_path=/var/run/docker.sock
 
+common:examples --host_platform=@clang_platform
+
 common --@rules_python//python/config_settings:bootstrap_impl=script
-
-# libc++ - default for clang
-common:libc++ --action_env=CXXFLAGS=-stdlib=libc++
-common:libc++ --action_env=LDFLAGS="-stdlib=libc++ -fuse-ld=lld"
-common:libc++ --action_env=BAZEL_CXXOPTS=-stdlib=libc++
-common:libc++ --action_env=BAZEL_LINKLIBS=-l%:libc++.a:-l%:libc++abi.a
-common:libc++ --action_env=BAZEL_LINKOPTS=-lm:-pthread
-common:libc++ --define force_libcpp=enabled
-common:libc++ --@envoy//bazel:libc++=true
-
-# Common flags for Clang (shared between all clang variants)
-common:clang-common --linkopt=-fuse-ld=lld
-common:clang-common --cxxopt=-Wno-nullability-completeness
-common:clang-common --@toolchains_llvm//toolchain/config:compiler-rt=false
-common:clang-common --@toolchains_llvm//toolchain/config:libunwind=false
-
-# Clang with libc++ (default)
-common:clang --config=clang-common
-common:clang --config=libc++
-common:clang --host_platform=@clang_platform
-common:clang --repo_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
 
 try-import %workspace%/user.bazelrc
 try-import %workspace%/repo.bazelrc

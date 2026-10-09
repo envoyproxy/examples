@@ -4,7 +4,7 @@ module(
 )
 
 bazel_dep(name = "bazel_skylib", version = "1.9.2")
-bazel_dep(name = "envoy", version = "1.40.0-dev.20260927.5f95744.envoy")
+bazel_dep(name = "envoy", version = "1.40.0-dev.20261009.189f198.envoy")
 bazel_dep(name = "envoy-example-filter-cc", version = "0.2.7")
 bazel_dep(name = "envoy-example-wasm-cc", version = "0.2.7")
 bazel_dep(name = "rules_pkg", version = "1.3.0")
