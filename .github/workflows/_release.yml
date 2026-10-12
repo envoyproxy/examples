@@ -1,0 +1,86 @@
+name: _release
+
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+    secrets:
+      ENVOY_CI_PUBLISH_APP_ID:
+        required: false
+      ENVOY_CI_PUBLISH_APP_KEY:
+        required: false
+    inputs:
+      action:
+        type: string
+        default: release
+      dry-run:
+        type: boolean
+        default: false
+      release-version:
+        type: string
+        default: ""
+      committer-name:
+        type: string
+        default: publish-envoy[bot]
+      committer-email:
+        type: string
+        default: 140627008+publish-envoy[bot]@users.noreply.github.com
+
+jobs:
+  release:
+    if: inputs.action == 'release' && (inputs.dry-run || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Appauth
+      id: appauth
+      if: ${{ ! inputs.dry-run }}
+      uses: envoyproxy/toolshed/actions/appauth@9bd3b300cf19f67cd2ef8b6e4aaa920f79894c24  # actions-v0.4.29
+      with:
+        app_id: ${{ secrets.ENVOY_CI_PUBLISH_APP_ID }}
+        key: ${{ secrets.ENVOY_CI_PUBLISH_APP_KEY }}
+    - name: Checkout
+      uses: envoyproxy/toolshed/actions/github/checkout@9bd3b300cf19f67cd2ef8b6e4aaa920f79894c24  # actions-v0.4.29
+      with:
+        branch: main
+        pr: ${{ github.event.pull_request.number || '' }}
+        committer-name: ${{ inputs.committer-name }}
+        committer-email: ${{ inputs.committer-email }}
+        token: ${{ steps.appauth.outputs.token || github.token }}
+    - name: Version
+      id: version
+      uses: envoyproxy/toolshed/actions/version@9bd3b300cf19f67cd2ef8b6e4aaa920f79894c24  # actions-v0.4.29
+      with:
+        version-file: VERSION
+    - name: Prepare and commit release
+      id: commit
+      if: fromJSON(steps.version.outputs.version).is_dev
+      env:
+        RELEASE_VERSION: ${{ inputs.release-version || fromJSON(steps.version.outputs.version).next }}
+      run: |
+        if [[ ! "$RELEASE_VERSION" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "Release version must be a plain semantic version" >&2
+            exit 1
+        fi
+        export NEXT_VERSION="$RELEASE_VERSION"
+        TMP_OUTPUT=$(mktemp)
+        export TMP_OUTPUT
+        trap 'rm -f "$TMP_OUTPUT"' EXIT
+        .github/workflows/prepare_dev.sh
+        cat "$TMP_OUTPUT"
+        printf '%s\n' "$RELEASE_VERSION" > VERSION
+        git add VERSION MODULE.bazel filter-cc/MODULE.bazel wasm-cc/MODULE.bazel
+        git commit --signoff -m "Release v${RELEASE_VERSION}"
+        git show
+        echo "version=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
+    - name: Create release PR
+      if: steps.commit.outputs.version != ''
+      uses: envoyproxy/toolshed/actions/github/pr@9bd3b300cf19f67cd2ef8b6e4aaa920f79894c24  # actions-v0.4.29
+      with:
+        base: main
+        branch: release/create/${{ steps.commit.outputs.version }}
+        commit: false
+        title: Release v${{ steps.commit.outputs.version }}
+        body: Created by publish-envoy[bot] for @${{ github.actor }}
+        dry-run: ${{ inputs.dry-run }}
+        GITHUB_TOKEN: ${{ steps.appauth.outputs.token || github.token }}
