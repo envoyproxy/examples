@@ -1,4 +1,4 @@
-FROM rust:1.98 AS builder
+FROM rust:1.99 AS builder
 # bindgen, used by the Rust SDK to generate bindings for the dynamic modules ABI,
 # requires libclang.
 RUN --mount=type=tmpfs,target=/var/cache/apt \
