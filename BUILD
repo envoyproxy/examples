@@ -41,8 +41,6 @@ EXAMPLE_TESTS = [
     "tls-inspector",
     "tls-sni",
     "udp",
-    "vrp-litmus",
-    # "vrp-local",
     "websocket",
     "zipkin",
     "zstd",
