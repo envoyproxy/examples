@@ -30,8 +30,8 @@ Terminal 1
 
             Name                         Command               State               Ports
   ------------------------------------------------------------------------------------------------------
-  fault-injection_backend_1   gunicorn -b 0.0.0.0:80 htt       Up      0.0.0.0:8080->80/tcp
-  fault-injection_envoy_1     /docker-entrypoint.sh /usr       Up      10000/tcp, 0.0.0.0:9211->9211/tcp
+  fault-injection_backend_1   gunicorn -b 0.0.0.0:80 htt       Up      80/tcp
+  fault-injection_envoy_1     /docker-entrypoint.sh /usr       Up      10000/tcp
 
 Step 2: Start sending continuous stream of HTTP requests
 ********************************************************

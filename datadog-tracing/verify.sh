@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 export NAME=datadog-tracing
-export PORT_PROXY="${DATADOG_PORT_PROXY:-10400}"
+export PORT_PROXY="${DATADOG_TRACING_PORT_PROXY:-10430}"
 
 # shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"

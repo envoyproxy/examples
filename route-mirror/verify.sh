@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 export NAME=route-mirroring
-export PORT_PROXY="${FRONT_PROXY_PORT_PROXY:-11820}"
+export PORT_PROXY="${ROUTE_MIRROR_PORT_PROXY:-11820}"
 
 # shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"

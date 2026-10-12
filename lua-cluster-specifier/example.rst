@@ -57,7 +57,7 @@ the Lua code will select the fake service.
 
 .. code-block:: console
 
-   $ curl -i localhost:8000/anything -H "header_key:fake" 2>&1 |grep 503
+   $ curl -i localhost:10000/anything -H "header_key:fake" 2>&1 |grep 503
    HTTP/1.1 503 Service Unavailable
 
 .. seealso::

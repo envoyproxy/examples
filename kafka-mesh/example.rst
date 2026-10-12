@@ -43,7 +43,7 @@ up Envoy, two independent Kafka clusters, and a shared Zookeeper instance.
 
          Name                       State              Ports
    ------------------------------------------------------------------
-   kafka-mesh_proxy_1          Up             0.0.0.0:10000->10000/tcp
+   kafka-mesh_proxy_1          Up             10000/tcp, 0.0.0.0:8001->8001/tcp
    kafka-mesh_kafka-cluster1_1 Up             9092/tcp
    kafka-mesh_kafka-cluster2_1 Up             9092/tcp
    kafka-mesh_zookeeper_1      Up (healthy)   2181/tcp

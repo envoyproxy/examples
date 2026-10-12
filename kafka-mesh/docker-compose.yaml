@@ -15,7 +15,6 @@ services:
       args:
         ENVOY_VARIANT: contrib-dev
     ports:
-    - "${PORT_PROXY:-10000}:10000"
     - "${PORT_ADMIN:-8001}:8001"
 
   kafka-cluster1:
