@@ -1,0 +1,101 @@
+name: Publish
+
+permissions:
+  contents: read
+
+on:
+  workflow_run:
+    workflows:
+    - Verify
+    types:
+    - completed
+
+concurrency:
+  group: publish-main
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: >-
+      github.event.workflow_run.event == 'push'
+      && github.event.workflow_run.head_branch == 'main'
+      && github.event.workflow_run.conclusion == 'success'
+      && github.event.workflow_run.head_repository.full_name == github.repository
+    permissions:
+      contents: read
+      actions: read
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Appauth
+      id: appauth
+      uses: envoyproxy/toolshed/actions/appauth@9bd3b300cf19f67cd2ef8b6e4aaa920f79894c24  # actions-v0.4.29
+      with:
+        app_id: ${{ secrets.ENVOY_CI_PUBLISH_APP_ID }}
+        key: ${{ secrets.ENVOY_CI_PUBLISH_APP_KEY }}
+    - name: Checkout verified commit
+      uses: envoyproxy/toolshed/actions/github/checkout@9bd3b300cf19f67cd2ef8b6e4aaa920f79894c24  # actions-v0.4.29
+      with:
+        branch: main
+        config: |
+          ref: ${{ github.event.workflow_run.head_sha }}
+        committer-name: publish-envoy[bot]
+        committer-email: 140627008+publish-envoy[bot]@users.noreply.github.com
+        token: ${{ steps.appauth.outputs.token }}
+    - name: Release title
+      id: title
+      env:
+        COMMIT_MESSAGE: ${{ github.event.workflow_run.head_commit.message }}
+      run: |
+        echo "title=${COMMIT_MESSAGE%%$'\n'*}" >> "$GITHUB_OUTPUT"
+    # The aggregate github/release action hardcodes examples-v<version> tags.
+    # Use its status/publish components to retain the v<version> BCR convention.
+    - name: Check release status
+      id: status
+      uses: envoyproxy/toolshed/actions/github/release/status@9bd3b300cf19f67cd2ef8b6e4aaa920f79894c24  # actions-v0.4.29
+      with:
+        name: examples
+        repository: ${{ github.repository }}
+        sha: ${{ github.event.workflow_run.head_sha }}
+        title: ${{ steps.title.outputs.title }}
+        workflows: Verify
+        version-file: VERSION
+        template-status: |
+          ## Publish: examples
+
+          ### \(.title)
+    - name: Publish release and reopen main for development
+      if: fromJSON(steps.status.outputs.continue) && ! fromJSON(steps.status.outputs.version).is_dev
+      uses: envoyproxy/toolshed/actions/github/release/publish@9bd3b300cf19f67cd2ef8b6e4aaa920f79894c24  # actions-v0.4.29
+      env:
+        RELEASE_TITLE: ${{ steps.title.outputs.title }}
+      with:
+        name: examples
+        branch: main
+        sha: ${{ github.event.workflow_run.head_sha }}
+        repository: ${{ github.repository }}
+        event: push
+        dry-run: false
+        fail-if-exists: false
+        assets: ""
+        token: ${{ steps.appauth.outputs.token }}
+        version: ${{ steps.status.outputs.version }}
+        version-file: VERSION
+        prepare-dev: ${{ github.workspace }}/.github/workflows/prepare_dev.sh
+        template-release: |
+          export ASSETS=\"\($assets)\"
+          export DEBUG=1
+          export SHA=\"\(.sha)\"
+          export TAG=\"v\($version)\"
+          export TITLE=\"${RELEASE_TITLE}\"
+          export REPO=\"\(.repo)\"
+          export BRANCH=\"\(.branch)\"
+          export FAIL_IF_EXISTS=\"\(.fail_if_exists)\"
+          export DRY_RUN=\"\(.dry_run)\"
+          export NEXT_VERSION=\"\($next_version)\"
+          export VERSION=\"\($version)\"
+          export VERSION_FILE=\"\(.version_file)\"
+          export PREPARE_DEV=\"\($prepare_dev)\"
+          export REOPEN_MESSAGE=\"\($reopen_message)\"
+          OUTPUT=$(${RELEASE_ACTION_PATH}/release.sh)
+        template-release-message: |
+          ### Release created [v\(.version.version)](https://github.com/\(.repository)/releases/tag/v\(.version.version)) \($dry_run)

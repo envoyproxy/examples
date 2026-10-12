@@ -2,6 +2,7 @@
 
 set -euo pipefail
 
+NEXT_VERSION="${NEXT_VERSION%-dev}"
 if [[ ! "${NEXT_VERSION}" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
     echo "NEXT_VERSION must be a plain semantic version" >&2
     exit 1
