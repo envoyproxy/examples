@@ -1,0 +1,40 @@
+services:
+
+  proxy:
+    build:
+      context: .
+      dockerfile: ../shared/envoy/Dockerfile
+      target: envoy-admin
+      args:
+        ENVOY_ADMIN_PORT: 9901
+    depends_on:
+      openai:
+        condition: service_healthy
+      anthropic:
+        condition: service_healthy
+      gemini:
+        condition: service_healthy
+    ports:
+    - "${PORT_PROXY:-10000}:10000"
+    - "${PORT_ADMIN:-9901}:9901"
+
+  openai:
+    build:
+      context: ../shared/python
+      target: aiohttp-service
+    volumes:
+    - ./mocks/openai.py:/code/service.py
+
+  anthropic:
+    build:
+      context: ../shared/python
+      target: aiohttp-service
+    volumes:
+    - ./mocks/anthropic.py:/code/service.py
+
+  gemini:
+    build:
+      context: ../shared/python
+      target: aiohttp-service
+    volumes:
+    - ./mocks/gemini.py:/code/service.py
