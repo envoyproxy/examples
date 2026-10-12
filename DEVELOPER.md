@@ -1,5 +1,28 @@
 # Adding a sandbox example
 
+## Releasing
+
+`VERSION` is the authoritative version. A `-dev` suffix means development;
+a plain semantic version means that commit is ready to release. The three
+`MODULE.bazel` module versions and the root `envoy-example-*` dependency pins
+must match `VERSION` without `-dev`; Lint checks this.
+
+Run the **Release** workflow to open a release PR against `main`. It removes
+`-dev` (or uses the optional release-version override) and updates the Bazel
+versions. Use `dry-run` to exercise this without pushing or opening a PR.
+After merging, a successful **Verify** push run publishes the GitHub release
+`v<version>`, which triggers BCR publishing via the `.bcr/` configuration.
+`publish-envoy[bot]` then pushes directly to `main` to set `VERSION` to
+`<next>-dev` and the Bazel versions to `<next>`. No dev-bump PR is created,
+and the version-only bump does not require regenerating `MODULE.bazel.lock`.
+If publishing succeeds but the dev push fails, retry the **Publish** run to
+complete the missing bump without recreating the release.
+
+The repository must have access to the org/repo secrets
+`ENVOY_CI_PUBLISH_APP_ID` and `ENVOY_CI_PUBLISH_APP_KEY`. The publish app needs
+permission to create PRs and releases and push to `main`, including any
+required branch-protection bypass.
+
 ## Add a `verify.sh` test to your sandbox
 
 Sandboxes are tested as part of the continuous integration process, which expects

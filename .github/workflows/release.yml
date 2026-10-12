@@ -1,0 +1,32 @@
+name: Release
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        type: choice
+        options:
+        - release
+        default: release
+      dry-run:
+        description: Dry run (no PR created)
+        type: boolean
+        default: false
+      release-version:
+        description: Release version (defaults to VERSION without -dev)
+        type: string
+        required: false
+
+jobs:
+  release:
+    uses: ./.github/workflows/_release.yml
+    with:
+      action: ${{ inputs.action }}
+      dry-run: ${{ inputs.dry-run }}
+      release-version: ${{ inputs.release-version }}
+    secrets:
+      ENVOY_CI_PUBLISH_APP_ID: ${{ secrets.ENVOY_CI_PUBLISH_APP_ID }}
+      ENVOY_CI_PUBLISH_APP_KEY: ${{ secrets.ENVOY_CI_PUBLISH_APP_KEY }}

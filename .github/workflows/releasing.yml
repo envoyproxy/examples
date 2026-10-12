@@ -1,0 +1,40 @@
+name: Releasing CI
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  request:
+    runs-on: ubuntu-24.04
+    outputs:
+      run: ${{ steps.filter.outputs.run }}
+    steps:
+    - name: Check release machinery changes
+      id: filter
+      uses: envoyproxy/toolshed/actions/github/should-run@9bd3b300cf19f67cd2ef8b6e4aaa920f79894c24  # actions-v0.4.29
+      with:
+        config: |
+          paths:
+          - .github/workflows/_release.yml
+          - .github/workflows/release.yml
+          - .github/workflows/publish.yml
+          - .github/workflows/releasing.yml
+          - .github/workflows/prepare_dev.sh
+          - VERSION
+
+  release:
+    needs: request
+    if: fromJSON(needs.request.outputs.run || 'false')
+    uses: ./.github/workflows/_release.yml
+    with:
+      action: release
+      dry-run: true
+      committer-name: CI TESTING
+      committer-email: ci-testing@does.not.exist
