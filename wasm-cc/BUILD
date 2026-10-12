@@ -6,6 +6,12 @@ licenses(["notice"])  # Apache 2
 
 exports_files(["example.rst"])
 
+filegroup(
+    name = "compose_files",
+    srcs = glob(["docker-compose*.y*ml"]),
+    visibility = ["//visibility:public"],
+)
+
 selects.config_setting_group(
     name = "include_wasm_config",
     match_all = [

@@ -46,3 +46,5 @@ jobs:
     - run: |
         pip install -r ./.github/workflows/requirements.txt
         envoy.code.check . -c glint python_flake8 shellcheck yamllint -x single-page-app/_github-clusters.yml
+    - name: Lint compose host ports
+      run: bazel test //:lint_ports //:port_harness_test

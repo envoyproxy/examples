@@ -1,13 +1,19 @@
 #!/bin/bash -e
 
-# Example verify.sh scripts export host PORT_* values before sourcing this file.
-# CI defaults use 1LLBN: LL is the directory's first letter (a=01 ... z=26),
-# B is a unique block per example within that letter (0-9, alphabetical where
-# practical), and N is the port within the example (0-9, normally proxy=0).
-# Override PORT_<ROLE> with <EXAMPLE>_PORT_<ROLE>, using the full upper-case
-# directory name with hyphens/underscores mapped to underscores.
-# Keep all defaults globally unique so parallel examples on one Docker host
-# cannot clash; e.g. gzip uses 10700 for its proxy and 10701/10702 for stats.
+# Compose files publish host ports as "${PORT_<ROLE>:-<default>}:<container>".
+# Unless already set, every PORT_<ROLE> is set to 0 before `up` so Docker binds a free
+# ephemeral host port, and `resolve_ports` reads the real port back and
+# re-exports PORT_<ROLE> so that tests can use http://localhost:${PORT_<ROLE>}.
+# Roles that are interpolated outside `ports:` (and so are needed before `up`)
+# are instead pre-reserved by binding and releasing a free port.
+# Set PRERESERVE_ROLES="PORT_PROXY PORT_DEV_PROXY" for roles needed in generated
+# files before `up`; call prepare_ports before generating those files.
+# Multiple publications of one target are also pre-reserved: Compose merges
+# identical host-port-0 mappings during interpolation.
+# Set PORT_PROXY=10000 ./verify.sh to pin a port locally.
+#
+# This file is sourced on developer machines as well as in CI, so it must stay
+# bash 3.2 compatible (macOS): no mapfile, associative arrays, or [[ -v ]].
 
 DELAY="${DELAY:-0}"
 DOCKER_NO_PULL="${DOCKER_NO_PULL:-}"
@@ -26,6 +32,186 @@ fi
 
 run_log () {
     echo -e "\n> [${NAME}] ${*}"
+}
+
+PORT_ROLE_RE='\$\{PORT_[A-Z0-9_]+'
+RESOLVED_PORTS=()
+EXEMPT_PORTS=()
+
+_compose_config_json () {
+    "${DOCKER_COMPOSE[@]}" config --no-interpolate --format json
+}
+
+# Print the PORT_* roles referenced anywhere in the compose config
+# (arg 1: "ports" for host port publications only, "other" for the rest)
+_port_roles () {
+    local filter
+    case "$1" in
+        ports)
+            filter='[.services[]?.ports[]? | if type == "object" then .published else . end | strings] | tostring'
+            ;;
+        *)
+            filter='del(.services[]?.ports) | tostring'
+            ;;
+    esac
+    _compose_config_json | jq -r "$filter" | grep -oE "$PORT_ROLE_RE" | sed 's/^${//' | sort -u || true
+}
+
+_port_bindings () {
+    _compose_config_json | jq -c '
+        .services | to_entries[] | .key as $svc
+        | (.value.ports // [])[]
+        | if type == "object"
+          then [(.published // ""), (.target | tostring), (.protocol // "tcp")]
+          else (capture("^(?<p>.*):(?<t>[0-9]+)(/(?<proto>[a-z]+))?$")
+                | [.p, .t, (.proto // "tcp")])
+          end
+        | select(.[0] | test("\\$\\{PORT_[A-Z0-9_]+"))
+        | [(.[0] | capture("\\$\\{(?<role>PORT_[A-Z0-9_]+)").role), $svc, .[1], .[2]]'
+}
+
+reserve_port () {
+    command -v python3 > /dev/null || {
+        echo "ERROR: reserve_port requires python3" >&2
+        return 1
+    }
+    python3 -c '
+import socket
+s = socket.socket()
+s.bind(("", 0))
+print(s.getsockname()[1])
+s.close()
+'
+}
+
+# True if the variable named by $1 is set (possibly empty). bash 3.2 has no [[ -v ]].
+_is_set () {
+    [[ -n "${!1+x}" ]]
+}
+
+prepare_ports () {
+    [[ -n "${PORT_MANIFEST_PATH:-}" ]] && return 0
+    local paths path role roles reserved=() other port
+    read -ra reserved <<< "${PRERESERVE_ROLES:-}"
+    read -ra paths <<< "$(echo "$PATHS" | tr ',' ' ')"
+    RESOLVED_PORTS=()
+    EXEMPT_PORTS=()
+    ROLES_PRERESERVED=" "
+    ROLES_PINNED=" "
+    mkdir -p "${PORT_MANIFEST_DIR:-${TEST_UNDECLARED_OUTPUTS_DIR:-/tmp}}" || return 1
+    PORT_MANIFEST_PATH="$(cd "${PORT_MANIFEST_DIR:-${TEST_UNDECLARED_OUTPUTS_DIR:-/tmp}}" && pwd)/${NAME}.ports.json"
+    printf '[]\n' > "$PORT_MANIFEST_PATH"
+    roles=()
+    # Role names are [A-Z0-9_]+ so whitespace splitting is safe.
+    for path in "${paths[@]}"; do
+        pushd "$path" > /dev/null || return 1
+        read -ra other <<< "$(_port_roles other | tr '\n' ' ')"
+        reserved+=("${other[@]}")
+        read -ra other <<< "$(_port_bindings | jq -sr 'group_by(.[1:])[] | select(length > 1) | .[][0]' | tr '\n' ' ')"
+        reserved+=("${other[@]}")
+        read -ra other <<< "$(_port_roles ports | tr '\n' ' ')"
+        roles+=("${other[@]}")
+        popd > /dev/null || return 1
+    done
+    # A role may be in both roles (published) and reserved (pre-reserved);
+    # one already set non-zero is pinned and wins over ephemeral allocation
+    # and pre-reservation.
+    for role in $(printf '%s\n' "${roles[@]}" | sort -u); do
+        [[ -n "$role" ]] || continue
+        if _is_set "$role" && [[ "${!role}" != 0 ]]; then
+            ROLES_PINNED+="${role} "
+            EXEMPT_PORTS+=("${!role}")
+            RESOLVED_PORTS+=("${!role}")
+        elif ! _is_set "$role"; then
+            export "${role}=0"
+        fi
+    done
+    for role in $(printf '%s\n' "${reserved[@]}" | sort -u); do
+        [[ -n "$role" ]] || continue
+        if [[ "$ROLES_PINNED" != *" ${role} "* ]]; then
+            if ! _is_set "$role" || [[ "${!role}" == 0 ]]; then
+                port=$(reserve_port) || return 1
+                export "${role}=${port}"
+            fi
+        fi
+        ROLES_PRERESERVED+="${role} "
+        RESOLVED_PORTS+=("${!role}")
+        EXEMPT_PORTS+=("${!role}")
+        run_log "Pre-reserved ${role}=${!role}"
+    done
+}
+
+# Map each published ${PORT_<ROLE>} to its actual host port, and re-export it
+resolve_ports () {
+    local role service target proto host_port lines candidates candidate key
+    # Space-delimited set of "service:target/proto:port" already claimed
+    # (no associative arrays in bash 3.2).
+    local used=" "
+    lines=$(_port_bindings | jq -r '@tsv') || return 1
+    while IFS=$'\t' read -r role service target proto; do
+        [[ -n "$role" ]] || continue
+        if [[ "$ROLES_PRERESERVED" == *" ${role} "* || "$ROLES_PINNED" == *" ${role} "* ]]; then
+            used+="${service}:${target}/${proto}:${!role} "
+        fi
+    done <<< "$lines"
+    while IFS=$'\t' read -r role service target proto; do
+        [[ -n "$role" ]] || continue
+        if [[ "$ROLES_PRERESERVED" == *" ${role} "* || "$ROLES_PINNED" == *" ${role} "* ]]; then
+            continue
+        fi
+        candidates=$("${DOCKER_COMPOSE[@]}" port --protocol "$proto" "$service" "$target") || return 1
+        host_port=""
+        # Consume distinct publications in order, ignoring duplicate IPv4/IPv6 bindings.
+        while read -r candidate; do
+            candidate="${candidate##*:}"
+            key="${service}:${target}/${proto}:${candidate}"
+            [[ "$used" == *" ${key} "* ]] && continue
+            host_port="$candidate"
+            break
+        done <<< "$candidates"
+        if [[ ! "$host_port" =~ ^[0-9]+$ ]]; then
+            echo "ERROR: could not resolve host port for ${role} (${service}:${target}/${proto})" >&2
+            return 1
+        fi
+        export "${role}=${host_port}"
+        used+="${service}:${target}/${proto}:${host_port} "
+        RESOLVED_PORTS+=("$host_port")
+        run_log "Resolved ${role}=${host_port} (${service}:${target}/${proto})"
+    done <<< "$lines"
+}
+
+# Record all publications, then reject unallocated or non-ephemeral ports.
+check_published_ports () {
+    local published manifest low high
+    published=$("${DOCKER_COMPOSE[@]}" ps --format json) || return 1
+    manifest=$(jq -s --arg example "$NAME" --arg ports " ${RESOLVED_PORTS[*]} " '
+        [.. | objects | select(has("Publishers")) | .Service as $service
+         | .Publishers[]? | select(.PublishedPort != null and .PublishedPort != 0)
+         | .PublishedPort as $port
+         | {example: $example, service: $service, port: .PublishedPort,
+            target: .TargetPort, proto: .Protocol,
+            allocated: ($ports | contains(" \($port) "))}]
+    ' <<< "$published") || return 1
+    manifest=$(jq -s --arg ports " ${RESOLVED_PORTS[*]} " '
+        add | unique_by([.example, .service, .port, .target, .proto])
+        | map(.port as $port | .allocated = ($ports | contains(" \($port) ")))
+    ' \
+        "$PORT_MANIFEST_PATH" <(printf '%s\n' "$manifest")) || return 1
+    printf '%s\n' "$manifest" > "$PORT_MANIFEST_PATH"
+    if ! jq -e 'all(.[]; .allocated)' "$PORT_MANIFEST_PATH" > /dev/null; then
+        echo "ERROR: ${NAME} publishes unallocated ports; see ${PORT_MANIFEST_PATH}" >&2
+        return 1
+    fi
+    if [[ -r /proc/sys/net/ipv4/ip_local_port_range ]]; then
+        read -r low high < /proc/sys/net/ipv4/ip_local_port_range
+        if ! jq -e --argjson low "$low" --argjson high "$high" --arg exempt " ${EXEMPT_PORTS[*]} " '
+            all(.[]; .port as $port | (.port >= $low and .port <= $high)
+                or ($exempt | contains(" \($port) ")))
+        ' "$PORT_MANIFEST_PATH" > /dev/null; then
+            echo "ERROR: ${NAME} publishes ports outside ${low}-${high}; see ${PORT_MANIFEST_PATH}" >&2
+            return 1
+        fi
+    fi
 }
 
 bring_up_example_stack () {
@@ -53,18 +239,21 @@ bring_up_example_stack () {
         echo "----------------------------------------------"
     fi
     echo
+    resolve_ports || return 1
 }
 
 bring_up_example () {
     local path paths
     read -ra paths <<< "$(echo "$PATHS" | tr ',' ' ')"
 
+    prepare_ports || return 1
     for path in "${paths[@]}"; do
         pushd "$path" > /dev/null || return 1
         bring_up_example_stack "$path" || {
             echo "ERROR: starting ${NAME} ${path}" >&2
             return 1
         }
+        check_published_ports || return 1
         popd > /dev/null || return 1
     done
     if [[ "$DELAY" -ne "0" ]]; then

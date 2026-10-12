@@ -1,8 +1,6 @@
 #!/bin/bash -e
 
 export NAME=jaeger-tracing
-export PORT_PROXY="${JAEGER_TRACING_PORT_PROXY:-11010}"
-export PORT_UI="${JAEGER_TRACING_PORT_UI:-11011}"
 
 # shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"

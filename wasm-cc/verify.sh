@@ -1,8 +1,6 @@
 #!/bin/bash -e
 
 export NAME=wasm-cc
-export PORT_PROXY="${WASM_CC_PORT_PROXY:-12310}"
-export PORT_ADMIN="${WASM_CC_PORT_ADMIN:-12311}"
 export UID
 
 

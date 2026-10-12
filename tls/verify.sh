@@ -1,10 +1,6 @@
 #!/bin/bash -e
 
 export NAME=tls
-export PORT_PROXY0="${TLS_PORT_PROXY0:-12000}"
-export PORT_PROXY1="${TLS_PORT_PROXY1:-12001}"
-export PORT_PROXY2="${TLS_PORT_PROXY2:-12002}"
-export PORT_PROXY3="${TLS_PORT_PROXY3:-12003}"
 
 # shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"

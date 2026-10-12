@@ -1,8 +1,6 @@
 #!/bin/bash -e
 
 export NAME=kafka
-export PORT_PROXY="${KAFKA_PORT_PROXY:-11100}"
-export PORT_ADMIN="${KAFKA_PORT_ADMIN:-11101}"
 
 # Explicitly specified the service want to start, since the `kafka-client` is expected to
 # not start.

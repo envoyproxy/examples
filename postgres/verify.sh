@@ -1,7 +1,6 @@
 #!/bin/bash -e
 
 export NAME=postgres
-export PORT_ADMIN="${POSTGRES_PORT_ADMIN:-11600}"
 
 # shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
