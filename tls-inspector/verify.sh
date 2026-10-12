@@ -1,8 +1,6 @@
 #!/bin/bash -e
 
 export NAME=tls-inspector
-export PORT_PROXY="${TLS_INSPECTOR_PORT_PROXY:-12010}"
-export PORT_ADMIN="${TLS_INSPECTOR_PORT_ADMIN:-12011}"
 
 # shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"

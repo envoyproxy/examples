@@ -1,7 +1,6 @@
 #!/bin/bash -e
 
 export NAME=mysql
-export PORT_ADMIN="${MYSQL_PORT_ADMIN:-11300}"
 
 # shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"

@@ -2,8 +2,6 @@
 
 export NAME=tls-sni
 export MANUAL=true
-export PORT_PROXY="${TLS_SNI_PORT_PROXY:-12020}"
-export PORT_PROXY_CLIENT="${TLS_SNI_PORT_PROXY_CLIENT:-12021}"
 
 # shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"

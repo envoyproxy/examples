@@ -4,7 +4,6 @@ export NAME=golang
 export UID
 export GID
 export MANUAL=true
-export PORT_PROXY="${GOLANG_HTTP_PORT_PROXY:-10710}"
 
 
 # shellcheck source=verify-common.sh

@@ -1,13 +1,11 @@
 #!/bin/bash -e
 
-# Example verify.sh scripts export host PORT_* values before sourcing this file.
-# CI defaults use 1LLBN: LL is the directory's first letter (a=01 ... z=26),
-# B is a unique block per example within that letter (0-9, alphabetical where
-# practical), and N is the port within the example (0-9, normally proxy=0).
-# Override PORT_<ROLE> with <EXAMPLE>_PORT_<ROLE>, using the full upper-case
-# directory name with hyphens/underscores mapped to underscores.
-# Keep all defaults globally unique so parallel examples on one Docker host
-# cannot clash; e.g. gzip uses 10700 for its proxy and 10701/10702 for stats.
+# Compose files publish host ports as "${PORT_<ROLE>:-<default>}:<container>".
+# In CI every PORT_<ROLE> is set to 0 before `up` so Docker binds a free
+# ephemeral host port, and `resolve_ports` reads the real port back and
+# re-exports PORT_<ROLE> so that tests can use http://localhost:${PORT_<ROLE>}.
+# Roles that are interpolated outside `ports:` (and so are needed before `up`)
+# are instead pre-reserved by binding and releasing a free port.
 
 DELAY="${DELAY:-0}"
 DOCKER_NO_PULL="${DOCKER_NO_PULL:-}"
@@ -26,6 +24,106 @@ fi
 
 run_log () {
     echo -e "\n> [${NAME}] ${*}"
+}
+
+PORT_ROLE_RE='PORT_[A-Z0-9_]+'
+RESOLVED_PORTS=()
+
+_compose_config_json () {
+    "${DOCKER_COMPOSE[@]}" config --no-interpolate --format json
+}
+
+# Print the PORT_* roles referenced anywhere in the compose config
+# (arg 1: "ports" for host port publications only, "other" for the rest)
+_port_roles () {
+    local filter
+    case "$1" in
+        ports)
+            filter='[.services[]?.ports[]? | if type == "object" then .published else . end | strings] | tostring'
+            ;;
+        *)
+            filter='del(.services[]?.ports) | tostring'
+            ;;
+    esac
+    _compose_config_json | jq -r "$filter" | grep -oE "$PORT_ROLE_RE" | sort -u || true
+}
+
+reserve_port () {
+    python3 -c '
+import socket
+s = socket.socket()
+s.bind(("", 0))
+print(s.getsockname()[1])
+s.close()
+'
+}
+
+prepare_ports () {
+    local paths path role roles reserved=() other
+    read -ra paths <<< "$(echo "$PATHS" | tr ',' ' ')"
+    RESOLVED_PORTS=()
+    ROLES_PRERESERVED=" "
+    roles=()
+    for path in "${paths[@]}"; do
+        pushd "$path" > /dev/null || return 1
+        mapfile -t other < <(_port_roles other)
+        reserved+=("${other[@]}")
+        mapfile -t other < <(_port_roles ports)
+        roles+=("${other[@]}")
+        popd > /dev/null || return 1
+    done
+    for role in $(printf '%s\n' "${roles[@]}" | sort -u); do
+        export "${role}=0"
+    done
+    for role in $(printf '%s\n' "${reserved[@]}" | sort -u); do
+        [[ -n "$role" ]] || continue
+        export "${role}=$(reserve_port)"
+        ROLES_PRERESERVED+="${role} "
+        RESOLVED_PORTS+=("${!role}")
+        run_log "Pre-reserved ${role}=${!role}"
+    done
+}
+
+# Map each published ${PORT_<ROLE>} to its actual host port, and re-export it
+resolve_ports () {
+    local role service target proto host_port lines
+    lines=$(_compose_config_json | jq -r '
+        .services | to_entries[] | .key as $svc
+        | (.value.ports // [])[]
+        | if type == "object"
+          then [(.published // ""), (.target | tostring), (.protocol // "tcp")]
+          else (capture("^(?<p>.*):(?<t>[0-9]+)(/(?<proto>[a-z]+))?$")
+                | [.p, .t, (.proto // "tcp")])
+          end
+        | select(.[0] | test("^\\$\\{PORT_[A-Z0-9_]+(:-[^}]*)?\\}$"))
+        | [(.[0] | sub("^\\$\\{"; "") | sub("[:}].*$"; "")), $svc, .[1], .[2]]
+        | @tsv')
+    while IFS=$'\t' read -r role service target proto; do
+        [[ -n "$role" ]] || continue
+        if [[ "$ROLES_PRERESERVED" == *" ${role} "* ]]; then
+            continue
+        fi
+        host_port=$("${DOCKER_COMPOSE[@]}" port --protocol "$proto" "$service" "$target" | head -n1 | sed 's/.*://')
+        if [[ ! "$host_port" =~ ^[0-9]+$ ]]; then
+            echo "ERROR: could not resolve host port for ${role} (${service}:${target}/${proto})" >&2
+            return 1
+        fi
+        export "${role}=${host_port}"
+        RESOLVED_PORTS+=("$host_port")
+        run_log "Resolved ${role}=${host_port} (${service}:${target}/${proto})"
+    done <<< "$lines"
+}
+
+# Fail if anything is published on a host port that was not allocated above
+check_published_ports () {
+    local port published
+    published=$("${DOCKER_COMPOSE[@]}" ps --format json | jq -r '.Publishers[]? | .PublishedPort | select(. != 0)' | sort -u)
+    for port in $published; do
+        if [[ " ${RESOLVED_PORTS[*]} " != *" ${port} "* ]]; then
+            echo "ERROR: ${NAME} publishes host port ${port} that was not allocated via PORT_*" >&2
+            return 1
+        fi
+    done
 }
 
 bring_up_example_stack () {
@@ -53,18 +151,21 @@ bring_up_example_stack () {
         echo "----------------------------------------------"
     fi
     echo
+    resolve_ports || return 1
 }
 
 bring_up_example () {
     local path paths
     read -ra paths <<< "$(echo "$PATHS" | tr ',' ' ')"
 
+    prepare_ports || return 1
     for path in "${paths[@]}"; do
         pushd "$path" > /dev/null || return 1
         bring_up_example_stack "$path" || {
             echo "ERROR: starting ${NAME} ${path}" >&2
             return 1
         }
+        check_published_ports || return 1
         popd > /dev/null || return 1
     done
     if [[ "$DELAY" -ne "0" ]]; then

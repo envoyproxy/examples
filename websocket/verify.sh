@@ -5,10 +5,6 @@
 
 export NAME=websocket
 export MANUAL=true
-export PORT_PROXY0="${WEBSOCKET_PORT_PROXY0:-12300}"
-export PORT_PROXY1="${WEBSOCKET_PORT_PROXY1:-12301}"
-export PORT_PROXY2="${WEBSOCKET_PORT_PROXY2:-12302}"
-export PORT_PROXY3="${WEBSOCKET_PORT_PROXY3:-12303}"
 
 # shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"

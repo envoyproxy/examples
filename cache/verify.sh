@@ -2,7 +2,6 @@
 
 export NAME=cache
 
-export PORT_PROXY="${CACHE_PORT_PROXY:-10300}"
 export CACHE_RESPONSES_YAML="${PWD}/ci-responses.yaml"
 
 

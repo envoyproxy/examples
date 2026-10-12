@@ -1,9 +1,6 @@
 #!/bin/bash -e
 
 export NAME=brotli
-export PORT_PROXY="${BROTLI_PORT_PROXY:-10200}"
-export PORT_STATS0="${BROTLI_PORT_STATS0:-10201}"
-export PORT_STATS1="${BROTLI_PORT_STATS1:-10202}"
 
 # shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"

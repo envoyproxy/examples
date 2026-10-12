@@ -1,5 +1,6 @@
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("@rules_pkg//pkg:pkg.bzl", "pkg_tar")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 load("//:examples.bzl", "envoy_examples")
 
 licenses(["notice"])  # Apache 2
@@ -180,6 +181,20 @@ pkg_tar(
         "@envoy-example-wasm-cc//:includes",
     ],
     visibility = ["//visibility:public"],
+)
+
+sh_test(
+    name = "lint_ports",
+    srcs = ["lint_ports.sh"],
+    data = glob(
+        [
+            "*/docker-compose*.yaml",
+            "*/docker-compose*.yml",
+            "*/*/docker-compose*.yaml",
+            "*/*/docker-compose*.yml",
+        ],
+        exclude = ["**/node_modules/**"],
+    ),
 )
 
 envoy_examples(
