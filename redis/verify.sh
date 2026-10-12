@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 export NAME=redis
-export PORT_PROXY="${REDIS_PORT:-11800}"
+export PORT_PROXY="${REDIS_PORT_PROXY:-11800}"
 export PORT_ADMIN="${REDIS_PORT_ADMIN:-11801}"
 
 # shellcheck source=verify-common.sh

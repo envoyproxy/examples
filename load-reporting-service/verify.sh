@@ -2,9 +2,9 @@
 
 export NAME=load-reporting
 export UPARGS="--scale http_service=2"
-export PORT_PROXY0="${LRS_PORT_PROXY0:-11200}"
-export PORT_PROXY1="${LRS_PORT_PROXY1:-11201}"
-export PORT_ADMIN="${LRS_PORT_ADMIN:-11202}"
+export PORT_PROXY0="${LOAD_REPORTING_SERVICE_PORT_PROXY0:-11200}"
+export PORT_PROXY1="${LOAD_REPORTING_SERVICE_PORT_PROXY1:-11201}"
+export PORT_ADMIN="${LOAD_REPORTING_SERVICE_PORT_ADMIN:-11202}"
 
 # shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"

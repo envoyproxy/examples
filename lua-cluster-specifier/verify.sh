@@ -1,8 +1,8 @@
 #!/bin/bash -e
 
 export NAME=lua-cluster-specifier
-export PORT_PROXY="${LUA_CLUSTER_PORT_PROXY:-12620}"
-export PORT_WEB="${LUA_CLUSTER_PORT_WEB:-12621}"
+export PORT_PROXY="${LUA_CLUSTER_SPECIFIER_PORT_PROXY:-11240}"
+export PORT_WEB="${LUA_CLUSTER_SPECIFIER_PORT_WEB:-11241}"
 
 # shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
