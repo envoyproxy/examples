@@ -2,8 +2,8 @@
 
 export NAME=dynamic-config-cp
 export UPARGS=" proxy"
-export PORT_PROXY="${DYNAMIC_CP_PORT_PROXY:-10410}"
-export PORT_ADMIN="${DYNAMIC_CP_PORT_ADMIN:-10411}"
+export PORT_PROXY="${DYNAMIC_CONFIG_CP_PORT_PROXY:-10410}"
+export PORT_ADMIN="${DYNAMIC_CONFIG_CP_PORT_ADMIN:-10411}"
 
 # shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"

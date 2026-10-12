@@ -7,8 +7,8 @@ services:
     depends_on:
     - web_service
     ports:
-    - "8000:8000"
-    - "8001:8001"
+    - "${PORT_PROXY:-8000}:8000"
+    - "${PORT_ADMIN:-8001}:8001"
 
   web_service:
     build:

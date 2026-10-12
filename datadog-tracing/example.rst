@@ -48,9 +48,9 @@ Change to the ``datadog-tracing`` directory, and start the containers, with the 
 
                 Name                          Command             State            Ports
     -----------------------------------------------------------------------------------------------------------
-    datadog-tracing-dd-agent-1   "/bin/entrypoint.sh"             running      8125/udp, 0.0.0.0:8126->8126/tcp
+    datadog-tracing-dd-agent-1   "/bin/entrypoint.sh"             running      8125/udp, 8126/tcp
     datadog-tracing-envoy-1      "/docker-entrypoint.…"           running      10000/tcp, 0.0.0.0:10000->1337/tcp
-    datadog-tracing-http-1       "node --require dd-t…"           running      0.0.0.0:8080->8080/tcp
+    datadog-tracing-http-1       "node --require dd-t…"           running      8080/tcp
 
 Step 2: Make a request to ``http``
 **********************************

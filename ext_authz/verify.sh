@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 export NAME=ext_authz
-export PORT_PROXY="${EXT_AUTH_PORT_PROXY:-10500}"
+export PORT_PROXY="${EXT_AUTHZ_PORT_PROXY:-10500}"
 
 # shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"

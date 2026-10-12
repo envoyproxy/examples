@@ -1,5 +1,14 @@
 #!/bin/bash -e
 
+# Example verify.sh scripts export host PORT_* values before sourcing this file.
+# CI defaults use 1LLBN: LL is the directory's first letter (a=01 ... z=26),
+# B is a unique block per example within that letter (0-9, alphabetical where
+# practical), and N is the port within the example (0-9, normally proxy=0).
+# Override PORT_<ROLE> with <EXAMPLE>_PORT_<ROLE>, using the full upper-case
+# directory name with hyphens/underscores mapped to underscores.
+# Keep all defaults globally unique so parallel examples on one Docker host
+# cannot clash; e.g. gzip uses 10700 for its proxy and 10701/10702 for stats.
+
 DELAY="${DELAY:-0}"
 DOCKER_NO_PULL="${DOCKER_NO_PULL:-}"
 MANUAL="${MANUAL:-}"

@@ -1,6 +1,7 @@
 #!/bin/bash -e
 
 export NAME=filter-cc
+export PORT_PROXY="${FILTER_CC_PORT_PROXY:-10620}"
 export MANUAL=true
 export UID
 
@@ -20,12 +21,12 @@ run_log "Test connection"
 wait_for 10 bash -c "\
          responds_with \
          'Request served by' \
-         http://localhost:8000"
+         http://localhost:${PORT_PROXY}"
 
 run_log "Test the sample filter has added its header to the proxied request"
 responds_with \
     "Via: sample-filter" \
-    http://localhost:8000
+    "http://localhost:${PORT_PROXY}"
 
 run_log "Run the integration test"
 "${DOCKER_COMPOSE[@]}" -f docker-compose-build.yaml run --quiet-pull --remove-orphans filter_test
