@@ -99,3 +99,23 @@ jobs:
           OUTPUT=$(${RELEASE_ACTION_PATH}/release.sh)
         template-release-message: |
           ### Release created [v\(.version.version)](https://github.com/\(.repository)/releases/tag/v\(.version.version)) \($dry_run)
+    - name: Recover an incomplete development bump on retry
+      if: fromJSON(steps.status.outputs.continue) && ! fromJSON(steps.status.outputs.version).is_dev
+      env:
+        RELEASE_VERSION: ${{ fromJSON(steps.status.outputs.version).version }}
+        NEXT_VERSION: ${{ fromJSON(steps.status.outputs.version).next }}
+      run: |
+        git fetch origin main
+        git checkout -B main origin/main
+        if [[ "$(cat VERSION)" != "$RELEASE_VERSION" ]]; then
+            exit 0
+        fi
+        TMP_OUTPUT=$(mktemp)
+        export TMP_OUTPUT
+        trap 'rm -f "$TMP_OUTPUT"' EXIT
+        .github/workflows/prepare_dev.sh
+        cat "$TMP_OUTPUT"
+        printf '%s\n' "$NEXT_VERSION" > VERSION
+        git add VERSION MODULE.bazel filter-cc/MODULE.bazel wasm-cc/MODULE.bazel
+        git commit --signoff -m "repo: Dev Examples v${NEXT_VERSION}"
+        git push origin HEAD:refs/heads/main
