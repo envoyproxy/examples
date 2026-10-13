@@ -54,10 +54,16 @@ jobs:
         version-file: VERSION
     - name: Prepare and commit release
       id: commit
-      if: fromJSON(steps.version.outputs.version).is_dev
+      if: steps.version.outputs.version != ''
       env:
-        RELEASE_VERSION: ${{ inputs.release-version || fromJSON(steps.version.outputs.version).next }}
+        VERSION_JSON: ${{ steps.version.outputs.version }}
+        RELEASE_VERSION_INPUT: ${{ inputs.release-version }}
       run: |
+        if ! jq -e .is_dev <<< "$VERSION_JSON" > /dev/null; then
+            echo "VERSION is not a dev version, nothing to release"
+            exit 0
+        fi
+        RELEASE_VERSION="${RELEASE_VERSION_INPUT:-$(jq -r .next <<< "$VERSION_JSON")}"
         if [[ ! "$RELEASE_VERSION" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
             echo "Release version must be a plain semantic version" >&2
             exit 1
