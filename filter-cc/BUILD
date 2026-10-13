@@ -7,6 +7,12 @@ licenses(["notice"])  # Apache 2
 exports_files(["example.rst"])
 
 filegroup(
+    name = "compose_files",
+    srcs = glob(["docker-compose*.y*ml"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
     name = "configs",
     srcs = glob(
         [

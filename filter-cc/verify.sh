@@ -1,7 +1,6 @@
 #!/bin/bash -e
 
 export NAME=filter-cc
-export PORT_PROXY="${FILTER_CC_PORT_PROXY:-10620}"
 export MANUAL=true
 export UID
 

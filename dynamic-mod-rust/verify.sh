@@ -1,7 +1,6 @@
 #!/bin/bash -e
 
 export NAME=dynamic-mod-rust
-export PORT_PROXY="${DYNAMIC_MOD_RUST_PORT_PROXY:-10440}"
 
 # shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"

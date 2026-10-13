@@ -6,10 +6,11 @@ PORT_PROXY1=${PORT_PROXY1:-81}
 counter=1
 while [ $counter -le 50 ]
 do
-  # generate random Port number to send requests
-  ports=("${PORT_PROXY0}" "${PORT_PROXY1}")
-  port=${ports[$RANDOM % ${#ports[@]} ]}
-
+  if ((counter % 2)); then
+    port="$PORT_PROXY0"
+  else
+    port="$PORT_PROXY1"
+  fi
   curl -v "localhost:${port}/service/load"
   ((counter++))
 done

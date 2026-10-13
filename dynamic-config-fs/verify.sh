@@ -2,8 +2,6 @@
 
 export NAME=dynamic-config-fs
 
-export PORT_PROXY="${DYNAMIC_CONFIG_FS_PORT_PROXY:-10420}"
-export PORT_ADMIN="${DYNAMIC_CONFIG_FS_PORT_ADMIN:-10421}"
 
 chmod go+r configs/*
 chmod go+rx configs

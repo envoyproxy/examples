@@ -20,7 +20,7 @@ from Cluster A to Cluster C.
 
 In this example, all incoming requests are routed via Envoy to a simple Golang web server named ``http_server``.
 
-We scale up two containers and randomly send requests to each.
+We scale up two backend containers and alternate requests between two published Envoy ports.
 
 Envoy is configured to initiate the connection with the LRS Server.
 
@@ -63,7 +63,7 @@ Terminal 2 ::
   $ bash send_requests.sh
 
 The script above (:download:`send_requests.sh <_include/load-reporting-service/send_requests.sh>`) sends requests
-randomly to each Envoy, which in turn forwards the requests to the backend service.
+alternately to each published Envoy port, which in turn forwards the requests to the backend service.
 
 Step 3: See Envoy Stats
 ***********************

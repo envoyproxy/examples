@@ -5,10 +5,8 @@
 #  with eg snap
 
 export NAME=single-page-app
-export PORT_DEV_PROXY="${SINGLE_PAGE_APP_PORT_DEV_PROXY:-11901}"
-export PORT_PROXY="${SINGLE_PAGE_APP_PORT_PROXY:-11900}"
-export PORT_MYHUB="${SINGLE_PAGE_APP_PORT_MYHUB:-11902}"
 export MANUAL=true
+export PRERESERVE_ROLES="PORT_PROXY PORT_DEV_PROXY"
 
 
 BACKUP_FILES=(
@@ -30,6 +28,7 @@ export -f finally
 
 # shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
+prepare_ports
 
 # As much of the logic is implemented in js, not everything can get tested, at least without using
 # eg selenium or similar.

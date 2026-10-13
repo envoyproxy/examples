@@ -1,8 +1,6 @@
 #!/bin/bash -e
 
 export NAME=ai-transcoder
-export PORT_PROXY="${AI_TRANSCODER_PORT_PROXY:-10100}"
-export PORT_ADMIN="${AI_TRANSCODER_PORT_ADMIN:-10101}"
 
 # shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"

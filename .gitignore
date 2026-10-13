@@ -26,6 +26,7 @@
 !\.zuul.yaml
 
 /bazel-*
+/port-manifests/
 /mobile/bazel-*
 BROWSE
 /build

@@ -3,6 +3,7 @@ module(
     version = "0.2.8",
 )
 
+bazel_dep(name = "aspect_bazel_lib", version = "2.22.5")
 bazel_dep(name = "bazel_skylib", version = "1.9.2")
 bazel_dep(name = "envoy", version = "1.40.0-dev.20261009.189f198.envoy")
 bazel_dep(name = "envoy-example-filter-cc", version = "0.2.8")
@@ -12,6 +13,12 @@ bazel_dep(name = "rules_python", version = "2.3.3")
 bazel_dep(name = "rules_shell", version = "0.8.0")
 
 bazel_dep(name = "toolchains_llvm", version = "1.9.1.envoy", dev_dependency = True)
+
+bazel_lib_toolchains = use_extension("@aspect_bazel_lib//lib:extensions.bzl", "toolchains")
+bazel_lib_toolchains.yq()
+bazel_lib_toolchains.jq()
+use_repo(bazel_lib_toolchains, "jq_toolchains", "yq_toolchains")
+register_toolchains("@yq_toolchains//:all", "@jq_toolchains//:all")
 
 envoy_toolchains_ext = use_extension("@envoy//bazel:extensions.bzl", "envoy_toolchains_extension")
 use_repo(envoy_toolchains_ext, "clang_platform")

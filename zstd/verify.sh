@@ -1,9 +1,6 @@
 #!/bin/bash -e
 
 export NAME=zstd
-export PORT_PROXY="${ZSTD_PORT_PROXY:-12610}"
-export PORT_ADMIN0="${ZSTD_PORT_ADMIN0:-12611}"
-export PORT_ADMIN1="${ZSTD_PORT_ADMIN1:-12612}"
 
 # shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
