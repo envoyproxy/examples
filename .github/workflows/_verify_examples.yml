@@ -60,6 +60,22 @@ jobs:
       with:
         path: /home/runner/.cache
         key: ${{ runner.os }}-bazel-${{ hashFiles('examples/**/BUILD', 'examples/**/*bzl', 'examples/WORKSPACE') }}
+    - name: Inject bzlmod sibling overrides into MODULE.bazel
+      run: |
+        # The sibling example modules are checked out alongside this module in
+        # CI, so resolve them from the local tree rather than the registry.
+        cat >> MODULE.bazel <<'EOF'
+
+        local_path_override(
+            module_name = "envoy-example-filter-cc",
+            path = "filter-cc",
+        )
+        local_path_override(
+            module_name = "envoy-example-wasm-cc",
+            path = "wasm-cc",
+        )
+        EOF
+      working-directory: examples
 
     - name: RBE auth check
       id: rbe
