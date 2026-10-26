@@ -5,14 +5,14 @@ go 1.25.0
 
 // NOTICE: these lines could be generated automatically by "go mod tidy"
 require (
-	github.com/cncf/xds/go v0.0.0-20251210132809-ee656c7534f5
-	github.com/envoyproxy/envoy v1.39.3
+	github.com/cncf/xds/go v0.0.0-20260202195803-dba9d589def2
+	github.com/envoyproxy/envoy v1.40.1
 	google.golang.org/protobuf v1.36.12
 )
 
 require (
-	cel.dev/expr v0.24.0 // indirect
-	github.com/envoyproxy/protoc-gen-validate v1.3.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20251202230838-ff82c1b0f217 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20251202230838-ff82c1b0f217 // indirect
+	cel.dev/expr v0.25.1 // indirect
+	github.com/envoyproxy/protoc-gen-validate v1.3.3 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20260526163538-3dc84a4a5aaa // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260526163538-3dc84a4a5aaa // indirect
 )
