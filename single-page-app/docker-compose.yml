@@ -3,6 +3,8 @@ services:
     build:
       context: ../shared/node
       target: yarn-routed
+      additional_contexts:
+        app-deps-src: ./ui
     volumes:
     - ${UI_PATH:-./ui}:/workspace
     - ${XDS_PATH:-./xds}:/var/lib/envoy
