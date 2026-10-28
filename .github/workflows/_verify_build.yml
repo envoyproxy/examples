@@ -35,17 +35,23 @@ jobs:
       working-directory: examples/${{ inputs.example }}
     - name: Inject bzlmod envoy pin into MODULE.bazel
       run: |
-        cat >> MODULE.bazel <<'EOF'
+        if ! ENVOY_SHA=$(git ls-remote https://github.com/envoyproxy/envoy refs/heads/main | cut -f1) || [ -z "$ENVOY_SHA" ]; then
+          echo "::error::Failed to resolve envoyproxy/envoy main HEAD"
+          exit 1
+        fi
+        echo "Resolved envoy main HEAD: ${ENVOY_SHA}"
+        echo "ENVOY_SHA=${ENVOY_SHA}" >> "$GITHUB_ENV"
+        cat >> MODULE.bazel <<EOF
 
         git_override(
             module_name = "envoy",
             remote = "https://github.com/envoyproxy/envoy",
-            commit = "527cdd936a40d1580f9fb6ef2d0880ad75dd922d",
+            commit = "${ENVOY_SHA}",
         )
         git_override(
             module_name = "envoy_api",
             remote = "https://github.com/envoyproxy/envoy",
-            commit = "527cdd936a40d1580f9fb6ef2d0880ad75dd922d",
+            commit = "${ENVOY_SHA}",
             strip_prefix = "api",
         )
         EOF
