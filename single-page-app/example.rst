@@ -311,11 +311,13 @@ You can view the logs for the development server with:
 You can also use ``docker attach`` should you want to interact with the process.
 
 .. tip::
-   You can manage the Typescript package using `Yarn <yarn_>`__:
+   The UI's Javascript dependencies are installed into the ``ui`` image when it is built,
+   using `Yarn <yarn_>`__ and the ``yarn.lock`` file, so nothing is downloaded when the
+   container starts. After changing ``ui/package.json`` or ``ui/yarn.lock``, rebuild the image:
 
    .. code-block:: console
 
-      $ docker compose run --rm ui yarn
+      $ docker compose build ui
 
 .. _install_sandboxes_single_page_app_step_logout:
 

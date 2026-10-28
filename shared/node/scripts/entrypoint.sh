@@ -15,6 +15,9 @@ usermod -l "$USER_NAME" -md "$USER_HOME" -u "$USER_UID" "$DEFAULT_USER_NAME" || 
 chown "$USER_NAME" "$USER_HOME"
 export HOME="${USER_HOME}"
 export PATH=$PATH:"${HOME}/.yarn/bin/"
+if [[ ! -e node_modules && -d /opt/app/node_modules ]]; then
+    ln -s /opt/app/node_modules node_modules
+fi
 mkdir -p ./dist
 chown -R "$USER_NAME" ./dist
 exec /usr/sbin/gosu "${USER_NAME}" "$@"
