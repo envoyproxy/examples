@@ -1,4 +1,61 @@
+load("@bazel_skylib//lib:shell.bzl", "shell")
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+
+def _example_name(f):
+    workspace = f.owner.workspace_name
+    if "envoy-example-" in workspace:
+        return workspace.split("envoy-example-", 1)[1].split("~", 1)[0].split("+", 1)[0]
+    return f.owner.name.split("/")[0]
+
+def _example_files_impl(ctx):
+    excluded = ctx.attr._exclude[BuildSettingInfo].value
+    return [DefaultInfo(files = depset([
+        f
+        for f in ctx.files.srcs
+        if _example_name(f) not in excluded
+    ]))]
+
+example_files = rule(
+    implementation = _example_files_impl,
+    attrs = {
+        "srcs": attr.label_list(allow_files = True),
+        "_exclude": attr.label(default = Label("//:exclude")),
+    },
+)
+
+def _example_runner_impl(ctx):
+    excluded = ctx.attr._exclude[BuildSettingInfo].value
+    inputs = [
+        f
+        for target, example in ctx.attr.outputs.items()
+        if example not in excluded
+        for f in target[DefaultInfo].files.to_list()
+        if f.basename.endswith(ctx.attr.suffix)
+    ]
+    out = ctx.actions.declare_file(ctx.label.name + ".sh")
+    ctx.actions.write(
+        out,
+        "#!/bin/bash -e\nexec {} {} \"$@\"\n".format(
+            shell.quote(ctx.executable.runner.short_path),
+            " ".join([shell.quote(f.short_path) for f in inputs]),
+        ),
+        is_executable = True,
+    )
+    runfiles = ctx.runfiles(files = inputs + [ctx.executable.runner])
+    runfiles = runfiles.merge(ctx.attr.runner[DefaultInfo].default_runfiles)
+    return [DefaultInfo(executable = out, runfiles = runfiles)]
+
+example_runner = rule(
+    implementation = _example_runner_impl,
+    executable = True,
+    attrs = {
+        "outputs": attr.label_keyed_string_dict(allow_files = True),
+        "runner": attr.label(executable = True, cfg = "target"),
+        "suffix": attr.string(mandatory = True),
+        "_exclude": attr.label(default = Label("//:exclude")),
+    },
+)
 
 def envoy_example(name, shared = ":shared_files", common_fun = ":verify-common.sh"):
     native.filegroup(
@@ -51,12 +108,6 @@ def envoy_example(name, shared = ":shared_files", common_fun = ":verify-common.s
     )
 
 def envoy_examples(examples):
-    RESULTS = []
-    RESULT_OUTS = []
-    RESULT_FILES = []
-    MANIFEST_OUTS = []
-    MANIFEST_FILES = []
-
     native.filegroup(
         name = "shared_files",
         srcs = native.glob(
@@ -97,22 +148,29 @@ def envoy_examples(examples):
             ],
             tags = ["no-remote-exec", "no-sandbox"],
         )
-        RESULTS.append(":%s_result" % example)
-        RESULT_OUTS.append(":%s_result.txt" % example)
-        RESULT_FILES.append("$(location :%s_result.txt)" % example)
-        MANIFEST_OUTS.append(":%s.ports.json" % example)
-        MANIFEST_FILES.append("$(location :%s.ports.json)" % example)
+
+    results = {":%s_result" % example: example for example in examples}
 
     sh_binary(
-        name = "verify_examples",
+        name = "verify_examples_sh",
         srcs = [":verify_examples.sh"],
-        args = RESULT_FILES,
-        data = RESULTS + RESULT_OUTS,
+    )
+
+    example_runner(
+        name = "verify_examples",
+        runner = ":verify_examples_sh",
+        outputs = results,
+        suffix = "_result.txt",
     )
 
     sh_binary(
-        name = "check_example_ports",
+        name = "check_example_ports_sh",
         srcs = ["tools/check_port_manifests.sh"],
-        args = MANIFEST_FILES,
-        data = RESULTS + MANIFEST_OUTS,
+    )
+
+    example_runner(
+        name = "check_example_ports",
+        runner = ":check_example_ports_sh",
+        outputs = results,
+        suffix = ".ports.json",
     )
