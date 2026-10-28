@@ -92,12 +92,12 @@ jobs:
         export UID
         printf '%s\n' 'common --config=ci' >> repo.bazelrc
         docker compose run --quiet --quiet-pull --quiet-build examples bash -c '
-          bazel run ${BAZEL_BUILD_EXTRA_OPTIONS} --config=examples //:verify_examples
+          bazel build ${BAZEL_BUILD_EXTRA_OPTIONS} --config=examples //:verify_examples
           result=$?
           mkdir -p port-manifests
           cp bazel-bin/*.ports.json port-manifests/
           [[ "$result" == 0 ]] || exit "$result"
-          bazel run ${BAZEL_BUILD_EXTRA_OPTIONS} --config=examples //:check_example_ports || exit 1
+          bazel build ${BAZEL_BUILD_EXTRA_OPTIONS} --config=examples //:check_example_ports || exit 1
           bazel test ${BAZEL_BUILD_EXTRA_OPTIONS} --config=examples //:port_collision_test \
               --test_output=errors --nocache_test_results
         '

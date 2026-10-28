@@ -74,7 +74,7 @@ services:
     - bash
     - -c
     - |
-      bazel run ${BAZEL_BUILD_EXTRA_OPTIONS} --config=examples //:verify_examples
+      bazel build ${BAZEL_BUILD_EXTRA_OPTIONS} --config=examples //:verify_examples
 
   html:
     image: nginx

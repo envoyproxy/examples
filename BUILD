@@ -1,12 +1,22 @@
 load("@aspect_bazel_lib//lib:jq.bzl", "jq")
 load("@aspect_bazel_lib//lib:yq.bzl", "yq")
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
+load("@bazel_skylib//rules:common_settings.bzl", "repeatable_string_flag")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("@rules_pkg//pkg:pkg.bzl", "pkg_tar")
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
-load("//:examples.bzl", "envoy_examples")
+load("//:examples.bzl", "envoy_examples", "example_files")
+load("//:examples_test.bzl", "example_exclusion_test_suite")
 
 licenses(["notice"])  # Apache 2
+
+# Examples to drop from docs, config validation and verification.
+# Repeatable: `--@envoy-examples//:exclude=foo --@envoy-examples//:exclude=bar`
+repeatable_string_flag(
+    name = "exclude",
+    build_setting_default = [],
+    visibility = ["//visibility:public"],
+)
 
 # Excluding build tests - eg wasm - these should be run directly
 EXAMPLE_TESTS = [
@@ -51,7 +61,7 @@ EXAMPLE_TESTS = [
     "zstd",
 ]
 
-filegroup(
+example_files(
     name = "configs",
     srcs = glob(
         [
@@ -106,7 +116,7 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-filegroup(
+example_files(
     name = "docs_rst",
     srcs = glob(["**/example.rst"]) + [
         "@envoy-example-filter-cc//:example.rst",
@@ -153,7 +163,7 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-filegroup(
+example_files(
     name = "files",
     srcs = glob(
         ["**/*"],
@@ -239,3 +249,5 @@ sh_test(
 envoy_examples(
     examples = EXAMPLE_TESTS,
 )
+
+example_exclusion_test_suite(name = "example_exclusion_tests")
