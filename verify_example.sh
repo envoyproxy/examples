@@ -2,25 +2,59 @@
 
 EXAMPLE_NAME="${1}"
 EXAMPLE_DIR="${2}"
-TMPOUT=$(mktemp -p "${HOME}")
-RUNDIR=$(mktemp -d -p "${HOME}")
+# $HOME may be unset (or read-only) under `bazel test`
+WORKDIR="${TEST_TMPDIR:-${HOME:-/tmp}}"
+TMPOUT=$(mktemp -p "${WORKDIR}")
+RUNDIR=$(mktemp -d -p "${WORKDIR}")
+if [[ -n "${TEST_UNDECLARED_OUTPUTS_DIR:-}" ]]; then
+    PORT_MANIFEST_DIR="${TEST_UNDECLARED_OUTPUTS_DIR}"
+    mkdir -p "$PORT_MANIFEST_DIR"
+else
+    PORT_MANIFEST_DIR="$(mktemp -d -p "${WORKDIR}")"
+    CLEANUP_MANIFESTS=1
+fi
+export PORT_MANIFEST_DIR
 
 export COMPOSE_INTERACTIVE_NO_CLI=1
 export COMPOSE_PROGRESS=quiet
 
+merge_manifests () {
+    local out manifests=()
+    out="${TEST_UNDECLARED_OUTPUTS_DIR:-${PORT_MANIFEST_DIR}}/${EXAMPLE_NAME}.ports.json"
+    shopt -s nullglob
+    manifests=("$PORT_MANIFEST_DIR"/*.ports.json)
+    shopt -u nullglob
+    if [[ ${#manifests[@]} -gt 0 ]]; then
+        jq -s --arg example "$EXAMPLE_NAME" 'add | map(.example = $example)' \
+            "${manifests[@]}" > "${out}.merged"
+        mv "${out}.merged" "$out"
+    else
+        echo '[]' > "$out"
+    fi
+}
+
 complete () {
-    EXITCODE="$(tail -n 1 "${TMPOUT}" | grep -oP '(?<=COMMAND_EXIT_CODE=")[0-9]+')"
-    echo "${EXAMPLE_NAME}: ${EXITCODE}:${TIME}"
+    local trapcode=$? exitcode
+    set +e
+    exitcode="$(tail -n 1 "${TMPOUT}" | grep -oP '(?<=COMMAND_EXIT_CODE=")[0-9]+')"
+    echo "${EXAMPLE_NAME}: ${exitcode}:${TIME}"
     tail -n 1 "$TMPOUT"
     echo
     echo
-    if [[ "$EXITCODE" != 0 ]]; then
+    if [[ "$exitcode" != 0 ]]; then
         cat "$TMPOUT"
     fi
     echo
     echo
+    merge_manifests || true
     rm -rf "$RUNDIR"
     rm -rf "$TMPOUT"
+    [[ -n "${CLEANUP_MANIFESTS:-}" ]] && rm -rf "$PORT_MANIFEST_DIR"
+    if [[ -z "$exitcode" ]]; then
+        # Could not parse the example's exit code: always fail
+        exit "$(( trapcode != 0 ? trapcode : 1 ))"
+    fi
+    exit "$exitcode"
 }
 
 verify () {

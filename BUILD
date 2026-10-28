@@ -225,6 +225,12 @@ sh_test(
 )
 
 sh_test(
+    name = "check_example_ports",
+    srcs = ["tools/check_port_manifests.sh"],
+    tags = ["local", "no-sandbox"],
+)
+
+sh_test(
     name = "port_harness_test",
     srcs = ["tools/port_harness_test.sh"],
     args = ["$(location :compose_ports_json)"],

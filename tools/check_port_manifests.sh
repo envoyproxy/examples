@@ -1,5 +1,20 @@
 #!/bin/bash -e
 
+# With no args, collect manifests from the outputs of previous `bazel test //:verify_examples`
+# runs; with a single directory arg, use the *.ports.json files within it.
+if [[ $# == 0 ]]; then
+    TESTLOGS="$(dirname "$(readlink -f "$0")")/../bazel-testlogs"
+    [[ -n "${BUILD_WORKSPACE_DIRECTORY:-}" ]] && TESTLOGS="${BUILD_WORKSPACE_DIRECTORY}/bazel-testlogs"
+    EXTRACT="$(mktemp -d "${TEST_TMPDIR:-${TMPDIR:-/tmp}}/ports.XXXXXX")"
+    for z in "${TESTLOGS}"/*_result/test.outputs/outputs.zip; do
+        if [[ -f "$z" ]]; then unzip -qo "$z" '*.ports.json' -d "$EXTRACT" || true; fi
+    done
+    set -- "$EXTRACT"/*.ports.json
+    [[ -f "$1" ]] || set --
+elif [[ $# == 1 && -d "$1" ]]; then
+    set -- "$1"/*.ports.json
+    [[ -f "$1" ]] || set --
+fi
 if [[ $# == 0 ]]; then
     echo "ERROR: no port manifests provided" >&2
     exit 1

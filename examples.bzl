@@ -1,4 +1,4 @@
-load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 
 def envoy_example(name, shared = ":shared_files", common_fun = ":verify-common.sh"):
     native.filegroup(
@@ -40,23 +40,7 @@ def envoy_example(name, shared = ":shared_files", common_fun = ":verify-common.s
         ],
     )
 
-    sh_binary(
-        name = "verify_%s" % name,
-        srcs = [":verify_example.sh"],
-        args = [
-            name,
-            "$(location :%s_dir)" % name,
-        ],
-        data = [":%s_dir" % name],
-    )
-
 def envoy_examples(examples):
-    RESULTS = []
-    RESULT_OUTS = []
-    RESULT_FILES = []
-    MANIFEST_OUTS = []
-    MANIFEST_FILES = []
-
     native.filegroup(
         name = "shared_files",
         srcs = native.glob(
@@ -72,47 +56,18 @@ def envoy_examples(examples):
 
     for example in examples:
         envoy_example(name = example, shared = ":shared_files")
-        native.genrule(
+        sh_test(
             name = "%s_result" % example,
-            outs = [
-                "%s_result.txt" % example,
-                "%s.ports.json" % example,
-            ],
-            cmd = """
-                export PORT_MANIFEST_DIR=$$(mktemp -d)
-                trap 'rm -rf "$$PORT_MANIFEST_DIR"' EXIT
-                ./$(location :verify_%s) %s $(location :%s_dir) >> $(location :%s_result.txt)
-                shopt -s nullglob
-                manifests=("$$PORT_MANIFEST_DIR"/*.ports.json)
-                if [[ $${#manifests[@]} -gt 0 ]]; then
-                    jq -s --arg example %s 'add | map(.example = $$example)' \\
-                        "$${manifests[@]}" > $(location :%s.ports.json)
-                else
-                    echo '[]' > $(location :%s.ports.json)
-                fi
-            """ % (example, example, example, example, example, example, example),
-            tools = [
-                "verify_%s" % example,
-                "%s_dir" % example,
-            ],
-            tags = ["no-remote-exec", "no-sandbox"],
+            srcs = [":verify_example.sh"],
+            args = [example, "$(location :%s_dir)" % example],
+            data = [":%s_dir" % example],
+            env = {"BUILDX_BAKE_ENTITLEMENTS_FS": "0"},
+            tags = ["requires-docker", "no-sandbox", "no-remote-exec", "local"],
+            size = "large",
+            timeout = "long",
         )
-        RESULTS.append(":%s_result" % example)
-        RESULT_OUTS.append(":%s_result.txt" % example)
-        RESULT_FILES.append("$(location :%s_result.txt)" % example)
-        MANIFEST_OUTS.append(":%s.ports.json" % example)
-        MANIFEST_FILES.append("$(location :%s.ports.json)" % example)
 
-    sh_binary(
+    native.test_suite(
         name = "verify_examples",
-        srcs = [":verify_examples.sh"],
-        args = RESULT_FILES,
-        data = RESULTS + RESULT_OUTS,
-    )
-
-    sh_binary(
-        name = "check_example_ports",
-        srcs = ["tools/check_port_manifests.sh"],
-        args = MANIFEST_FILES,
-        data = RESULTS + MANIFEST_OUTS,
+        tests = [":%s_result" % example for example in examples],
     )
