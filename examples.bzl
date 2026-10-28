@@ -1,4 +1,58 @@
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+
+def _example_name(f):
+    workspace = f.owner.workspace_name
+    if "envoy-example-" in workspace:
+        return workspace.split("envoy-example-", 1)[1].split("~", 1)[0].split("+", 1)[0]
+    return f.owner.name.split("/")[0]
+
+def _example_files_impl(ctx):
+    excluded = ctx.attr._exclude[BuildSettingInfo].value
+    return [DefaultInfo(files = depset([
+        f
+        for f in ctx.files.srcs
+        if _example_name(f) not in excluded
+    ]))]
+
+example_files = rule(
+    implementation = _example_files_impl,
+    attrs = {
+        "srcs": attr.label_list(allow_files = True),
+        "_exclude": attr.label(default = Label("//:exclude")),
+    },
+)
+
+def _example_runner_impl(ctx):
+    excluded = ctx.attr._exclude[BuildSettingInfo].value
+    inputs = [
+        f
+        for target, example in ctx.attr.outputs.items()
+        if example not in excluded
+        for f in target[DefaultInfo].files.to_list()
+        if f.basename.endswith(ctx.attr.suffix)
+    ]
+    out = ctx.actions.declare_file(ctx.label.name + ".txt")
+    ctx.actions.run_shell(
+        inputs = inputs + [ctx.file.runner],
+        outputs = [out],
+        command = '"$1" "${@:3}" 2>&1 | tee "$2"; exit "${PIPESTATUS[0]}"',
+        arguments = [ctx.file.runner.path, out.path] + [f.path for f in inputs],
+        mnemonic = "ExampleRunner",
+        progress_message = "Running %s" % ctx.label.name,
+        execution_requirements = {"no-remote-exec": "1", "no-cache": "1"},
+    )
+    return [DefaultInfo(files = depset([out]))]
+
+example_runner = rule(
+    implementation = _example_runner_impl,
+    attrs = {
+        "outputs": attr.label_keyed_string_dict(allow_files = True),
+        "runner": attr.label(allow_single_file = True),
+        "suffix": attr.string(mandatory = True),
+        "_exclude": attr.label(default = Label("//:exclude")),
+    },
+)
 
 def envoy_example(name, shared = ":shared_files", common_fun = ":verify-common.sh"):
     native.filegroup(
@@ -51,12 +105,6 @@ def envoy_example(name, shared = ":shared_files", common_fun = ":verify-common.s
     )
 
 def envoy_examples(examples):
-    RESULTS = []
-    RESULT_OUTS = []
-    RESULT_FILES = []
-    MANIFEST_OUTS = []
-    MANIFEST_FILES = []
-
     native.filegroup(
         name = "shared_files",
         srcs = native.glob(
@@ -97,22 +145,19 @@ def envoy_examples(examples):
             ],
             tags = ["no-remote-exec", "no-sandbox"],
         )
-        RESULTS.append(":%s_result" % example)
-        RESULT_OUTS.append(":%s_result.txt" % example)
-        RESULT_FILES.append("$(location :%s_result.txt)" % example)
-        MANIFEST_OUTS.append(":%s.ports.json" % example)
-        MANIFEST_FILES.append("$(location :%s.ports.json)" % example)
 
-    sh_binary(
+    results = {":%s_result" % example: example for example in examples}
+
+    example_runner(
         name = "verify_examples",
-        srcs = [":verify_examples.sh"],
-        args = RESULT_FILES,
-        data = RESULTS + RESULT_OUTS,
+        runner = ":verify_examples.sh",
+        outputs = results,
+        suffix = "_result.txt",
     )
 
-    sh_binary(
+    example_runner(
         name = "check_example_ports",
-        srcs = ["tools/check_port_manifests.sh"],
-        args = MANIFEST_FILES,
-        data = RESULTS + MANIFEST_OUTS,
+        runner = "tools/check_port_manifests.sh",
+        outputs = results,
+        suffix = ".ports.json",
     )
