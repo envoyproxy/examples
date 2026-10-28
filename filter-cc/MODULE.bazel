@@ -1,6 +1,6 @@
 module(
     name = "envoy-example-filter-cc",
-    version = "0.2.9",
+    version = "0.2.10-dev",
 )
 
 bazel_dep(name = "envoy", version = "1.41.0-dev.20261028.011e396.envoy")
