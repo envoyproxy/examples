@@ -8,6 +8,7 @@ bazel_dep(name = "bazel_skylib", version = "1.9.2")
 bazel_dep(name = "envoy", version = "1.41.0-dev.20261028.011e396.envoy")
 bazel_dep(name = "envoy-example-filter-cc", version = "0.2.9")
 bazel_dep(name = "envoy-example-wasm-cc", version = "0.2.9")
+bazel_dep(name = "platforms", version = "1.1.0")
 bazel_dep(name = "rules_pkg", version = "1.3.0")
 bazel_dep(name = "rules_python", version = "2.4.5")
 bazel_dep(name = "rules_shell", version = "0.8.0")
@@ -18,6 +19,7 @@ bazel_lib_toolchains = use_extension("@aspect_bazel_lib//lib:extensions.bzl", "t
 bazel_lib_toolchains.yq()
 bazel_lib_toolchains.jq()
 use_repo(bazel_lib_toolchains, "jq_toolchains", "yq_toolchains")
+
 register_toolchains("@yq_toolchains//:all", "@jq_toolchains//:all")
 
 envoy_toolchains_ext = use_extension("@envoy//bazel:extensions.bzl", "envoy_toolchains_extension")
