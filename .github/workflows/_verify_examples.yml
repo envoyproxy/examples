@@ -35,7 +35,9 @@ jobs:
     - run: |
         TEMPDIR=/cache/docker
         sudo mkdir -p "${TEMPDIR}"
-        sudo mount -t tmpfs none "$TEMPDIR"
+        # Exceed the default 50%-RAM cap, leaving ~2 GiB on a 16 GiB runner.
+        # This is a ceiling, not a reservation; free memory before archiving.
+        sudo mount -t tmpfs -o size=14g none "$TEMPDIR"
         sudo chown runner "$TEMPDIR"
     - uses: actions/cache/restore@v6
       id: cache
@@ -46,13 +48,9 @@ jobs:
         TEMPDIR=/cache/docker
         sudo mkdir -p /var/lib/docker-examples
         zstd --stdout -d "${TEMPDIR}/docker.tar.zst" | sudo tar --warning=no-timestamp -xf - -C /var/lib/docker-examples
-        sudo umount "$TEMPDIR"
+        sudo rm "${TEMPDIR}/docker.tar.zst"
       if: steps.cache.outputs.cache-hit == 'true'
     - run: |
-        TEMPDIR=/cache/docker
-        sudo mkdir -p "${TEMPDIR}"
-        sudo mount -t tmpfs none "$TEMPDIR"
-        sudo chown runner "$TEMPDIR"
         sudo du -ch /var/lib/docker | grep total
         sudo du -ch /var/lib/docker-examples | grep total
         sudo df -h
@@ -113,13 +111,39 @@ jobs:
         name: example-port-manifests
         path: examples/port-manifests/*.ports.json
 
-    - run: |
+    - name: Free memory before caching
+      if: steps.cache.outputs.cache-hit != 'true' && github.event_name != 'pull_request'
+      continue-on-error: true
+      working-directory: examples
+      run: |
+        free -h
+        docker compose run --rm examples bazel shutdown || true
+        docker compose down --remove-orphans || true
+        sync
+        echo 3 | sudo tee /proc/sys/vm/drop_caches
+        free -h
+
+    - id: archive
+      continue-on-error: true
+      run: |
         TEMPDIR=/cache/docker
+        sudo du -sh /var/lib/docker-examples
+        df -h /cache/docker
+        sudo du -sh /var/lib/docker-examples/* | sort -h | tail -n 20
+        # TODO: Prune buildkit/dangling layers through the owning daemon, not the offline store.
         sudo tar cf - -C /var/lib/docker-examples . | zstd - -q -T0 -o "${TEMPDIR}/docker.tar.zst"
         ls -alh "${TEMPDIR}/docker.tar.zst"
+        ARCHIVE_SIZE=$(stat -c %s "${TEMPDIR}/docker.tar.zst")
+        echo "::notice::Docker cache archive size: $(numfmt --to=iec-i --suffix=B "$ARCHIVE_SIZE") ($ARCHIVE_SIZE bytes)"
+        if (( ARCHIVE_SIZE > 9 * 1024 * 1024 * 1024 )); then
+          echo "::warning::Docker cache archive exceeds 9 GiB, approaching the 10 GB per-entry cache limit."
+        fi
       if: steps.cache.outputs.cache-hit != 'true' && github.event_name != 'pull_request'
     - uses: actions/cache/save@v6
-      if: steps.cache.outputs.cache-hit != 'true' && github.event_name != 'pull_request'
+      if: >-
+        steps.cache.outputs.cache-hit != 'true' && github.event_name != 'pull_request'
+        && steps.archive.outcome == 'success'
+      continue-on-error: true
       with:
         path: /cache/docker
         key: ${{ runner.os }}-docker-${{ hashFiles('examples/**/Dockerfile*') }}
