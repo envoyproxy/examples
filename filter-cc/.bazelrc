@@ -1,13 +1,12 @@
 common --color=yes
 
 common --registry=https://bcr.bazel.build/
-common --registry=https://raw.githubusercontent.com/envoyproxy/bazel-registry/5db29c09de17218d24f58c665be38208284754d8
-
-build --@rules_rust//rust/settings:extra_exec_rustc_flags=-Clink-self-contained=no
+common --registry=https://raw.githubusercontent.com/envoyproxy/bazel-registry/36d481b01b5d5bd40c9545852b01f0b46d370285
 
 # Common flags for Clang (shared between all clang variants)
 common --linkopt=-fuse-ld=lld
 common --cxxopt=-Wno-nullability-completeness
+build --features=system_include_paths --host_features=system_include_paths
 
 # Required by Envoy and its deps when consumed via bzlmod.
 common --noincompatible_disallow_empty_glob
@@ -43,6 +42,13 @@ common --incompatible_enable_proto_toolchain_resolution
 # Wasm is excluded by this example's extensions_build_config.
 common --@proxy-wasm-cpp-host//bazel:engine=disabled
 
+# Rust
+build --@rules_rust//rust/settings:extra_exec_rustc_flags=-Clink-self-contained=no
+# rustc links with -nodefaultlibs; cc_toolchain unwinder/rtlib flags are inert for Rust
+build --@rules_rust//rust/settings:extra_rustc_flag=-Alinker_messages
+build --@rules_rust//rust/settings:extra_exec_rustc_flag=-Alinker_messages
+
+# Python
 common --@rules_python//python/config_settings:bootstrap_impl=script
 build --incompatible_default_to_explicit_init_py
 
