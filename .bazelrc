@@ -1,7 +1,7 @@
 common --color=yes
 
 common --registry=https://bcr.bazel.build
-common --registry=https://raw.githubusercontent.com/envoyproxy/bazel-registry/36d481b01b5d5bd40c9545852b01f0b46d370285
+common --registry=https://raw.githubusercontent.com/envoyproxy/bazel-registry/3e4b684ae83972af4467e6d861f390c9d4c039de
 
 common:examples --action_env=DEV_CONTAINER_ID
 common:examples --host_action_env=DEV_CONTAINER_ID
