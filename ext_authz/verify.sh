@@ -7,9 +7,11 @@ export NAME=ext_authz
 
 
 run_log "Test services responds with 403"
-responds_with_header \
-    "HTTP/1.1 403 Forbidden"\
-    "http://localhost:${PORT_PROXY}/service"
+# front-envoy has no healthcheck, so `up --wait` can return before it is listening.
+wait_for 15 bash -c "\
+         responds_with_header \
+         'HTTP/1.1 403 Forbidden' \
+         http://localhost:${PORT_PROXY}/service"
 
 run_log "Restart front-envoy with FRONT_ENVOY_YAML=config/http-service.yaml"
 "${DOCKER_COMPOSE[@]}" down
