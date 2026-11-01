@@ -61,6 +61,10 @@ check_from_origin() {
 }
 
 
+# Wait for the proxy to come up, probing a response that is never cached so
+# the first cacheable request below is still served by the origin.
+wait_for 10 bash -c "responds_with 'private response' http://localhost:${PORT_PROXY}/service/1/private"
+
 run_log "Valid-for-minute: First request should be served by the origin"
 response=$(curl -si "localhost:${PORT_PROXY}/service/1/valid-for-minute")
 check_from_origin "$response"
