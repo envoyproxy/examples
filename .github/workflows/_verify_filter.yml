@@ -28,12 +28,23 @@ jobs:
     - run: |
         printf '%s\n' 'common --config=ci' > repo.bazelrc
       working-directory: examples/filter-cc
-    - name: Inject bzlmod envoy pin into MODULE.bazel
+    - name: Pin envoy main (and its bazel-registry commit)
       run: |
         # The envoy module is not (yet) published to a registry, so resolve
         # the current envoy main HEAD and override the module to use it.
         ENVOY_SHA=$(git ls-remote https://github.com/envoyproxy/envoy refs/heads/main | head -n1 | awk '{print $1}')
         echo "Resolved envoy main HEAD: ${ENVOY_SHA}"
+        # Resolve envoy's dependencies from the same registry commit envoy itself pins, as the
+        # example's pin can lag behind (or be ahead of) envoy main.
+        if ! REGISTRY_SHA=$(curl -sfL --retry 3 "https://raw.githubusercontent.com/envoyproxy/envoy/${ENVOY_SHA}/.bazelrc" \
+                | sed -n -E 's#^common --registry=https://raw\.githubusercontent\.com/envoyproxy/bazel-registry/([0-9a-f]{40})$#\1#p') \
+            || [[ ! "$REGISTRY_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+          echo "::error::Failed to resolve the bazel-registry commit pinned by envoy ${ENVOY_SHA}"
+          exit 1
+        fi
+        echo "Resolved envoy bazel-registry pin: ${REGISTRY_SHA}"
+        sed -i -E "s#(envoyproxy/bazel-registry/)[0-9a-f]{40}#\1${REGISTRY_SHA}#" .bazelrc
+        grep -q "envoyproxy/bazel-registry/${REGISTRY_SHA}" .bazelrc
         cat >> MODULE.bazel <<EOF
 
         git_override(
