@@ -1,0 +1,100 @@
+# The MCP backend of the mcp sandbox: the MCP filter end-to-end test. The official MCP Python SDK
+# runs in an MCP client and an MCP server, with Envoy between them:
+#
+#   mcp-client -> envoy:10000 (envoy.filters.http.mcp -> router) -> mcp-server:8000
+#
+# The client runs the 17 regression cases, or with DEMO=1 the developer demo. From this directory:
+#
+#   docker compose up --build -d
+#   docker compose exec mcp-client python -u docker/client_entrypoint.py
+#   DEMO=1 docker compose up -d --force-recreate
+#   docker compose exec mcp-client python -u docker/client_entrypoint.py
+#   docker compose down -v
+#
+# verify.sh runs these steps, and then the REST backend's (rest_backend/). See README.md.
+
+name: mcp-e2e
+
+# Where the services find each other, and the run directory that they share.
+x-e2e-environment: &e2e-environment
+  ENVOY_HOST: envoy
+  ENVOY_PORT: "10000"
+  ENVOY_CAPPED_PORT: "10001"
+  ENVOY_ADMIN_PORT: "9901"
+  MCP_SERVER_HOST: mcp-server
+  MCP_SERVER_PORT: "8000"
+  E2E_RUN_DIR: /e2e-run
+  DEMO: "${DEMO:-0}"
+
+# The test's sources, read-only, and the run directory: a volume, or with RUN_DIR set, that host
+# directory.
+x-e2e-volumes: &e2e-volumes
+- .:/e2e:ro
+- ${RUN_DIR:-run}:/e2e-run
+
+# The Python image of the client and the server: mcp==2.2.0, from docker/requirements.txt.
+x-python-service: &python-service
+  build: ./docker
+  image: envoy-mcp-e2e-python:mcp-2.2.0
+  # The image is built here, from docker/, and never pulled: no registry has it.
+  pull_policy: build
+  # An init process that passes on signals, so that the service stops at once.
+  init: true
+  volumes: *e2e-volumes
+
+services:
+  mcp-server:
+    <<: *python-service
+    environment:
+      <<: *e2e-environment
+    command: ["sh", "docker/server_entrypoint.sh"]
+    healthcheck:
+      # The server accepts connections once the SDK's session manager runs. A connection with no
+      # request, so that health checks are not in the server's request log.
+      test:
+      - CMD
+      - python
+      - -c
+      - import os, socket; socket.create_connection(('127.0.0.1', int(os.environ['MCP_SERVER_PORT'])), timeout=2).close()
+      interval: 1s
+      timeout: 3s
+      retries: 30
+
+  envoy:
+    # Envoy with envoy.yaml built in, from envoyproxy/envoy:dev by default. ENVOY_IMAGE and
+    # ENVOY_VARIANT select another image to build from: see README.md.
+    build:
+      context: .
+      dockerfile: ../shared/envoy/Dockerfile
+      target: envoy-admin
+      args:
+        ENVOY_IMAGE: ${ENVOY_IMAGE:-envoyproxy/envoy}
+        ENVOY_VARIANT: ${ENVOY_VARIANT:-dev}
+        ENVOY_ADMIN_PORT: "9901"
+    depends_on:
+      mcp-server:
+        condition: service_healthy
+    # One worker, and access log entries written out every 200 ms. Envoy runs as the image's
+    # non-root envoy user, and writes its access log into the run directory, which
+    # docker/server_entrypoint.sh makes writable for it.
+    command: ["envoy", "-c", "/etc/envoy.yaml", "-l", "${LOG_LEVEL:-info}", "--concurrency", "1",
+              "--disable-hot-restart", "--file-flush-interval-msec", "200"]
+    volumes:
+    - ${RUN_DIR:-run}:/e2e-run
+
+  mcp-client:
+    <<: *python-service
+    depends_on:
+      mcp-server:
+        condition: service_healthy
+      # The client waits for Envoy's /ready itself.
+      envoy:
+        condition: service_started
+    environment:
+      <<: *e2e-environment
+      SKIP_CASES: "${SKIP_CASES:-}"
+    # The client stays up: the tests run in it, with docker compose exec.
+    command: ["sleep", "infinity"]
+
+volumes:
+  run: {}
