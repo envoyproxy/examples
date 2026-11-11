@@ -40,6 +40,20 @@ updates:
     time: "06:00"
 
 - package-ecosystem: "pip"
+  directory: "/mcp/docker"
+  groups:
+    examples-mcp:
+      patterns:
+      - "*"
+  ignore:
+  # The suites are pinned to this MCP Python SDK version: docker/client_entrypoint.py checks it.
+  - dependency-name: "mcp"
+  - dependency-name: "mcp-types"
+  schedule:
+    interval: "daily"
+    time: "06:00"
+
+- package-ecosystem: "pip"
   directory: "/shared/python/aiohttp"
   groups:
     examples-shared-python:
@@ -139,6 +153,16 @@ updates:
   directory: "/local_ratelimit"
   groups:
     examples-local-ratelimit:
+      patterns:
+      - "*"
+  schedule:
+    interval: daily
+    time: "06:00"
+
+- package-ecosystem: "docker"
+  directory: "/mcp/docker"
+  groups:
+    examples-mcp:
       patterns:
       - "*"
   schedule:
