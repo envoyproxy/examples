@@ -1,17 +1,9 @@
-# The MCP backend of the mcp sandbox: the MCP filter end-to-end test. The official MCP Python SDK
-# runs in an MCP client and an MCP server, with Envoy between them:
+# The MCP backend of the mcp sandbox: the official MCP Python SDK in an MCP client and an MCP
+# server, with Envoy between them:
 #
 #   mcp-client -> envoy:10000 (envoy.filters.http.mcp -> router) -> mcp-server:8000
 #
-# The client runs the 17 regression cases, or with DEMO=1 the developer demo. From this directory:
-#
-#   docker compose up --build -d
-#   docker compose exec mcp-client python -u docker/client_entrypoint.py
-#   DEMO=1 docker compose up -d --force-recreate
-#   docker compose exec mcp-client python -u docker/client_entrypoint.py
-#   docker compose down -v
-#
-# verify.sh runs these steps, and then the REST backend's (rest_backend/). See README.md.
+# verify.sh runs it, and then rest_backend/. To run it by hand, see README.md.
 
 name: mcp-e2e
 
@@ -24,7 +16,6 @@ x-e2e-environment: &e2e-environment
   MCP_SERVER_HOST: mcp-server
   MCP_SERVER_PORT: "8000"
   E2E_RUN_DIR: /e2e-run
-  DEMO: "${DEMO:-0}"
 
 # The test's sources, read-only, and the run directory: a volume, or with RUN_DIR set, that host
 # directory.

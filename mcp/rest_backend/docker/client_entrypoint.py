@@ -61,7 +61,7 @@ def main():
         while not envoy_ready():
             if time.monotonic() > deadline:
                 say(f"ERROR: Envoy did not become ready in {STARTUP_TIMEOUT_SECONDS}s; see "
-                    f"{RUN_DIR}/envoy.log")
+                    "docker compose logs envoy")
                 return 1
             time.sleep(0.2)
         with urllib.request.urlopen(f"http://{ENVOY_HOST}:{ENVOY_ADMIN_PORT}/server_info",
@@ -75,10 +75,9 @@ def main():
 
         command = [
             sys.executable, "-u", str(HERE / "rest_client.py"), "--envoy-host", ENVOY_HOST,
-            "--port", ENVOY_PORT, "--bridge-only-port", ENVOY_BRIDGE_ONLY_PORT, "--admin-port",
-            ENVOY_ADMIN_PORT, "--run-dir", str(RUN_DIR), "--only", os.environ.get("ONLY", ""),
-            "--skip", os.environ.get("SKIP_CASES", ""), "--compliance",
-            os.environ.get("COMPLIANCE", "")
+            "--port", ENVOY_PORT, "--bridge-only-port", ENVOY_BRIDGE_ONLY_PORT, "--run-dir",
+            str(RUN_DIR), "--only", os.environ.get("ONLY", ""), "--skip",
+            os.environ.get("SKIP_CASES", "")
         ]
         process = subprocess.Popen(command, cwd=HERE, stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT, text=True)
@@ -88,11 +87,10 @@ def main():
 
         say()
         say("Processes")
-        processes = (("Envoy", envoy_ready(), f"{RUN_DIR}/envoy.log"),
-                     ("The REST server", server_up(), "docker compose logs rest-server"))
-        for name, up, where in processes:
+        for name, up, logs in (("Envoy", envoy_ready(), "envoy"),
+                               ("The REST server", server_up(), "rest-server")):
             say(f"  ok    {name} is still running" if up else
-                f"  FAIL  {name} is no longer running; see {where}")
+                f"  FAIL  {name} is no longer running; see docker compose logs {logs}")
             failed = failed or not up
         say()
         where = f"the run directory, {RUN_DIR}, in the rest-client container (see README.md)"

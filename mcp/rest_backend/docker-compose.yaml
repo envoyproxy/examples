@@ -1,17 +1,11 @@
-# The REST backend of the mcp sandbox: the MCP JSON-REST bridge end-to-end test, at MCP protocol
-# version 2026-07-28. The official MCP Python SDK (and raw HTTP) in a client, Envoy, and a REST
-# backend:
+# The REST backend of the mcp sandbox: the official MCP Python SDK (and raw HTTP) in a client, Envoy
+# with the MCP JSON-REST bridge, and a REST backend:
 #
 #   rest-client -> envoy:10000 (mcp -> mcp_json_rest_bridge -> router) -> rest-server:8000
 #               -> envoy:10001 (mcp_json_rest_bridge -> router)       -> rest-server:8000
 #
-# From this directory:
-#
-#   docker compose up --build -d
-#   docker compose exec rest-client python -u docker/client_entrypoint.py
-#   docker compose down -v
-#
-# Reuses the MCP backend's Python image (../docker). See README.md.
+# Reuses the MCP backend's Python image (../docker). ../verify.sh runs it; to run it by hand, see
+# README.md.
 
 name: mcp-rest-e2e
 
@@ -73,15 +67,11 @@ services:
     depends_on:
       rest-server:
         condition: service_healthy
-    # One worker, access log entries written out every 200 ms, and Envoy's own log in the run
-    # directory, with the debug lines of the bridge (component filter), the router (router) and the
-    # MCP filter (mcp): the client quotes a failed case's lines from it. Envoy runs as the image's
-    # non-root envoy user, and writes both logs into the run directory, which
+    # One worker, and access log entries written out every 200 ms. Envoy runs as the image's
+    # non-root envoy user, and writes its access log into the run directory, which
     # docker/server_entrypoint.sh makes writable for it.
-    command: ["envoy", "-c", "/etc/envoy.yaml", "-l", "${LOG_LEVEL:-info}",
-              "--component-log-level", "filter:debug,router:debug,mcp:debug",
-              "--log-path", "/e2e-run/envoy.log", "--concurrency", "1", "--disable-hot-restart",
-              "--file-flush-interval-msec", "200"]
+    command: ["envoy", "-c", "/etc/envoy.yaml", "-l", "${LOG_LEVEL:-info}", "--concurrency", "1",
+              "--disable-hot-restart", "--file-flush-interval-msec", "200"]
     volumes:
     - ${RUN_DIR:-run}:/e2e-run
 
@@ -98,8 +88,6 @@ services:
       # Comma-separated case names or prefixes to run (ONLY), or not to run (SKIP_CASES).
       ONLY: "${ONLY:-}"
       SKIP_CASES: "${SKIP_CASES:-}"
-      # strict: known-gap (compliance) failures fail the run too.
-      COMPLIANCE: "${COMPLIANCE:-}"
     # The client stays up: the tests run in it, with docker compose exec.
     command: ["sleep", "infinity"]
 

@@ -1,10 +1,9 @@
 """The test run in the mcp-client service, with docker compose exec (see docker-compose.yaml).
 
 Waits until Envoy is ready, and records which Envoy it is. Then runs the 17 regression cases
-(mcp_client.py) or, with DEMO=1, the developer demo (demo_client.py), against the envoy and
-mcp-server services. Finally checks that Envoy and the MCP server are still up, and exits with the
-result: 0 for PASS, 1 for FAIL. Everything that it prints also goes to client_output.txt in the run
-directory. See README.md.
+(mcp_client.py) against the envoy and mcp-server services. Finally checks that Envoy and the MCP
+server are still up, and exits with the result: 0 for PASS, 1 for FAIL. Everything that it prints
+also goes to client_output.txt in the run directory. See README.md.
 """
 import importlib.metadata
 import json
@@ -53,7 +52,6 @@ def server_up():
 
 
 def main():
-    demo = os.environ.get("DEMO", "0")
     skip_cases = os.environ.get("SKIP_CASES", "")
     with open(RUN_DIR / "client_output.txt", "w", encoding="utf-8") as output:
 
@@ -62,12 +60,6 @@ def main():
             output.write(text + "\n")
             output.flush()
 
-        if demo not in ("0", "1"):
-            say(f"ERROR: DEMO must be 0 or 1, not {demo}.")
-            return 1
-        if demo == "1" and skip_cases:
-            say("ERROR: SKIP_CASES selects regression cases, which DEMO=1 does not run.")
-            return 1
         version = importlib.metadata.version("mcp")
         if version != MCP_SDK_VERSION:
             say(f"ERROR: the image has mcp {version}, but this suite is pinned to mcp=="
@@ -89,15 +81,12 @@ def main():
         say(f"==> Envoy {envoy_version}, at {ENVOY_HOST}:{ENVOY_PORT}, in front of the MCP server "
             f"at {MCP_SERVER_HOST}:{MCP_SERVER_PORT}")
 
-        script = "demo_client.py" if demo == "1" else "mcp_client.py"
         command = [
-            sys.executable, "-u", str(E2E_DIR / script), "--envoy-host", ENVOY_HOST, "--port",
-            ENVOY_PORT, "--capped-port", ENVOY_CAPPED_PORT, "--admin-port", ENVOY_ADMIN_PORT,
-            "--backend-host", MCP_SERVER_HOST, "--backend-port", MCP_SERVER_PORT, "--run-dir",
-            str(RUN_DIR)
+            sys.executable, "-u", str(E2E_DIR / "mcp_client.py"), "--envoy-host", ENVOY_HOST,
+            "--port", ENVOY_PORT, "--capped-port", ENVOY_CAPPED_PORT, "--admin-port",
+            ENVOY_ADMIN_PORT, "--backend-host", MCP_SERVER_HOST, "--backend-port", MCP_SERVER_PORT,
+            "--run-dir", str(RUN_DIR), "--skip", skip_cases
         ]
-        if demo == "0":
-            command += ["--skip", skip_cases]
         say()
         process = subprocess.Popen(command, cwd=E2E_DIR, stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT, text=True)

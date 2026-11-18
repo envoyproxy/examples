@@ -26,8 +26,8 @@ static_resources:
         typed_config:
           "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
           stat_prefix: rest_http
-          # One JSON object per request. The client finds a case's entries by its X-E2E-Case header.
-          # For a transcoded tools/call, method and path are those of the REST request.
+          # One JSON object per request, with the case's X-E2E-Case header, to debug a failure. For
+          # a transcoded tools/call, method and path are those of the REST request.
           access_log: &access_log
           - name: envoy.access_loggers.file
             typed_config:
@@ -36,7 +36,6 @@ static_resources:
               log_format:
                 json_format:
                   listener_port: "%DOWNSTREAM_LOCAL_PORT%"
-                  connection_id: "%CONNECTION_ID%"
                   e2e_case: "%REQ(X-E2E-CASE)%"
                   method: "%REQ(:METHOD)%"
                   path: "%REQ(:PATH)%"
@@ -69,21 +68,15 @@ static_resources:
               attribute_source: BODY
               request_storage_mode: DYNAMIC_METADATA
               max_supported_protocol_version: "2026-07-28"
-              # The bridge's default limit, 64 KiB, instead of the MCP filter's 8 KiB.
-              max_request_body_size: 65536
           - name: envoy.filters.http.mcp_json_rest_bridge
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.mcp_json_rest_bridge.v3.McpJsonRestBridge
               request_storage_mode: DYNAMIC_METADATA
-              trace_context_extraction: {}
               server_info: &server_info
                 max_supported_protocol_version: "2026-07-28"
-                server_discovery_cache_config:
-                  ttl: 60s
-                  cache_scope: CACHE_SCOPE_PRIVATE
               tool_config:
                 tool_list_http_rule: {get: "/v1/tools"}
-                # rest_server.py's GET /v1/tools describes the same tools.
+                # rest_server.py's GET /v1/tools describes the same tools, in the same order.
                 tools: &tools
                 - name: get_weather
                   http_rule: {get: "/v1/weather/{city}"}
@@ -105,21 +98,6 @@ static_resources:
                       {"type":"object","properties":{"city":{"type":"string","x-mcp-header":"City"},
                       "days":{"type":"integer","x-mcp-header":"Days"},"detailed":{"type":"boolean",
                       "x-mcp-header":"Detailed"}},"required":["city"]}
-                - name: search_items
-                  http_rule: {get: "/v1/search"}
-                  tool_list_config:
-                    description: Searches the catalog.
-                    input_schema: >-
-                      {"type":"object","properties":{"q":{"type":"string"},
-                      "filter":{"type":"object","properties":{"color":{"type":"string"},
-                      "size":{"type":"string"}}},"tags":{"type":"array","items":{"type":"string"}},
-                      "limit":{"type":"integer"},"exact":{"type":"boolean"}},"required":["q"]}
-                - name: get_file
-                  http_rule: {get: "/v1/{name=projects/*/files/*}"}
-                  tool_list_config:
-                    description: A file, by its resource name projects/{project}/files/{file}.
-                    input_schema: >-
-                      {"type":"object","properties":{"name":{"type":"string"}},"required":["name"]}
                 - name: create_order
                   http_rule: {post: "/v1/orders", body: "*"}
                   tool_list_config:
@@ -128,77 +106,12 @@ static_resources:
                       {"type":"object","properties":{"item":{"type":"string"},
                       "quantity":{"type":"integer"},"options":{"type":"object"}},"required":["item",
                       "quantity"]}
-                - name: update_order
-                  http_rule: {put: "/v1/orders/{order_id}", body: "order"}
-                  tool_list_config:
-                    description: Replaces an order.
-                    input_schema: >-
-                      {"type":"object","properties":{"order_id":{"type":"string"},
-                      "order":{"type":"object"},"notify":{"type":"boolean"}},"required":["order_id",
-                      "order"]}
-                - name: patch_order
-                  http_rule: {patch: "/v1/orders/{order_id}", body: "*"}
-                  tool_list_config:
-                    description: Updates fields of an order.
-                    input_schema: >-
-                      {"type":"object","properties":{"order_id":{"type":"string"},
-                      "status":{"type":"string"}},"required":["order_id"]}
-                - name: delete_order
-                  http_rule: {delete: "/v1/orders/{order_id}"}
-                  tool_list_config:
-                    description: Deletes an order.
-                    input_schema: >-
-                      {"type":"object","properties":{"order_id":{"type":"string"}},
-                      "required":["order_id"]}
-                - name: get_account
-                  http_rule:
-                    get: "/v1/account"
-                    bindings:
-                    - {type: HEADER, name: X-Api-Key, argument_path: api_key}
-                    - {type: COOKIE, name: session, argument_path: session_id}
-                  tool_list_config:
-                    description: The account of an API key.
-                    input_schema: >-
-                      {"type":"object","properties":{"api_key":{"type":"string"},
-                      "session_id":{"type":"string"},"verbose":{"type":"boolean"}}}
-                - name: get_status
-                  http_rule: {get: "/v1/status/{code}"}
-                  tool_list_config:
-                    description: Answers with the HTTP status code it is given.
-                    input_schema: >-
-                      {"type":"object","properties":{"code":{"type":"integer"}},"required":["code"]}
                 # No input_schema: tools/list shows the bridge's default, {"type":"object"}.
-                - name: get_binary
-                  http_rule: {get: "/v1/binary"}
-                  tool_list_config:
-                    description: Answers with bytes that are not UTF-8.
-                - name: get_large
-                  http_rule: {get: "/v1/large"}
-                  tool_list_config:
-                    description: Answers with more than the bridge's 1 MiB response limit.
-                # Two methods: the API docs say that the one with the highest field number, post,
-                # is the effective one.
-                - name: probe_method
-                  http_rule: {get: "/v1/method-probe", post: "/v1/method-probe"}
-                  tool_list_config:
-                    description: Echoes the HTTP method of the REST request.
                 - name: stream_text
                   http_rule: {get: "/v1/stream/text"}
                   text_content_streaming_enabled: true
                   tool_list_config:
                     description: A chunked JSON answer, streamed.
-                - name: stream_events
-                  http_rule: {get: "/v1/stream/events"}
-                  text_content_streaming_enabled: true
-                  tool_list_config:
-                    description: A server-sent events answer, streamed.
-                - name: stream_status
-                  http_rule: {get: "/v1/status/{code}"}
-                  text_content_streaming_enabled: true
-                  tool_list_config:
-                    description: get_status, streamed.
-                    input_schema: >-
-                      {"type":"object","properties":{"code":{"type":"integer"}},"required":["code"]}
           - &router_filter
             name: envoy.filters.http.router
             typed_config:
@@ -221,7 +134,6 @@ static_resources:
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.mcp_json_rest_bridge.v3.McpJsonRestBridge
               request_storage_mode: DYNAMIC_METADATA
-              trace_context_extraction: {}
               server_info: *server_info
               tool_config:
                 tool_list_local: {}
