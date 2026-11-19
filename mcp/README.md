@@ -45,7 +45,7 @@ the shared run directory when it starts: to run the cases again, first run
 
 | Variable | Default | |
 |---|---|---|
-| `ENVOY_IMAGE`, `ENVOY_VARIANT` | `envoyproxy/envoy`, `dev` | The image that Envoy's is built from, `${ENVOY_IMAGE}:${ENVOY_VARIANT}` in `../shared/envoy/Dockerfile`: for example `ENVOY_VARIANT=dev-<commit>` |
+| `ENVOY_IMAGE`, `ENVOY_VARIANT` | `envoyproxy/envoy`, `dev` | The image that Envoy's image is built from, `${ENVOY_IMAGE}:${ENVOY_VARIANT}` in `../shared/envoy/Dockerfile`: for example `ENVOY_VARIANT=dev-<commit>` for a pinned build |
 | `SKIP_CASES` | unset | Comma-separated names of cases not to run. Each is reported as `SKIP` |
 | `LOG_LEVEL` | `info` | Envoy's log level |
 | `RUN_DIR` | the `run` volume | A host directory for the run directory |
@@ -60,9 +60,8 @@ docker build -t envoy-local:dev /tmp/envoy-local
 ENVOY_IMAGE=envoy-local ENVOY_VARIANT=dev docker compose up --build -d
 ```
 
-Any image must have the MCP filter changes that the cases test, which `envoyproxy/envoy:dev` has:
-envoyproxy/envoy#47280, envoyproxy/envoy#47862, envoyproxy/envoy#47915 and envoyproxy/envoy#48720.
-As the Ubuntu-based variants do, it also needs `apt-get` and its own `/docker-entrypoint.sh`.
+Use a build that includes the Envoy features exercised by the test suite you are running. As the
+Ubuntu-based variants do, the image also needs `apt-get` and its own `/docker-entrypoint.sh`.
 
 ## What the cases check
 
@@ -71,6 +70,9 @@ mcp_client.py ──▶ Envoy: envoy.filters.http.mcp ─▶ router ──▶ mc
                   envoy:10000, the main listener              mcp-server:8000/mcp
                   envoy:10001, capped at 2025-11-25
 ```
+
+The MCP backend suite exercises the filter with `attribute_source: BODY` and
+`traffic_mode: REJECT_NO_MCP`, on both listeners.
 
 The server has one tool, `get_weather(city)`, whose result is fixed. For each case, the client
 checks the response, Envoy's access log entry with the MCP filter's dynamic metadata, the MCP
@@ -172,7 +174,7 @@ docker compose exec envoy curl -sS http://localhost:10000/mcp \
 ```
 
 Envoy runs as its image's non-root `envoy` user: `docker/server_entrypoint.sh` makes the run
-directory writable for it. On hosts that enforce SELinux, the bind mounts may need the `z` option.
+directory writable for it.
 
 ## Files
 
@@ -185,12 +187,3 @@ directory writable for it. On hosts that enforce SELinux, the bind mounts may ne
 | [`mcp_server.py`](mcp_server.py) | The MCP server: `get_weather(city)` over Streamable HTTP, with a request log |
 | [`docker/`](docker) | The Python image (`mcp==2.2.0`, every dependency pinned by hash), the server's entrypoint, and the client's test run |
 | [`rest_backend/`](rest_backend) | The MCP JSON-REST bridge's suite |
-
-## Not covered
-
-- The MCP JSON-REST bridge, which [`rest_backend/`](rest_backend) tests, `Mcp-Param-*` headers, RBAC
-  and transcoding, and the legacy stateful protocol, up to 2025-11-25.
-- Cases that could be added: a 2026-07-28 notification without client capabilities, which
-  envoyproxy/envoy#47915 exempts; a request whose `params._meta` has client capabilities but no
-  protocol version (envoyproxy/envoy#48720); and `attribute_source: HEADERS`, the filter's other
-  modes and options, each of which needs a listener of its own.

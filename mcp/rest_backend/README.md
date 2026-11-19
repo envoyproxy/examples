@@ -96,11 +96,9 @@ run `docker cp "$(docker compose ps -aq rest-client)":/e2e-run/. /tmp/rest-e2e-r
 
 ## The Envoy image
 
-Envoy is built from `envoyproxy/envoy:dev`, as for the MCP backend. An image of an older commit
-(`ENVOY_VARIANT=dev-<commit>`) needs at least envoyproxy/envoy#47331, envoyproxy/envoy#47473,
-envoyproxy/envoy#47878, envoyproxy/envoy#48125 and envoyproxy/envoy#48635, for the bridge, and the
-MCP filter changes that [`../README.md`](../README.md#quick-start) lists. A newer image must cause
-no regression failure: expect `FIXED` lines for the gaps that it fixes.
+Envoy is built from `envoyproxy/envoy:dev` by default, as for the MCP backend. To select a pinned
+build, set `ENVOY_VARIANT=dev-<commit>`. Use a build that includes the Envoy features exercised by
+the test suite you are running.
 
 ## Changing the suite
 
