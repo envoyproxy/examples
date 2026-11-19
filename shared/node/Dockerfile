@@ -24,7 +24,7 @@ COPY --chmod=755 ./scripts/dev.sh /usr/local/bin/dev.sh
 COPY --chmod=644 ./routes.jq /usr/local/share/routes.jq
 RUN echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80-retries
 RUN apt-get update \
-    && apt-get -qq install -y --no-install-recommends curl gosu jq yq
+    && apt-get install -y --no-install-recommends curl gosu jq yq
 # Dependencies are installed at build time, outside the bind-mounted /workspace.
 # Supply package.json and yarn.lock with `additional_contexts: {app-deps-src: <path>}`
 WORKDIR /opt/app

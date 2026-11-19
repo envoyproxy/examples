@@ -11,8 +11,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     rm -f /etc/apt/apt.conf.d/docker-clean \
     && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' | tee /etc/apt/apt.conf.d/keep-cache \
-    && apt-get -qq update -y \
-    && apt-get -qq install --no-install-recommends -y curl
+    && apt-get update -y \
+    && apt-get install --no-install-recommends -y curl
 COPY --chmod=777 "$ENVOY_CONFIG" /etc/envoy.yaml
 CMD ["/usr/local/bin/envoy", "-c", "/etc/envoy.yaml"]
 
@@ -30,8 +30,8 @@ HEALTHCHECK \
 FROM envoy-base AS envoy-fault-injection
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
-    apt-get -qq update -y \
-    && apt-get -qq install --no-install-recommends -y tree
+    apt-get update -y \
+    && apt-get install --no-install-recommends -y tree
 COPY enable_delay_fault_injection.sh disable_delay_fault_injection.sh enable_abort_fault_injection.sh disable_abort_fault_injection.sh send_request.sh /
 
 
@@ -51,8 +51,8 @@ RUN echo "4a7d17d4724ee890490bcd6cfdedb12a02316a3d33214348d30979abd201f1ca /usr/
 FROM envoy-base AS envoy-load-balancing
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
-    apt-get -qq update -y \
-    && apt-get -qq install --no-install-recommends -y python3
+    apt-get update -y \
+    && apt-get install --no-install-recommends -y python3
 COPY ./client.py /client.py
 EXPOSE 8001
 

@@ -23,8 +23,8 @@ RUN echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80-retries
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     pip3 install --require-hashes -qr /tmp/requirements.txt \
-    && apt-get -qq update \
-    && apt-get -qq install -y --no-install-recommends netcat-traditional \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends netcat-traditional \
     && mkdir /code
 HEALTHCHECK \
     --interval=1s \
@@ -53,8 +53,8 @@ ENTRYPOINT ["/usr/local/bin/start_service.sh"]
 FROM aiohttp-tracing-service3 AS aiohttp-jaeger-service
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
-    apt-get -qq update \
-    && apt-get -qq install --no-install-recommends -y curl
+    apt-get update \
+    && apt-get install --no-install-recommends -y curl
 #
 # for discussion on jaeger binary compatibility, and the source of the file, see here:
 #  https://github.com/envoyproxy/envoy/issues/11382#issuecomment-638012072

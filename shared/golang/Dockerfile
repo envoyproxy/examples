@@ -19,8 +19,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80-retries
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
-    apt-get -qq update \
-    && apt-get -qq install --no-install-recommends -y netcat-traditional
+    apt-get update \
+    && apt-get install --no-install-recommends -y netcat-traditional
 COPY --from=golang-control-plane-builder /go/go-control-plane/bin/example /usr/local/bin/example
 
 

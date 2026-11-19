@@ -6,8 +6,8 @@ ARG ECHO_SHA256_arm64=4fe0bbbeeec8b03c3b7bc9d70815153fe5651494c8d63220b33f66d756
 ARG TARGETARCH
 RUN --mount=type=tmpfs,target=/var/cache/apt \
     --mount=type=tmpfs,target=/var/lib/apt/lists \
-    apt-get -qq update \
-    && apt-get -qq install -y libssl-dev ca-certificates curl \
+    apt-get update \
+    && apt-get install -y libssl-dev ca-certificates curl \
     && test -n "${TARGETARCH}" || (echo "Error: TARGETARCH build arg must be set" && exit 1) \
     && curl -fsSL "https://github.com/envoyproxy/toolshed/releases/download/bins-v${BINS_VERSION}/echo-${ECHO_VERSION}-${TARGETARCH}" \
          -o /usr/local/bin/example-echo \

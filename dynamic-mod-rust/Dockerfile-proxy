@@ -3,8 +3,8 @@ FROM rust:1.99 AS builder
 # requires libclang.
 RUN --mount=type=tmpfs,target=/var/cache/apt \
     --mount=type=tmpfs,target=/var/lib/apt/lists \
-    apt-get -qq update \
-    && apt-get -qq install -y clang
+    apt-get update \
+    && apt-get install -y clang
 WORKDIR /build
 # Fetch the dependencies first to leverage the Docker cache.
 COPY ./Cargo.toml ./Cargo.lock ./
