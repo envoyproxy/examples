@@ -15,9 +15,9 @@ services:
     environment:
       DOCS_BUILD_RST: "${DOCS_BUILD_RST:-}"
       BAZEL_BUILD_EXTRA_OPTIONS: >-
-        --override_module=envoy-example-filter-cc=../../examples/filter-cc
-        --override_module=envoy-example-wasm-cc=../../examples/wasm-cc
-        --override_module=envoy-examples=../../examples
+        --override_repository=envoy-example-filter-cc+=../../examples/filter-cc
+        --override_repository=envoy-example-wasm-cc+=../../examples/wasm-cc
+        --override_repository=envoy-examples+=../../examples
       BUILD_UID: "${UID:-1000}"
       USER_UID: "${UID:-1000}"
       GROUP_UID: "${GID:-1000}"
