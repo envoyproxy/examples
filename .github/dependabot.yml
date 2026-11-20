@@ -175,6 +175,16 @@ updates:
     interval: daily
     time: "06:00"
 
+- package-ecosystem: "cargo"
+  directory: "/shared/echo"
+  groups:
+    examples-shared-echo:
+      patterns:
+      - "*"
+  schedule:
+    interval: daily
+    time: "06:00"
+
 - package-ecosystem: "docker"
   directory: "/shared/golang"
   schedule:
