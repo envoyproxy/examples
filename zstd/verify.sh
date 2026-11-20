@@ -6,10 +6,11 @@ export NAME=zstd
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 run_log "Test service: localhost:${PORT_PROXY}/file.json with compression"
-responds_with_header \
-    "content-encoding: zstd" \
-    "https://localhost:${PORT_PROXY}/file.json" \
-    -ki -H "Accept-Encoding: zstd"
+# envoy-stats has no healthcheck, so `up --wait` can return before it is listening.
+wait_for 15 bash -c "\
+         responds_with_header \
+         'content-encoding: zstd' \
+         https://localhost:${PORT_PROXY}/file.json -ki -H 'Accept-Encoding: zstd'"
 
 run_log "Test service: localhost:${PORT_PROXY}/file.txt without compression"
 responds_without_header \
