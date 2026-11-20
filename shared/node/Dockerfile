@@ -1,4 +1,4 @@
-FROM node:26.13-bookworm-slim@sha256:bc0a2afd3b74ce12222fc8bab99271e66257f021078f5f4a5d687a77d280c1d9 AS node-base
+FROM node:26.13-bookworm-slim@sha256:5df79989ed685e09f0a98019db4cebfb22fb9df1a53c0161664a011f7ff6b0f1 AS node-base
 # node >=26 ships neither yarn nor corepack; the project is yarn-classic (yarn.lock v1).
 RUN npm install -g yarn@1.22.22
 
