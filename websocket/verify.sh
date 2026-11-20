@@ -23,13 +23,14 @@ UPARGS="proxy-ws proxy-ws-route proxy-wss-wss proxy-wss-passthrough service-ws s
 bring_up_example
 
 run_log "Interact with web socket ws -> ws"
-"${DOCKER_COMPOSE[@]}" run client-ws "${PORT_PROXY0}" ws ws
+# each proxy is a separate Envoy with no healthcheck; retry the interaction until it is serving.
+wait_for 10 "${DOCKER_COMPOSE[@]}" run client-ws "${PORT_PROXY0}" ws ws
 
 run_log "Interact with web socket ws -> ws for specific route"
-"${DOCKER_COMPOSE[@]}" run client-ws "${PORT_PROXY1}/ws" ws ws
+wait_for 10 "${DOCKER_COMPOSE[@]}" run client-ws "${PORT_PROXY1}/ws" ws ws
 
 run_log "Interact with web socket wss -> wss"
-"${DOCKER_COMPOSE[@]}" run client-ws "${PORT_PROXY2}" wss wss
+wait_for 10 "${DOCKER_COMPOSE[@]}" run client-ws "${PORT_PROXY2}" wss wss
 
 run_log "Interact with web socket wss passthrough"
-"${DOCKER_COMPOSE[@]}" run client-ws "${PORT_PROXY3}" wss wss
+wait_for 10 "${DOCKER_COMPOSE[@]}" run client-ws "${PORT_PROXY3}" wss wss

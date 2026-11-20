@@ -7,6 +7,9 @@ export UPARGS="--scale http_service=2"
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 run_log "Send requests"
+# the proxy Envoy has no healthcheck; wait for it to serve before sending the batch,
+# otherwise early requests race its startup and no 200s get logged.
+wait_for 10 bash -c "curl -sf http://localhost:${PORT_PROXY0}/service/load -o /dev/null"
 bash send_requests.sh 2> /dev/null
 run_log "Check logs: http 1"
 "${DOCKER_COMPOSE[@]}" logs http_service | grep http_service-1 | grep HTTP | grep 200

@@ -27,9 +27,8 @@ create_self_signed_certs domain2
 bring_up_example
 
 run_log "Query domain1 with curl and tls/sni"
-curl -sk --resolve "domain1.example.com:${PORT_PROXY}:127.0.0.1" \
-     "https://domain1.example.com:${PORT_PROXY}" \
-    | jq '.hostname' | grep service-http0
+# proxy has no healthcheck; retry the first query until it is serving.
+wait_for 10 bash -c "curl -sk --resolve 'domain1.example.com:${PORT_PROXY}:127.0.0.1' 'https://domain1.example.com:${PORT_PROXY}' | jq '.hostname' | grep service-http0"
 
 run_log "Query domain2 with curl and tls/sni"
 curl -sk --resolve "domain2.example.com:${PORT_PROXY}:127.0.0.1" \
@@ -42,8 +41,8 @@ curl -sk --resolve "domain3.example.com:${PORT_PROXY}:127.0.0.1" \
     | jq '.hostname' | grep service-https
 
 run_log "Query domain1 via Envoy sni client"
-curl -s "http://localhost:${PORT_PROXY_CLIENT}/domain1" \
-    | jq '.hostname' | grep service-http0
+# proxy-client is a separate Envoy with no healthcheck; retry its first query until it is serving.
+wait_for 10 bash -c "curl -s 'http://localhost:${PORT_PROXY_CLIENT}/domain1' | jq '.hostname' | grep service-http0"
 
 run_log "Query domain2 via Envoy sni client"
 curl -s "http://localhost:${PORT_PROXY_CLIENT}/domain2" \

@@ -15,14 +15,12 @@ export ES_WATERMARK_LOW=99%
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 run_log "Make a request to service-1"
-responds_with \
-    "Hello from behind Envoy (service 1)!" \
-    "http://localhost:${PORT_PROXY}/trace/1"
+# the Envoy containers have no healthcheck, so `compose up --wait` can return before they serve;
+# /trace/1 goes via envoy-1 and /trace/2 onward via envoy-2 - retry each until it is up.
+wait_for 10 bash -c "responds_with 'Hello from behind Envoy (service 1)!' http://localhost:${PORT_PROXY}/trace/1"
 
 run_log "Make a request to service-2"
-responds_with \
-    "Hello from behind Envoy (service 2)!" \
-    "http://localhost:${PORT_PROXY}/trace/2"
+wait_for 10 bash -c "responds_with 'Hello from behind Envoy (service 2)!' http://localhost:${PORT_PROXY}/trace/2"
 
 run_log "View the traces in Skywalking UI"
 responds_with \
