@@ -6,7 +6,7 @@ go 1.25.0
 // NOTICE: these lines could be generated automatically by "go mod tidy"
 require (
 	github.com/cncf/xds/go v0.0.0-20260202195803-dba9d589def2
-	github.com/envoyproxy/envoy v1.40.1
+	github.com/envoyproxy/envoy v1.40.2
 	google.golang.org/protobuf v1.36.12
 )
 
