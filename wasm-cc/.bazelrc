@@ -2,7 +2,7 @@ common --color=yes
 common --legacy_external_runfiles
 
 common --registry=https://bcr.bazel.build/
-common --registry=https://raw.githubusercontent.com/envoyproxy/bazel-registry/d7b20891d54f90d5865fb5805f8488412ac5e770
+common --registry=https://raw.githubusercontent.com/envoyproxy/bazel-registry/7a8637b3ac1ccd031178fb52beb1e14805142623
 
 common --@rules_python//python/config_settings:bootstrap_impl=script
 build --incompatible_default_to_explicit_init_py

@@ -1,7 +1,7 @@
 common --color=yes
 
 common --registry=https://bcr.bazel.build/
-common --registry=https://raw.githubusercontent.com/envoyproxy/bazel-registry/d7b20891d54f90d5865fb5805f8488412ac5e770
+common --registry=https://raw.githubusercontent.com/envoyproxy/bazel-registry/7a8637b3ac1ccd031178fb52beb1e14805142623
 
 # Common flags for Clang (shared between all clang variants)
 common --linkopt=-fuse-ld=lld
