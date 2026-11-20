@@ -11,7 +11,9 @@ Run the **Release** workflow to open a release PR against `main`. It removes
 `-dev` (or uses the optional release-version override) and updates the Bazel
 versions. Use `dry-run` to exercise this without pushing or opening a PR.
 After merging, a successful **Verify** push run publishes the GitHub release
-`v<version>`, which triggers BCR publishing via the `.bcr/` configuration.
+`v<version>` and dispatches `envoyproxy/bazel-registry` to register this
+release's modules from the `.bcr/` templates (`envoy-examples` and the
+`filter-cc` / `wasm-cc` roots).
 `publish-envoy[bot]` then pushes directly to `main` to set `VERSION` to
 `<next>-dev` and the Bazel versions to `<next>`. No dev-bump PR is created,
 and the version-only bump does not require regenerating `MODULE.bazel.lock`.

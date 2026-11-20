@@ -25,6 +25,9 @@ jobs:
       contents: read
       actions: read
     runs-on: ubuntu-24.04
+    outputs:
+      continue: ${{ steps.status.outputs.continue }}
+      version: ${{ steps.status.outputs.version }}
     steps:
     - name: Appauth
       id: appauth
@@ -119,3 +122,38 @@ jobs:
         git add VERSION MODULE.bazel filter-cc/MODULE.bazel wasm-cc/MODULE.bazel
         git commit --signoff -m "repo: Dev Examples v${NEXT_VERSION}"
         git push origin HEAD:refs/heads/main
+
+  # After a real (non-dev) release is published, ask envoyproxy/bazel-registry to
+  # register this release's Bazel modules (envoy-examples and the filter-cc /
+  # wasm-cc roots) from the repo's `.bcr/` templates. The registry's register
+  # workflow checks out this repo at the released tag and reads those templates.
+  register:
+    needs: release
+    name: Registry dispatch
+    if: >-
+      fromJSON(needs.release.outputs.continue)
+      && ! fromJSON(needs.release.outputs.version).is_dev
+    permissions:
+      contents: read
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Appauth
+      id: appauth
+      uses: envoyproxy/toolshed/actions/appauth@e8ab1b7c39d474eadc1b9340055df55407d2c77e  # actions-v0.4.33
+      with:
+        app_id: ${{ secrets.ENVOY_CI_PUBLISH_APP_ID }}
+        key: ${{ secrets.ENVOY_CI_PUBLISH_APP_KEY }}
+    # The publish app needs write access to envoyproxy/bazel-registry to send this.
+    - name: Dispatch registration
+      env:
+        GH_TOKEN: ${{ steps.appauth.outputs.token }}
+        REF: v${{ fromJSON(needs.release.outputs.version).version }}
+        REPOSITORY: ${{ github.repository }}
+        SHA: ${{ github.event.workflow_run.head_sha }}
+      run: |
+        gh api repos/envoyproxy/bazel-registry/dispatches \
+            -f event_type=register-module \
+            -f "client_payload[repository]=${REPOSITORY}" \
+            -f "client_payload[ref]=${REF}" \
+            -f "client_payload[sha]=${SHA}"
+        echo "Requested registration of ${REPOSITORY}@${REF} (${SHA})"
