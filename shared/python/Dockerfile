@@ -7,7 +7,7 @@ ADD "$PYTHON_REQUIREMENTS_FILE" /tmp/requirements.txt
 
 FROM python-base AS python-grpc-client
 WORKDIR /client
-RUN pip install --require-hashes -qr /tmp/requirements.txt
+RUN pip install --retries 5 --timeout 60 --require-hashes -qr /tmp/requirements.txt
 # Copy the sources, including the stubs
 COPY --chmod=777 client.py /client/grpc-kv-client.py
 COPY kv /client/kv
@@ -19,12 +19,15 @@ ARG SERVICE_PORT=8080
 ENV DEBIAN_FRONTEND=noninteractive \
     SERVICE_PORT=$SERVICE_PORT
 ADD "$PYTHON_REQUIREMENTS_FILE" /tmp/requirements.txt
-RUN echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80-retries
+RUN { echo 'Acquire::Retries "5";'; \
+      echo 'Acquire::Retries::Delay::Maximum "30";'; \
+      echo 'Acquire::http::Timeout "60";'; \
+      echo 'Acquire::https::Timeout "60";'; } > /etc/apt/apt.conf.d/80-retries
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
-    pip3 install --require-hashes -qr /tmp/requirements.txt \
-    && apt-get -qq update \
-    && apt-get -qq install -y --no-install-recommends netcat-traditional \
+    pip3 install --retries 5 --timeout 60 --require-hashes -qr /tmp/requirements.txt \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends netcat-traditional \
     && mkdir /code
 HEALTHCHECK \
     --interval=1s \
@@ -53,15 +56,16 @@ ENTRYPOINT ["/usr/local/bin/start_service.sh"]
 FROM aiohttp-tracing-service3 AS aiohttp-jaeger-service
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
-    apt-get -qq update \
-    && apt-get -qq install --no-install-recommends -y curl
+    apt-get update \
+    && apt-get install --no-install-recommends -y curl
 #
 # for discussion on jaeger binary compatibility, and the source of the file, see here:
 #  https://github.com/envoyproxy/envoy/issues/11382#issuecomment-638012072
 #
 RUN echo "4a7d17d4724ee890490bcd6cfdedb12a02316a3d33214348d30979abd201f1ca  /usr/local/lib/libjaegertracing_plugin.so" > /tmp/checksum \
-         && curl -Ls https://github.com/envoyproxy/misc/releases/download/jaegertracing-plugin/jaegertracing-plugin-centos.tar.gz \
-              | tar zxf - -C /usr/local/lib \
+         && curl --fail --retry 5 --retry-connrefused --retry-delay 2 -Lso /tmp/jaeger.tar.gz https://github.com/envoyproxy/misc/releases/download/jaegertracing-plugin/jaegertracing-plugin-centos.tar.gz \
+         && tar zxf /tmp/jaeger.tar.gz -C /usr/local/lib \
+         && rm /tmp/jaeger.tar.gz \
          && mv /usr/local/lib/libjaegertracing.so.0.4.2 /usr/local/lib/libjaegertracing_plugin.so \
          && sha256sum -c /tmp/checksum \
          && rm /tmp/checksum

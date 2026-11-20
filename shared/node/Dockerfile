@@ -22,14 +22,17 @@ COPY --chmod=755 ./scripts/entrypoint.sh /entrypoint.sh
 COPY --chmod=755 ./scripts/build.sh /usr/local/bin/build.sh
 COPY --chmod=755 ./scripts/dev.sh /usr/local/bin/dev.sh
 COPY --chmod=644 ./routes.jq /usr/local/share/routes.jq
-RUN echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80-retries
+RUN { echo 'Acquire::Retries "5";'; \
+      echo 'Acquire::Retries::Delay::Maximum "30";'; \
+      echo 'Acquire::http::Timeout "60";'; \
+      echo 'Acquire::https::Timeout "60";'; } > /etc/apt/apt.conf.d/80-retries
 RUN apt-get update \
-    && apt-get -qq install -y --no-install-recommends curl gosu jq yq
+    && apt-get install -y --no-install-recommends curl gosu jq yq
 # Dependencies are installed at build time, outside the bind-mounted /workspace.
 # Supply package.json and yarn.lock with `additional_contexts: {app-deps-src: <path>}`
 WORKDIR /opt/app
 COPY --from=app-deps-src package.json yarn.lock ./
-RUN yarn install --frozen-lockfile --non-interactive \
+RUN yarn install --frozen-lockfile --non-interactive --network-timeout 600000 \
     && chmod -R a+rX /opt/app \
     && yarn cache clean
 WORKDIR /
