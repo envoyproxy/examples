@@ -28,12 +28,12 @@ jobs:
     steps:
     - name: Appauth
       id: appauth
-      uses: envoyproxy/toolshed/actions/appauth@9bd3b300cf19f67cd2ef8b6e4aaa920f79894c24  # actions-v0.4.29
+      uses: envoyproxy/toolshed/actions/appauth@e8ab1b7c39d474eadc1b9340055df55407d2c77e  # actions-v0.4.33
       with:
         app_id: ${{ secrets.ENVOY_CI_PUBLISH_APP_ID }}
         key: ${{ secrets.ENVOY_CI_PUBLISH_APP_KEY }}
     - name: Checkout verified commit
-      uses: envoyproxy/toolshed/actions/github/checkout@9bd3b300cf19f67cd2ef8b6e4aaa920f79894c24  # actions-v0.4.29
+      uses: envoyproxy/toolshed/actions/github/checkout@e8ab1b7c39d474eadc1b9340055df55407d2c77e  # actions-v0.4.33
       with:
         branch: main
         config: |
@@ -51,7 +51,7 @@ jobs:
     # Use its status/publish components to retain the v<version> BCR convention.
     - name: Check release status
       id: status
-      uses: envoyproxy/toolshed/actions/github/release/status@9bd3b300cf19f67cd2ef8b6e4aaa920f79894c24  # actions-v0.4.29
+      uses: envoyproxy/toolshed/actions/github/release/status@e8ab1b7c39d474eadc1b9340055df55407d2c77e  # actions-v0.4.33
       with:
         name: examples
         repository: ${{ github.repository }}
@@ -65,7 +65,7 @@ jobs:
           ### \(.title)
     - name: Publish release and reopen main for development
       if: fromJSON(steps.status.outputs.continue) && ! fromJSON(steps.status.outputs.version).is_dev
-      uses: envoyproxy/toolshed/actions/github/release/publish@9bd3b300cf19f67cd2ef8b6e4aaa920f79894c24  # actions-v0.4.29
+      uses: envoyproxy/toolshed/actions/github/release/publish@e8ab1b7c39d474eadc1b9340055df55407d2c77e  # actions-v0.4.33
       env:
         RELEASE_TITLE: ${{ steps.title.outputs.title }}
       with:

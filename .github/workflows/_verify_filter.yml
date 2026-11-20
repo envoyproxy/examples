@@ -11,7 +11,7 @@ jobs:
   filter:
     runs-on: ubuntu-24.04
     steps:
-    - uses: envoyproxy/toolshed/actions/bind-mounts@598eacce15ab5f208102a2fd5669292868002701  # v0.4.0
+    - uses: envoyproxy/toolshed/actions/bind-mounts@e8ab1b7c39d474eadc1b9340055df55407d2c77e  # actions-v0.4.33
       with:
         mounts: |
           - src: /mnt/docker
