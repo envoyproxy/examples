@@ -10,6 +10,9 @@ on:
         type: string
         required: true
 
+env:
+  _TS_0: &ts-container-auth envoyproxy/toolshed/actions/github/container/auth@e8ab1b7c39d474eadc1b9340055df55407d2c77e
+
 jobs:
   build:
     permissions:
@@ -36,7 +39,7 @@ jobs:
     - name: RBE auth check
       id: rbe
       if: github.event_name == 'pull_request'
-      uses: envoyproxy/toolshed/actions/github/container/auth@e8ab1b7c39d474eadc1b9340055df55407d2c77e  # actions-v0.4.33
+      uses: *ts-container-auth
       with:
         container: hello-world
     - name: Configure repo Bazel settings (RBE/BES)
