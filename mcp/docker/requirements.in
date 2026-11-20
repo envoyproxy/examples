@@ -1,0 +1,8 @@
+# The Python dependencies of the Python services' image: the MCP Python SDK version that the suite
+# is pinned to (MCP_SDK_VERSION in docker/client_entrypoint.py). requirements.txt, with every
+# transitive dependency pinned by hash, is generated from this file, in this directory, with
+# Python 3.13:
+#
+#   pip-compile --generate-hashes --allow-unsafe --strip-extras --output-file=requirements.txt \
+#     requirements.in
+mcp==2.2.0
