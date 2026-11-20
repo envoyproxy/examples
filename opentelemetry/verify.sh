@@ -14,9 +14,8 @@ responds_with \
     "http://localhost:${PORT_PROXY}/trace/1"
 
 run_log "Make a request to service-2"
-responds_with \
-    "Hello from behind Envoy (service 2)!" \
-    "http://localhost:${PORT_PROXY}/trace/2"
+# /trace/2 routes onward through envoy-2, a separate container with no healthcheck; retry until up.
+wait_for 10 bash -c "responds_with 'Hello from behind Envoy (service 2)!' http://localhost:${PORT_PROXY}/trace/2"
 
 run_log "View the traces in the collector's debug output"
 # The collector's `debug` exporter logs the spans it receives to its stdout. Each request

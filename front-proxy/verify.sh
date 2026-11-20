@@ -7,9 +7,9 @@ export NAME=front-proxy
 
 
 run_log "Test service: localhost:${PORT_PROXY}/service/1"
-responds_with \
-    "Hello from behind Envoy (service 1)!" \
-    "http://localhost:${PORT_PROXY}/service/1"
+# front-envoy has no healthcheck, so `compose up --wait` can return before it is serving;
+# retry the first request until it is up.
+wait_for 10 bash -c "responds_with 'Hello from behind Envoy (service 1)!' http://localhost:${PORT_PROXY}/service/1"
 
 run_log "Test service: localhost:${PORT_PROXY}/service/2"
 responds_with \

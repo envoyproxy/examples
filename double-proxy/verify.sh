@@ -53,6 +53,5 @@ openssl x509 -req \
 bring_up_example
 
 run_log "Test app/db connection"
-responds_with \
-    "Connected to Postgres, version: PostgreSQL" \
-    "http://localhost:${PORT_PROXY}"
+# the request chains through three Envoy proxies, none with a healthcheck; retry until they serve.
+wait_for 10 bash -c "responds_with 'Connected to Postgres, version: PostgreSQL' http://localhost:${PORT_PROXY}"
