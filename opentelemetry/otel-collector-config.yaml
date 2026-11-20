@@ -1,6 +1,4 @@
 extensions:
-  zpages:
-    endpoint: 0.0.0.0:55679
   health_check:
 
 receivers:
@@ -35,4 +33,4 @@ service:
       processors: [memory_limiter, batch]
       exporters: [debug]
 
-  extensions: [zpages, health_check]
+  extensions: [health_check]
