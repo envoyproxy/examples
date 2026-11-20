@@ -4,6 +4,7 @@ RUN rm -f /etc/apt/apt.conf.d/docker-clean \
 
 
 FROM golang:1.27-bookworm@sha256:69a7b9788769bec032d238959b61854e9ae87f57be9029ec04e9885fabf99195 AS golang-base
+ENV GOPROXY=https://proxy.golang.org|direct
 
 
 FROM golang-base AS golang-control-plane-builder
@@ -16,11 +17,14 @@ WORKDIR /go/go-control-plane
 
 FROM os-base AS golang-control-plane
 ENV DEBIAN_FRONTEND=noninteractive
-RUN echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80-retries
+RUN { echo 'Acquire::Retries "5";'; \
+      echo 'Acquire::Retries::Delay::Maximum "30";'; \
+      echo 'Acquire::http::Timeout "60";'; \
+      echo 'Acquire::https::Timeout "60";'; } > /etc/apt/apt.conf.d/80-retries
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
-    apt-get -qq update \
-    && apt-get -qq install --no-install-recommends -y netcat-traditional
+    apt-get update \
+    && apt-get install --no-install-recommends -y netcat-traditional
 COPY --from=golang-control-plane-builder /go/go-control-plane/bin/example /usr/local/bin/example
 
 

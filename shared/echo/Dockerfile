@@ -6,10 +6,11 @@ ARG ECHO_SHA256_arm64=4fe0bbbeeec8b03c3b7bc9d70815153fe5651494c8d63220b33f66d756
 ARG TARGETARCH
 RUN --mount=type=tmpfs,target=/var/cache/apt \
     --mount=type=tmpfs,target=/var/lib/apt/lists \
-    apt-get -qq update \
-    && apt-get -qq install -y libssl-dev ca-certificates curl \
+    { echo 'Acquire::Retries "5";'; echo 'Acquire::Retries::Delay::Maximum "30";'; echo 'Acquire::http::Timeout "60";'; echo 'Acquire::https::Timeout "60";'; } > /etc/apt/apt.conf.d/80-retries \
+    && apt-get update \
+    && apt-get install -y libssl-dev ca-certificates curl \
     && test -n "${TARGETARCH}" || (echo "Error: TARGETARCH build arg must be set" && exit 1) \
-    && curl -fsSL "https://github.com/envoyproxy/toolshed/releases/download/bins-v${BINS_VERSION}/echo-${ECHO_VERSION}-${TARGETARCH}" \
+    && curl --retry 5 --retry-connrefused --retry-delay 2 -fsSL "https://github.com/envoyproxy/toolshed/releases/download/bins-v${BINS_VERSION}/echo-${ECHO_VERSION}-${TARGETARCH}" \
          -o /usr/local/bin/example-echo \
     && case "${TARGETARCH}" in \
          amd64) EXPECTED_SHA="${ECHO_SHA256_amd64}" ;; \
