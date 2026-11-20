@@ -27,6 +27,12 @@ on:
         type: string
         default: 140627008+publish-envoy[bot]@users.noreply.github.com
 
+env:
+  _TS_0: &ts-appauth envoyproxy/toolshed/actions/appauth@e8ab1b7c39d474eadc1b9340055df55407d2c77e
+  _TS_1: &ts-checkout envoyproxy/toolshed/actions/github/checkout@e8ab1b7c39d474eadc1b9340055df55407d2c77e
+  _TS_2: &ts-pr envoyproxy/toolshed/actions/github/pr@e8ab1b7c39d474eadc1b9340055df55407d2c77e
+  _TS_3: &ts-version envoyproxy/toolshed/actions/version@e8ab1b7c39d474eadc1b9340055df55407d2c77e
+
 jobs:
   release:
     if: inputs.action == 'release' && (inputs.dry-run || github.event_name == 'workflow_dispatch')
@@ -35,12 +41,12 @@ jobs:
     - name: Appauth
       id: appauth
       if: ${{ ! inputs.dry-run }}
-      uses: envoyproxy/toolshed/actions/appauth@e8ab1b7c39d474eadc1b9340055df55407d2c77e  # actions-v0.4.33
+      uses: *ts-appauth
       with:
         app_id: ${{ secrets.ENVOY_CI_PUBLISH_APP_ID }}
         key: ${{ secrets.ENVOY_CI_PUBLISH_APP_KEY }}
     - name: Checkout
-      uses: envoyproxy/toolshed/actions/github/checkout@e8ab1b7c39d474eadc1b9340055df55407d2c77e  # actions-v0.4.33
+      uses: *ts-checkout
       with:
         branch: main
         pr: ${{ github.event.pull_request.number || '' }}
@@ -49,7 +55,7 @@ jobs:
         token: ${{ steps.appauth.outputs.token || github.token }}
     - name: Version
       id: version
-      uses: envoyproxy/toolshed/actions/version@e8ab1b7c39d474eadc1b9340055df55407d2c77e  # actions-v0.4.33
+      uses: *ts-version
       with:
         version-file: VERSION
     - name: Prepare and commit release
@@ -75,7 +81,7 @@ jobs:
         echo "version=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
     - name: Create release PR
       if: steps.commit.outputs.version != ''
-      uses: envoyproxy/toolshed/actions/github/pr@e8ab1b7c39d474eadc1b9340055df55407d2c77e  # actions-v0.4.33
+      uses: *ts-pr
       with:
         base: main
         branch: release/create/${{ steps.commit.outputs.version }}

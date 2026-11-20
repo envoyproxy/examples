@@ -14,6 +14,12 @@ concurrency:
   group: publish-main
   cancel-in-progress: false
 
+env:
+  _TS_0: &ts-appauth envoyproxy/toolshed/actions/appauth@e8ab1b7c39d474eadc1b9340055df55407d2c77e
+  _TS_1: &ts-checkout envoyproxy/toolshed/actions/github/checkout@e8ab1b7c39d474eadc1b9340055df55407d2c77e
+  _TS_2: &ts-release-publish envoyproxy/toolshed/actions/github/release/publish@e8ab1b7c39d474eadc1b9340055df55407d2c77e
+  _TS_3: &ts-release-status envoyproxy/toolshed/actions/github/release/status@e8ab1b7c39d474eadc1b9340055df55407d2c77e
+
 jobs:
   release:
     if: >-
@@ -31,12 +37,12 @@ jobs:
     steps:
     - name: Appauth
       id: appauth
-      uses: envoyproxy/toolshed/actions/appauth@e8ab1b7c39d474eadc1b9340055df55407d2c77e  # actions-v0.4.33
+      uses: *ts-appauth
       with:
         app_id: ${{ secrets.ENVOY_CI_PUBLISH_APP_ID }}
         key: ${{ secrets.ENVOY_CI_PUBLISH_APP_KEY }}
     - name: Checkout verified commit
-      uses: envoyproxy/toolshed/actions/github/checkout@e8ab1b7c39d474eadc1b9340055df55407d2c77e  # actions-v0.4.33
+      uses: *ts-checkout
       with:
         branch: main
         config: |
@@ -54,7 +60,7 @@ jobs:
     # Use its status/publish components to retain the v<version> BCR convention.
     - name: Check release status
       id: status
-      uses: envoyproxy/toolshed/actions/github/release/status@e8ab1b7c39d474eadc1b9340055df55407d2c77e  # actions-v0.4.33
+      uses: *ts-release-status
       with:
         name: examples
         repository: ${{ github.repository }}
@@ -68,7 +74,7 @@ jobs:
           ### \(.title)
     - name: Publish release and reopen main for development
       if: fromJSON(steps.status.outputs.continue) && ! fromJSON(steps.status.outputs.version).is_dev
-      uses: envoyproxy/toolshed/actions/github/release/publish@e8ab1b7c39d474eadc1b9340055df55407d2c77e  # actions-v0.4.33
+      uses: *ts-release-publish
       env:
         RELEASE_TITLE: ${{ steps.title.outputs.title }}
       with:
@@ -139,7 +145,7 @@ jobs:
     steps:
     - name: Appauth
       id: appauth
-      uses: envoyproxy/toolshed/actions/appauth@e8ab1b7c39d474eadc1b9340055df55407d2c77e  # actions-v0.4.33
+      uses: *ts-appauth
       with:
         app_id: ${{ secrets.ENVOY_CI_PUBLISH_APP_ID }}
         key: ${{ secrets.ENVOY_CI_PUBLISH_APP_KEY }}
