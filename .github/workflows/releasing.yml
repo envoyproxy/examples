@@ -10,6 +10,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
+env:
+  _TS_0: &ts-should-run envoyproxy/toolshed/actions/github/should-run@e8ab1b7c39d474eadc1b9340055df55407d2c77e
+
 jobs:
   request:
     runs-on: ubuntu-24.04
@@ -18,7 +21,7 @@ jobs:
     steps:
     - name: Check release machinery changes
       id: filter
-      uses: envoyproxy/toolshed/actions/github/should-run@e8ab1b7c39d474eadc1b9340055df55407d2c77e  # actions-v0.4.33
+      uses: *ts-should-run
       with:
         config: |
           paths:
