@@ -8,8 +8,8 @@ on:
 
 
 env:
-  _TS_0: &ts-bind-mounts envoyproxy/toolshed/actions/bind-mounts@e8ab1b7c39d474eadc1b9340055df55407d2c77e
-  _TS_1: &ts-container-auth envoyproxy/toolshed/actions/github/container/auth@e8ab1b7c39d474eadc1b9340055df55407d2c77e
+  _TS_0: &ts-bind-mounts envoyproxy/toolshed/actions/bind-mounts@e8ab1b7c39d474eadc1b9340055df55407d2c77e  # actions-v0.4.33
+  _TS_1: &ts-container-auth envoyproxy/toolshed/actions/github/container/auth@e8ab1b7c39d474eadc1b9340055df55407d2c77e  # actions-v0.4.33
 
 jobs:
   examples:

@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  _TS_0: &ts-should-run envoyproxy/toolshed/actions/github/should-run@e8ab1b7c39d474eadc1b9340055df55407d2c77e
+  _TS_0: &ts-should-run envoyproxy/toolshed/actions/github/should-run@e8ab1b7c39d474eadc1b9340055df55407d2c77e  # actions-v0.4.33
 
 jobs:
   request:
