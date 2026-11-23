@@ -15,10 +15,10 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  _TS_0: &ts-appauth envoyproxy/toolshed/actions/appauth@e8ab1b7c39d474eadc1b9340055df55407d2c77e
-  _TS_1: &ts-checkout envoyproxy/toolshed/actions/github/checkout@e8ab1b7c39d474eadc1b9340055df55407d2c77e
-  _TS_2: &ts-release-publish envoyproxy/toolshed/actions/github/release/publish@e8ab1b7c39d474eadc1b9340055df55407d2c77e
-  _TS_3: &ts-release-status envoyproxy/toolshed/actions/github/release/status@e8ab1b7c39d474eadc1b9340055df55407d2c77e
+  _TS_0: &ts-appauth envoyproxy/toolshed/actions/appauth@e8ab1b7c39d474eadc1b9340055df55407d2c77e  # actions-v0.4.33
+  _TS_1: &ts-checkout envoyproxy/toolshed/actions/github/checkout@e8ab1b7c39d474eadc1b9340055df55407d2c77e  # actions-v0.4.33
+  _TS_2: &ts-release-publish envoyproxy/toolshed/actions/github/release/publish@e8ab1b7c39d474eadc1b9340055df55407d2c77e  # actions-v0.4.33
+  _TS_3: &ts-release-status envoyproxy/toolshed/actions/github/release/status@e8ab1b7c39d474eadc1b9340055df55407d2c77e  # actions-v0.4.33
 
 jobs:
   release:
