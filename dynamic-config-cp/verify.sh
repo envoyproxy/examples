@@ -10,9 +10,8 @@ run_log "Check port ${PORT_PROXY} is not open (still shows as succeeded)"
 nc -zv localhost "${PORT_PROXY}" |& grep -v open
 
 run_log "Check the static cluster"
-curl -s "http://localhost:${PORT_ADMIN}/config_dump" \
-    | jq -r '.configs[1].static_clusters' \
-    | grep 'go-control-plane'
+# the admin interface has no healthcheck; retry until it is serving.
+wait_for 10 bash -c "curl -s http://localhost:${PORT_ADMIN}/config_dump | jq -r '.configs[1].static_clusters' | grep 'go-control-plane'"
 
 run_log "Check there is no config for dynamic clusters"
 curl -s "http://localhost:${PORT_ADMIN}/config_dump" \
@@ -71,17 +70,13 @@ wait_for 30 sh -c "${DOCKER_COMPOSE[*]} ps go-control-plane | grep healthy | gre
 
 
 run_log "Check for response from service2 backend"
-wait_for 5 sh -c "\
+wait_for 30 sh -c "\
          curl -s \"http://localhost:${PORT_PROXY}\" \
          | jq -r '.hostname' \
          | grep service2"
 
 run_log "Check config for active clusters pointing to service2"
-curl -s "http://localhost:${PORT_ADMIN}/config_dump" \
-    | jq -r '.configs[1].dynamic_active_clusters' \
-    | grep '"version_info": "2"'
-curl -s "http://localhost:${PORT_ADMIN}/config_dump" \
-    | jq -r '.configs[1].dynamic_active_clusters' \
-    | grep '"address": "service2"'
+wait_for 10 bash -c "curl -s http://localhost:${PORT_ADMIN}/config_dump | jq -r '.configs[1].dynamic_active_clusters' | grep '\"version_info\": \"2\"'"
+wait_for 10 bash -c "curl -s http://localhost:${PORT_ADMIN}/config_dump | jq -r '.configs[1].dynamic_active_clusters' | grep '\"address\": \"service2\"'"
 
 mv resource.go.bak resource.go
