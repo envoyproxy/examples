@@ -18,7 +18,9 @@ TOPIC="envoy-kafka-broker"
 MESSAGE="Welcome to Envoy and Kafka broker filter!"
 
 run_log "Create a Kafka topic"
-kafka_client kafka-topics --bootstrap-server proxy:10000 --create --topic $TOPIC
+# the proxy has no healthcheck; retry the first broker call until envoy and the
+# upstream broker are both serving (--if-not-exists keeps the retry idempotent).
+wait_for 30 kafka_client kafka-topics --bootstrap-server proxy:10000 --create --topic "$TOPIC" --if-not-exists
 
 run_log "Check the Kafka topic"
 kafka_client kafka-topics --bootstrap-server proxy:10000 --list | grep $TOPIC
