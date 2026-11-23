@@ -12,7 +12,9 @@ kafka_client () {
 }
 
 run_log "Produce message to topic 'apples' (routes to cluster1)"
-kafka_client /bin/bash -c "echo 'hello from apples' | kafka-console-producer --request-required-acks 1 --producer-property enable.idempotence=false --broker-list proxy:10000 --topic apples"
+# the proxy has no healthcheck; retry the first produce until envoy and the
+# upstream cluster are both serving.
+wait_for 30 kafka_client /bin/bash -c "echo 'hello from apples' | kafka-console-producer --sync --request-required-acks 1 --producer-property enable.idempotence=false --broker-list proxy:10000 --topic apples"
 
 run_log "Produce message to topic 'bananas' (routes to cluster2)"
 kafka_client /bin/bash -c "echo 'hello from bananas' | kafka-console-producer --request-required-acks 1 --producer-property enable.idempotence=false --broker-list proxy:10000 --topic bananas"
