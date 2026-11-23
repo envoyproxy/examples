@@ -4059,10 +4059,10 @@ react-is@^16.13.1, react-is@^16.7.0:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
   integrity sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==
 
-react-router@^8.5.1:
-  version "8.5.1"
-  resolved "https://registry.yarnpkg.com/react-router/-/react-router-8.5.1.tgz#930df69ce3444240a4a6285c29aeb89aa493814b"
-  integrity sha512-5u1eQ46QjuXjNfEnLwzrnou1Bm5dquO3xjVYkkMYCudtkicD2AQHtx+fvXzPATtPJx8TW6DR1x1TDRqsfHyZBw==
+react-router@^8.5.2:
+  version "8.5.2"
+  resolved "https://registry.yarnpkg.com/react-router/-/react-router-8.5.2.tgz#cd97f90c6d8c93e6569b1ce95652783d42356275"
+  integrity sha512-luPXqNUAIZAmCHbeBysc2KO7VJjckIMZk4ByEetS7Jotit8R6lLSVVeC76UE//AYK6QD6tAnVAPGkvmqMd+b1w==
   dependencies:
     "@remix-run/route-pattern" "^0.22.1"
     cookie-es "^3.1.1"
