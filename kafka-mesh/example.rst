@@ -31,7 +31,7 @@ Step 1: Start all containers
 ****************************
 
 Change to the ``kafka-mesh`` directory and start the containers. This brings
-up Envoy, two independent Kafka clusters, and a shared Zookeeper instance.
+up Envoy and two independent single-node Kafka clusters (KRaft mode).
 
 .. code-block:: console
 
@@ -46,7 +46,6 @@ up Envoy, two independent Kafka clusters, and a shared Zookeeper instance.
    kafka-mesh_proxy_1          Up             10000/tcp, 0.0.0.0:8001->8001/tcp
    kafka-mesh_kafka-cluster1_1 Up             9092/tcp
    kafka-mesh_kafka-cluster2_1 Up             9092/tcp
-   kafka-mesh_zookeeper_1      Up (healthy)   2181/tcp
 
 
 Step 2: Produce a message to the ``apples`` topic

@@ -4,7 +4,7 @@ export NAME=kafka
 
 # Explicitly specified the service want to start, since the `kafka-client` is expected to
 # not start.
-UPARGS="proxy kafka-server zookeeper"
+UPARGS="proxy kafka-server"
 
 # shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"

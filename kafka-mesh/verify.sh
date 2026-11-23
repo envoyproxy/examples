@@ -2,7 +2,7 @@
 
 export NAME=kafka-mesh
 
-UPARGS="proxy kafka-cluster1 kafka-cluster2 zookeeper"
+UPARGS="proxy kafka-cluster1 kafka-cluster2"
 
 # shellcheck source=verify-common.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
