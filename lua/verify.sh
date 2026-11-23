@@ -7,9 +7,8 @@ export NAME=lua
 
 
 run_log "Test common Lua script"
-responds_with \
-    '"foo": "bar"' \
-    "http://localhost:${PORT_PROXY}"
+# the proxy has no healthcheck; retry until it is serving.
+wait_for 10 bash -c "responds_with '\"foo\": \"bar\"' http://localhost:${PORT_PROXY}"
 
 run_log "Test route-specific Lua script"
 responds_with_header \

@@ -28,6 +28,13 @@ responds_without_rate_limit () {
 export -f responds_without_rate_limit
 
 
+# envoy-stat has no healthcheck; wait until the traffic listener's workers are
+# serving before the rate-limit checks. Probe the stats interface for
+# listener_manager.workers_started (as shared/envoy's healthcheck does) rather
+# than the data port, so no rate-limit tokens are consumed and we do not race a
+# stats endpoint that is up before the workers are.
+wait_for 10 bash -c "curl -s 'http://localhost:${PORT_STATS0}/stats?filter=listener_manager.workers_started' | grep -q ': 1'"
+
 run_log "Test upstream: localhost:${PORT_PROXY} without rate limit header two times"
 for i in {1..2}; do
     output=$(curl -s -X GET --head "http://localhost:${PORT_PROXY}")
