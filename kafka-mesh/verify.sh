@@ -11,6 +11,17 @@ kafka_client () {
     "${DOCKER_COMPOSE[@]}" run --rm kafka-client "$@"
 }
 
+# >>> DEBUG (remove before merge): diagnose the produce path in CI
+set +e
+run_log "DEBUG: broker reachable through proxy?"
+out=$(kafka_client kafka-broker-api-versions --bootstrap-server proxy:10000 2>&1); echo "DEBUG api-versions rc=$? :"; echo "$out" | tail -8
+out=$(kafka_client kafka-topics --bootstrap-server proxy:10000 --list 2>&1); echo "DEBUG list rc=$? :"; echo "$out" | tail -8
+out=$(kafka_client /bin/bash -c "echo dbg | kafka-console-producer --sync --request-required-acks 1 --producer-property enable.idempotence=false --broker-list proxy:10000 --topic apples 2>&1"); echo "DEBUG produce rc=$? :"; echo "$out" | tail -25
+run_log "DEBUG: envoy kafka_mesh stats"
+out=$(responds_with "" "http://localhost:${PORT_ADMIN}/stats?filter=kafka" 2>&1); echo "DEBUG kafka stats (first 20 lines):"; echo "$out" | tail -20
+set -e
+# <<< DEBUG
+
 run_log "Produce message to topic 'apples' (routes to cluster1)"
 # the proxy has no healthcheck; retry the first produce until envoy and the
 # upstream cluster are both serving.
