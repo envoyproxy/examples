@@ -6,7 +6,8 @@ export NAME=rbac
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 run_log "Test upstream with access denied response"
-responds_with "RBAC: access denied" "http://localhost:${PORT_PROXY}"
+# the proxy has no healthcheck; retry until it is serving.
+wait_for 10 bash -c "responds_with 'RBAC: access denied' http://localhost:${PORT_PROXY}"
 
 run_log "Test authorized upstream response"
 responds_without "RBAC: access denied" "http://localhost:${PORT_PROXY}" -H "Referer: https://www.envoyproxy.io/docs/envoy"

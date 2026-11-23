@@ -6,9 +6,8 @@ export NAME=lua-cluster-specifier
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 run_log "Test Lua cluster specifier with normal cluster"
-responds_with_header \
-    "HTTP/1.1 200 OK" \
-    "http://localhost:${PORT_PROXY}/"
+# the proxy has no healthcheck; retry until it is serving.
+wait_for 10 bash -c "responds_with_header 'HTTP/1.1 200 OK' http://localhost:${PORT_PROXY}/"
 
 run_log "Test Lua cluster specifier with fake cluster"
 responds_with_header \

@@ -6,10 +6,11 @@ export NAME=gzip
 . "$(dirname "${BASH_SOURCE[0]}")/../verify-common.sh"
 
 run_log "Test service: localhost:${PORT_PROXY}/file.json with compression"
-responds_with_header \
-    "content-encoding: gzip" \
-    "http://localhost:${PORT_PROXY}/file.json" \
-    -i -H "Accept-Encoding: gzip"
+# envoy-stats has no healthcheck, so `up --wait` can return before it is listening.
+wait_for 15 bash -c "\
+         responds_with_header \
+         'content-encoding: gzip' \
+         http://localhost:${PORT_PROXY}/file.json -i -H 'Accept-Encoding: gzip'"
 
 run_log "Test service: localhost:${PORT_PROXY}/file.txt without compression"
 responds_without_header \
