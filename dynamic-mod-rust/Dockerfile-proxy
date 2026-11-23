@@ -1,4 +1,4 @@
-FROM rust:1.99 AS builder
+FROM rust:1.100 AS builder
 ENV CARGO_NET_RETRY=5
 # bindgen, used by the Rust SDK to generate bindings for the dynamic modules ABI,
 # requires libclang.
