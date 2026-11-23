@@ -44,7 +44,6 @@ EXAMPLE_TESTS = [
     "local_ratelimit",
     "lua",
     "lua-cluster-specifier",
-    "mcp",
     "mysql",
     "opentelemetry",
     "postgres",

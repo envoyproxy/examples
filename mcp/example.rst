@@ -7,161 +7,299 @@ MCP filter and MCP JSON-REST bridge
 
    .. include:: _include/docker-env-setup-link.rst
 
-This sandbox puts Envoy in front of two Model Context Protocol (MCP) backends, and tests it with
-real MCP clients, at MCP protocol version ``2026-07-28``. Each backend is a Docker Compose project of
-its own:
+   :ref:`curl <start_sandboxes_setup_curl>`
+        Used to make HTTP requests.
 
-- **The MCP backend**: an MCP server, behind Envoy's :ref:`MCP filter <config_http_filters_mcp>`.
-  The filter parses the JSON-RPC body of each request. For ``2026-07-28``, it checks the
-  ``Mcp-Method`` and ``Mcp-Name`` headers against the body, and the protocol version and the client
-  capabilities in ``params._meta``, and answers a request that breaks these rules itself.
-- **The REST backend**: a plain REST service, behind the
-  :ref:`MCP JSON-REST bridge <envoy_v3_api_msg_extensions.filters.http.mcp_json_rest_bridge.v3.McpJsonRestBridge>`,
-  which serves the service's REST endpoints as MCP tools. One listener has the MCP filter in front
-  of the bridge, and another has the bridge alone.
+   :ref:`jq <start_sandboxes_setup_jq>`
+        Parse JSON output from the proxy.
 
-The MCP server and the clients are built on the official MCP Python SDK, ``mcp`` 2.2.0. Each client
-runs a suite of cases through Envoy, with the SDK and with raw HTTP requests. For each request, it
-checks the answer and what reached the backend. The MCP client also checks Envoy's access log, and
-the MCP filter's dynamic metadata and statistics.
+This sandbox serves a REST API as a Model Context Protocol (MCP) server, at MCP protocol version
+``2026-07-28``: MCP clients send JSON-RPC requests to Envoy, and Envoy turns their tool calls into
+REST requests.
 
-The sandbox publishes no ports: the clients run in their containers, with ``docker compose exec``.
+The REST API is a local mock of a small weather and orders service. In front of it, Envoy runs two
+filters:
+
+- The :ref:`MCP filter <config_http_filters_mcp>` parses the JSON-RPC body of each request, and
+  rejects requests that are not MCP. At protocol version ``2026-07-28``, it also checks the
+  ``Mcp-Method`` and ``Mcp-Name`` headers against the body, and that ``params._meta`` has the
+  protocol version and the client capabilities. It stores what it parsed as
+  :ref:`dynamic metadata <config_http_filters_mcp_dynamic_metadata>`.
+- The :ref:`MCP JSON-REST bridge <envoy_v3_api_msg_extensions.filters.http.mcp_json_rest_bridge.v3.McpJsonRestBridge>`
+  serves the REST API as MCP tools. It answers ``server/discover`` and ``tools/list`` itself, from
+  its configuration, and transcodes each ``tools/call`` into a REST request, and the REST response
+  into the tool's result.
+
+The MCP filter does not need the bridge: it can also sit on its own in front of a native MCP server.
 
 .. warning::
 
-   The MCP JSON-REST bridge's API is a work in progress.
+   The MCP filter and the MCP JSON-REST bridge are not in an Envoy release yet: the sandbox needs an
+   Envoy build from ``main``, such as the ``envoyproxy/envoy:dev`` image that it uses. Their APIs are
+   a work in progress, and Envoy logs warnings about them at startup.
 
-Step 1: Start the MCP backend
-*****************************
+Step 1: Start the sandbox
+*************************
 
-Change to the ``mcp`` directory, and build and start the MCP server, Envoy and the MCP client.
+Change to the ``mcp`` directory, and build and start the proxy and the REST API.
 
 .. code-block:: console
 
    $ pwd
    examples/mcp
+   $ docker compose pull
    $ docker compose up --build -d
+   $ docker compose ps
+   NAME          IMAGE       COMMAND                  SERVICE   CREATED          STATUS                    PORTS
+   mcp-proxy-1   mcp-proxy   "/docker-entrypoint.…"   proxy     10 seconds ago   Up 4 seconds (healthy)    0.0.0.0:9901->9901/tcp, 0.0.0.0:10000->10000/tcp
+   mcp-rest-1    mcp-rest    "python3 /code/servi…"   rest      10 seconds ago   Up 9 seconds (healthy)
 
-Envoy listens on port ``10000``, and on port ``10001``, whose MCP filter supports protocol versions
-up to ``2025-11-25`` only. Both forward to the MCP server:
+Envoy listens for MCP requests on port ``10000``, and serves its admin interface on port ``9901``.
+The configuration of the MCP filter and the bridge, and the tools that the bridge serves:
 
 .. literalinclude:: _include/mcp/envoy.yaml
    :language: yaml
-   :lines: 67-80
+   :lines: 41-93
    :linenos:
-   :lineno-start: 67
+   :lineno-start: 41
    :caption: :download:`envoy.yaml <_include/mcp/envoy.yaml>`
 
-Step 2: Run the MCP backend's cases
-***********************************
+Step 2: Discover the server
+***************************
 
-The MCP client runs 17 cases. With the SDK, it lists the tools and calls one, through the first
-listener, and lists the tools through the second, whose MCP filter answers with error ``-32022``
-itself. With raw HTTP, it sends requests that each break one ``2026-07-28`` rule, which the MCP
-filter must answer without forwarding them, and a few that it must forward.
+An MCP ``2026-07-28`` request is a JSON-RPC ``POST``, whose ``params._meta`` has the protocol
+version, the client's information and its capabilities. Its headers repeat the protocol version and
+the method. There is no ``initialize`` handshake: a client asks the server what it supports with
+``server/discover``:
 
-.. code-block:: console
+.. code-block:: bash
 
-   $ docker compose exec mcp-client python -u docker/client_entrypoint.py
-   ...
-   [missing-mcp-method] tools/list without the Mcp-Method header
-     ok    400, application/json: {"jsonrpc": "2.0", "id": null, "error": {"code": -32020, ...}} (got 400, ...)
-     ok    the request did not reach the server (got [])
-     ok    MCP filter counters: header_mismatch +1, others unchanged (got header_mismatch +1, others unchanged)
-   ...
-   Cases: 17 of 17 run, 17 passed, 0 failed
-   ...
-   PASS. Logs and files: the run directory, /e2e-run, in the mcp-client container (see README.md)
+   curl -s http://localhost:10000/mcp \
+     -H 'content-type: application/json' -H 'accept: application/json, text/event-stream' \
+     -H 'mcp-protocol-version: 2026-07-28' -H 'mcp-method: server/discover' \
+     -d '{"jsonrpc": "2.0", "id": 1, "method": "server/discover", "params": {
+           "_meta": {"io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                     "io.modelcontextprotocol/clientInfo": {"name": "curl", "version": "1.0.0"},
+                     "io.modelcontextprotocol/clientCapabilities": {}}}}' \
+     | jq '.result'
 
-Each check prints ``ok`` or ``FAIL``, and any ``FAIL`` fails the run. Each run needs services that
-have just started, because the MCP server clears the shared run directory when it starts: to run the
-cases again, first run ``docker compose up -d --force-recreate``.
+.. code-block:: json
 
-Step 3: Start the REST backend
+   {
+     "_meta": {
+       "io.modelcontextprotocol/serverInfo": {
+         "name": "localhost",
+         "version": "1.0.0"
+       }
+     },
+     "cacheScope": "public",
+     "capabilities": {
+       "tools": {
+         "listChanged": false
+       }
+     },
+     "resultType": "complete",
+     "supportedVersions": [
+       "2024-11-05",
+       "2025-03-26",
+       "2025-06-18",
+       "2025-11-25",
+       "2026-07-28"
+     ],
+     "ttlMs": 0
+   }
+
+The bridge answered itself: the request never reached the REST API. The bridge has no setting for the
+server's name: ``serverInfo`` has the host of the request's ``Host`` header, ``localhost``, and the
+version ``1.0.0``.
+
+Step 3: List the tools
+**********************
+
+The bridge also answers ``tools/list`` itself, with the tools of its configuration:
+
+.. code-block:: bash
+
+   curl -s http://localhost:10000/mcp \
+     -H 'content-type: application/json' -H 'accept: application/json, text/event-stream' \
+     -H 'mcp-protocol-version: 2026-07-28' -H 'mcp-method: tools/list' \
+     -d '{"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {
+           "_meta": {"io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                     "io.modelcontextprotocol/clientInfo": {"name": "curl", "version": "1.0.0"},
+                     "io.modelcontextprotocol/clientCapabilities": {}}}}' \
+     | jq -c '.result.tools[] | {name, title, description}'
+
+.. code-block:: json
+
+   {"name":"get_weather","title":"Weather","description":"The current weather in a city."}
+   {"name":"create_order","title":"Create an order","description":"Creates an order for an item."}
+   {"name":"stream_text","title":"Stream text","description":"Streams an answer in several parts."}
+
+Step 4: Call a tool that is a GET request
+*****************************************
+
+Call ``get_weather``. A ``tools/call`` request also needs the ``Mcp-Name`` header, with the tool's
+name:
+
+.. code-block:: bash
+
+   curl -s http://localhost:10000/mcp \
+     -H 'content-type: application/json' -H 'accept: application/json, text/event-stream' \
+     -H 'mcp-protocol-version: 2026-07-28' -H 'mcp-method: tools/call' -H 'mcp-name: get_weather' \
+     -d '{"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {
+           "name": "get_weather", "arguments": {"city": "Paris", "units": "imperial"},
+           "_meta": {"io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                     "io.modelcontextprotocol/clientInfo": {"name": "curl", "version": "1.0.0"},
+                     "io.modelcontextprotocol/clientCapabilities": {}}}}' \
+     | jq '.result'
+
+.. code-block:: json
+
+   {
+     "content": [
+       {
+         "text": "{\"city\": \"Paris\", \"conditions\": \"sunny\", \"temperature\": 72, \"units\": \"imperial\"}",
+         "type": "text"
+       }
+     ],
+     "isError": false,
+     "resultType": "complete"
+   }
+
+The bridge sent ``GET /v1/weather/Paris?units=imperial`` to the REST API: ``city`` filled the
+``{city}`` variable of the tool's path, and ``units``, which is not in the path, became a query
+parameter. The REST API's JSON answer is the text content of the tool's result.
+
+Step 5: Call a tool that is a POST request
+******************************************
+
+``create_order`` is a ``POST`` with ``body: "*"``: the bridge sends the arguments as the JSON body.
+The REST API echoes the order that it received:
+
+.. code-block:: bash
+
+   curl -s http://localhost:10000/mcp \
+     -H 'content-type: application/json' -H 'accept: application/json, text/event-stream' \
+     -H 'mcp-protocol-version: 2026-07-28' -H 'mcp-method: tools/call' -H 'mcp-name: create_order' \
+     -d '{"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {
+           "name": "create_order", "arguments": {"item": "widget", "quantity": 3},
+           "_meta": {"io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                     "io.modelcontextprotocol/clientInfo": {"name": "curl", "version": "1.0.0"},
+                     "io.modelcontextprotocol/clientCapabilities": {}}}}' \
+     | jq -r '.result.content[0].text'
+
+.. code-block:: json
+
+   {"id": "order-1", "status": "created", "order": {"item": "widget", "quantity": 3}}
+
+Step 6: Stream a tool's result
 ******************************
 
-Change to the ``rest_backend`` directory, and build and start the REST service, Envoy and the
-client.
+The REST API answers ``stream_text`` with a stream of server-sent events. With
+``text_content_streaming_enabled``, the bridge streams the tool's result to the client in a chunked
+``application/json`` response, with each event as a text item, as the events arrive. The client gets
+a JSON-RPC response, not server-sent events:
+
+.. code-block:: bash
+
+   curl -sN http://localhost:10000/mcp \
+     -H 'content-type: application/json' -H 'accept: application/json, text/event-stream' \
+     -H 'mcp-protocol-version: 2026-07-28' -H 'mcp-method: tools/call' -H 'mcp-name: stream_text' \
+     -d '{"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {
+           "name": "stream_text", "arguments": {},
+           "_meta": {"io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                     "io.modelcontextprotocol/clientInfo": {"name": "curl", "version": "1.0.0"},
+                     "io.modelcontextprotocol/clientCapabilities": {}}}}' \
+     | jq -c '.result.content[]'
+
+.. code-block:: json
+
+   {"type":"text","text":"The REST API sends"}
+   {"type":"text","text":"this answer"}
+   {"type":"text","text":"in three events."}
+
+Step 7: Get a tool error
+************************
+
+The REST API answers ``404`` for a city that it does not know. The bridge turns the error into a
+tool result with ``isError: true``, so that the client, or its model, can read it:
+
+.. code-block:: bash
+
+   curl -s http://localhost:10000/mcp \
+     -H 'content-type: application/json' -H 'accept: application/json, text/event-stream' \
+     -H 'mcp-protocol-version: 2026-07-28' -H 'mcp-method: tools/call' -H 'mcp-name: get_weather' \
+     -d '{"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {
+           "name": "get_weather", "arguments": {"city": "Atlantis"},
+           "_meta": {"io.modelcontextprotocol/protocolVersion": "2026-07-28",
+                     "io.modelcontextprotocol/clientInfo": {"name": "curl", "version": "1.0.0"},
+                     "io.modelcontextprotocol/clientCapabilities": {}}}}' \
+     | jq '.result'
+
+.. code-block:: json
+
+   {
+     "content": [
+       {
+         "text": "{\"error\": \"No weather for Atlantis.\"}",
+         "type": "text"
+       }
+     ],
+     "isError": true,
+     "resultType": "complete"
+   }
+
+Step 8: Send a request that is not MCP
+**************************************
+
+With ``traffic_mode: REJECT_NO_MCP``, the MCP filter answers a request that is not MCP itself, here
+a JSON body that is not a JSON-RPC message, so that it reaches neither the bridge nor the REST API:
 
 .. code-block:: console
 
-   $ cd rest_backend
-   $ docker compose up --build -d
+   $ curl -s -w '\n%{http_code}\n' http://localhost:10000/mcp \
+       -H 'content-type: application/json' \
+       -d '{"city": "Paris"}'
+   request must be a valid JSON-RPC 2.0 message for MCP
+   400
 
-Envoy listens on port ``10000``, with the MCP filter in front of the bridge, the chain that the
-cases treat as supported, and on port ``10001``, with the bridge alone. Both have the same four
-tools, which the bridge transcodes to REST requests:
-
-.. literalinclude:: _include/mcp/rest_backend/envoy.yaml
-   :language: yaml
-   :lines: 71-88
-   :linenos:
-   :lineno-start: 71
-   :caption: :download:`rest_backend/envoy.yaml <_include/mcp/rest_backend/envoy.yaml>`
-
-Step 4: Run the REST backend's cases
+Step 9: See what each request became
 ************************************
 
-The client runs 11 cases: tools/list in both of the bridge's modes, a tool call with the SDK,
-``Mcp-Param`` headers, the transcoding of a GET, a POST and a streamed answer, and an empty POST.
+Envoy's access log shows, for each request, the MCP method and tool that the MCP filter read from the
+JSON-RPC body, and the REST request that the bridge made of it:
 
 .. code-block:: console
 
-   $ docker compose exec rest-client python -u docker/client_entrypoint.py
-   ...
-   Cases: 11 run, 0 not selected
-   Regression checks: 97 passed, 0 failed
-   Compliance checks (known gaps): 7 failing as known, 0 now passing
-   ...
-   PASS. Logs and files: the run directory, /e2e-run, in the rest-client container (see README.md)
+   $ docker compose logs proxy | grep -- ' -> '
+   proxy-1  | server/discover - -> POST /mcp 200 mcp_json_rest_bridge_filter_server_discover
+   proxy-1  | tools/list - -> POST /mcp 200 mcp_json_rest_bridge_tools_list
+   proxy-1  | tools/call get_weather -> GET /v1/weather/Paris?units=imperial 200 via_upstream
+   proxy-1  | tools/call create_order -> POST /v1/orders 200 via_upstream
+   proxy-1  | tools/call stream_text -> GET /v1/stream/text 200 via_upstream
+   proxy-1  | tools/call get_weather -> GET /v1/weather/Atlantis 200 via_upstream
+   proxy-1  | - - -> POST /mcp 400 mcp_not_jsonrpc
 
-Each check cites the requirement that it checks, from the MCP specification or the bridge's API:
+The method and the tool are the MCP filter's dynamic metadata, read with
+``%DYNAMIC_METADATA(envoy.filters.http.mcp:method)%`` and
+``%DYNAMIC_METADATA(envoy.filters.http.mcp:params:name)%``. The method and the path are those of the
+REST request, as the bridge rewrote them. The bridge answered ``server/discover`` and ``tools/list``
+itself, and the MCP filter the request that was not MCP.
 
-- A **regression check** must pass: a failure fails the run.
-- A **compliance check** names a known gap, a requirement that Envoy does not meet yet. Its failure
-  is reported (``GAP``), and does not fail the run.
-- When a known gap's check passes (``FIXED``), the client warns that the gap should be removed from
-  the check. That does not fail the run either, because Envoy's ``dev`` image moves on.
-
-To run only some cases, restart the services, and give the cases' names, or prefixes of them, in
-``ONLY``:
-
-.. code-block:: console
-
-   $ docker compose up -d --force-recreate
-   $ docker compose exec -e ONLY=params.,tools-list.local@B rest-client python -u docker/client_entrypoint.py
-
-Step 5: Read the logs
-*********************
-
-Each backend's services share a run directory, with Envoy's access log, the backend's request log
-and the client's output:
-
-.. code-block:: console
-
-   $ docker compose exec rest-client ls /e2e-run
-   access.log  client_output.txt  rest_requests.jsonl  server_info.json
-   $ docker compose cp rest-client:/e2e-run/client_output.txt .
-
-Step 6: Stop the backends
-*************************
-
-.. code-block:: console
-
-   $ docker compose down -v
-   $ cd ..
-   $ docker compose down -v
+The status is the one that Envoy sent to the client: the bridge answered each tool call with a
+``200``. The REST API created the order with a ``201``, and answered ``404`` for Atlantis, which the
+bridge turned into a tool result with ``isError: true``.
 
 .. seealso::
 
    :ref:`MCP filter <config_http_filters_mcp>`
-      Learn more about the MCP filter.
+      Learn more about the MCP filter, and its other uses, such as authorization on MCP attributes.
+
+   :ref:`MCP filter dynamic metadata <config_http_filters_mcp_dynamic_metadata>`
+      The attributes that the MCP filter stores for other filters and the access log.
 
    :ref:`MCP JSON-REST bridge API <envoy_v3_api_msg_extensions.filters.http.mcp_json_rest_bridge.v3.McpJsonRestBridge>`
       The MCP JSON-REST bridge's configuration.
 
    `MCP specification, 2026-07-28 <https://modelcontextprotocol.io/specification/2026-07-28>`_
       The version of the Model Context Protocol that the sandbox uses.
-
-   `The sandbox's README <https://github.com/envoyproxy/examples/blob/main/mcp/README.md>`_
-      The cases, the known gaps, and how to change the suites.
