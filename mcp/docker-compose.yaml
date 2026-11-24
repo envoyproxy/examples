@@ -1,0 +1,22 @@
+services:
+
+  proxy:
+    build:
+      context: .
+      dockerfile: ../shared/envoy/Dockerfile
+      target: envoy-admin
+      args:
+        ENVOY_ADMIN_PORT: 9901
+    depends_on:
+      rest:
+        condition: service_healthy
+    ports:
+    - "${PORT_PROXY:-10000}:10000"
+    - "${PORT_ADMIN:-9901}:9901"
+
+  rest:
+    build:
+      context: ../shared/python
+      target: aiohttp-service
+    volumes:
+    - ./mocks/rest.py:/code/service.py
