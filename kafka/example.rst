@@ -40,7 +40,6 @@ Change to the ``kafka`` directory.
   -----------------------------------------------------------------------------------------------------------------------
   kafka_kafka-server_1   /etc/confluent/docker/run      Up             9092/tcp
   kafka_proxy_1          /docker-entrypoint.sh /usr ... Up             0.0.0.0:10000->10000/tcp, 0.0.0.0:8001->8001/tcp
-  kafka_zookeeper_1      /etc/confluent/docker/run      Up (healthy)   2181/tcp, 2888/tcp, 3888/tcp
 
 
 Step 2: Create a Kafka topic

@@ -21,40 +21,47 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-kafka
-    depends_on:
-      zookeeper:
-        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server kafka-cluster1:9092 >/dev/null 2>&1 || exit 1"]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+      start_period: 10s
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181/cluster1
-      KAFKA_LISTENERS: PLAINTEXT://kafka-cluster1:9092
+      # Standalone single-node KRaft cluster (broker + controller).
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-cluster1:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENERS: PLAINTEXT://kafka-cluster1:9092,CONTROLLER://kafka-cluster1:9093
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-cluster1:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
 
   kafka-cluster2:
     build:
       context: .
       dockerfile: Dockerfile-kafka
-    depends_on:
-      zookeeper:
-        condition: service_healthy
-    environment:
-      KAFKA_BROKER_ID: 2
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181/cluster2
-      KAFKA_LISTENERS: PLAINTEXT://kafka-cluster2:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-cluster2:9092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-
-  zookeeper:
-    build:
-      context: .
-      dockerfile: Dockerfile-zookeeper
     healthcheck:
-      test: ["CMD", "sh", "-c", "echo ruok | nc 127.0.0.1 2181 || exit -1"]
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server kafka-cluster2:9092 >/dev/null 2>&1 || exit 1"]
       interval: 5s
-      timeout: 60s
-      retries: 120
+      timeout: 10s
+      retries: 30
+      start_period: 10s
     environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-      KAFKA_OPTS: "-Dzookeeper.4lw.commands.whitelist=ruok"
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      CLUSTER_ID: N2QzOUExMjM0NTY3ODlB
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-cluster2:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENERS: PLAINTEXT://kafka-cluster2:9092,CONTROLLER://kafka-cluster2:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-cluster2:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
